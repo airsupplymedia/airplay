@@ -1,0 +1,90 @@
+package de.airsupply.airplay.core.services;
+
+import java.io.InputStream;
+import java.util.Date;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import de.airsupply.airplay.core.graph.repository.RecordImportRepository;
+import de.airsupply.airplay.core.importers.sdf.AirplayRecordImporter;
+import de.airsupply.airplay.core.model.Chart;
+import de.airsupply.airplay.core.model.ChartState;
+import de.airsupply.airplay.core.model.RecordImport;
+import de.airsupply.commons.core.neo4j.Neo4jServiceSupport;
+import de.airsupply.commons.core.util.DateUtils;
+
+@Service
+public class ImportService extends Neo4jServiceSupport {
+
+	@Autowired
+	private ChartService chartService;
+
+	@Autowired
+	private ContentService contentService;
+
+	@Autowired
+	private AirplayRecordImporter importer;
+
+	@Autowired
+	private RecordImportRepository recordImportRepository;
+
+	@Autowired
+	private StationService stationService;
+
+	public void commitImport(final RecordImport recordImport) {
+		contentService.findOrCreate(recordImport.getImportedArtistList());
+		contentService.findOrCreate(recordImport.getImportedPublisherList());
+		contentService.findOrCreate(recordImport.getImportedRecordCompanyList());
+		contentService.findOrCreate(recordImport.getImportedSongList());
+
+		stationService.findOrCreate(recordImport.getImportedStationList());
+		stationService.findOrCreate(recordImport.getImportedShowBroadcastList());
+		stationService.findOrCreate(recordImport.getImportedSongBroadcastList());
+
+		recordImportRepository.save(recordImport);
+	}
+
+	public long getRecordImportCount() {
+		return recordImportRepository.count();
+	}
+
+	/*
+	 * @Transactional public RecordImport importRecords(final Chart chart, Date
+	 * week, final InputStream inputStream) { Assert.notNull(chart);
+	 * Assert.notNull(week); Assert.notNull(inputStream);
+	 * 
+	 * week = DateUtils.getStartOfWeek(week);
+	 * 
+	 * RecordImport recordImport = new RecordImport(week);
+	 * 
+	 * Assert.isTrue(!exists(recordImport), "Import for week " +
+	 * DateUtils.getWeekOfYearFormat(week) + " has been performed before!");
+	 * 
+	 * ChartState chartState = chartService.save(new ChartState(chart, week));
+	 * 
+	 * importer.processRecords(inputStream, chartState, recordImport);
+	 * 
+	 * recordImportRepository.save(recordImport); return recordImport; }
+	 */
+
+	public RecordImport prepareImport(final Chart chart, Date week, final InputStream inputStream) {
+		Assert.notNull(chart);
+		Assert.notNull(week);
+		Assert.notNull(inputStream);
+
+		week = DateUtils.getStartOfWeek(week);
+
+		RecordImport recordImport = new RecordImport(week);
+
+		Assert.isTrue(!exists(recordImport), "Import for week " + DateUtils.getWeekOfYearFormat(week)
+				+ " has been performed before!");
+
+		ChartState chartState = chartService.save(new ChartState(chart, week));
+		importer.processRecords(inputStream, chartState, recordImport);
+
+		return recordImport;
+	}
+
+}

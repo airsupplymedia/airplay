@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
+
+	<bean
+		id="basicProcessingFilter"
+		class="org.springframework.security.web.authentication.www.BasicAuthenticationFilter">
+
+		<property
+			name="authenticationManager"
+			ref="AuthenticationManager" />
+
+		<property
+			name="authenticationEntryPoint"
+			ref="AuthenticationEntryPoint" />
+
+	</bean>
+
+	<bean
+		id="AuthenticationEntryPoint"
+		class="org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint">
+
+		<property
+			name="realmName"
+			value="My Realm Here" />
+
+	</bean>
+
+	<security:http
+		entry-point-ref=""
+		once-per-request="true">
+
+		<security:custom-filter
+			ref="basicProcessingFilter"
+			before="FORM_LOGIN_FILTER" />
+
+		<security:intercept-url
+			pattern="/authenticate.jsp*"
+			access="ROLE_ANONYMOUS,IS_AUTHENTICATED_FULLY"
+			requires-channel="http" />
+
+		<security:intercept-url
+			pattern="/**"
+			access="IS_AUTHENTICATED_FULLY"
+			requires-channel="http" />
+
+		<security:access-denied-handler
+			error-page="/test.html" />
+
+		<security:session-management
+			session-fixation-protection="newSession" />
+
+		<!-- <security:port-mappings> <security:port-mapping http="8080" https="8443" 
+			/> </security:port-mappings> -->
+
+		<security:anonymous />
+
+		<security:form-login
+			login-processing-url="/login.jsp"
+			login-page="/test.html"
+			authentication-failure-url="/test.html"
+			default-target-url="/SupportUser"
+			always-use-default-target="false" />
+
+		<security:logout
+			invalidate-session="true"
+			logout-success-url="/authenticate.jsp"
+			logout-url="/logout" />
+
+	</security:http>
+
+	<!-- Technischer User wurde für TEST-LDAP Server erzeugt: Für "suwebapp" 
+		- LDAP: "eds-e.ldap.fiducia.de:636" https://uss-test.ldap.fiducia.de -->
+	<security:ldap-server
+		id="LdapServer"
+		manager-dn="uid=tu0003wm,cn=users,o=fiducia,c=de"
+		manager-password="FVupnNC7G7mD"
+		url="ldaps://eds-e.ldap.fiducia.de:636" />
+
+	<security:authentication-manager alias="AuthenticationManager">
+
+		<security:ldap-authentication-provider
+			server-ref="LdapServer"
+			user-dn-pattern="uid={0},cn=people,ou=corporation,cn=x-plex,cn=enterprise,o=fiducia,c=de"
+			user-details-class="inetOrgPerson" />
+
+	</security:authentication-manager>
+
+</beans>
