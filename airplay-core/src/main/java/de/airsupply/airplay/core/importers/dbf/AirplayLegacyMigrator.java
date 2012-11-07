@@ -61,7 +61,7 @@ public class AirplayLegacyMigrator {
 	@Autowired
 	private ContentService contentService;
 
-	private final String fileDirectory = "C:\\Development\\Projects\\ASM\\Application\\airplay-dbf";
+	private final String fileDirectory = "C:\\Development\\Projects\\ASM\\airplay-dbf";
 
 	private final Log log = LogFactory.getLog(getClass());
 

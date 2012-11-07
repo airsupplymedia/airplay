@@ -19,18 +19,17 @@ public class PersistentNode implements Serializable {
 		if (this == obj) {
 			return true;
 		}
+		if (identifier == null) {
+			return false;
+		}
 		if (obj == null) {
 			return false;
 		}
-		if (!(obj instanceof PersistentNode)) {
+		if (getClass() != obj.getClass()) {
 			return false;
 		}
 		PersistentNode other = (PersistentNode) obj;
-		if (identifier == null) {
-			if (other.identifier != null) {
-				return false;
-			}
-		} else if (!identifier.equals(other.identifier)) {
+		if (!identifier.equals(other.identifier)) {
 			return false;
 		}
 		return true;
@@ -42,6 +41,9 @@ public class PersistentNode implements Serializable {
 
 	@Override
 	public int hashCode() {
+		if (identifier == null) {
+			return System.identityHashCode(this);
+		}
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((identifier == null) ? 0 : identifier.hashCode());

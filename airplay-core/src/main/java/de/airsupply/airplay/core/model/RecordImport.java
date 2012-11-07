@@ -10,8 +10,10 @@ import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
+import org.springframework.data.neo4j.annotation.RelatedToVia;
 import org.springframework.util.Assert;
 
+import de.airsupply.commons.core.neo4j.annotation.Persistent;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 import de.airsupply.commons.core.util.CollectionUtils;
 
@@ -20,27 +22,39 @@ import de.airsupply.commons.core.util.CollectionUtils;
 @SuppressWarnings("serial")
 public class RecordImport extends PersistentNode {
 
+	@Persistent
 	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_ARTISTS")
 	private Set<Artist> importedArtists = new HashSet<>();
 
+	@Persistent
+	@RelatedToVia(direction = Direction.OUTGOING, type = "IMPORTED_CHART_POSITIONS")
+	private Set<ChartPosition> importedChartPositions = new HashSet<>();
+
+	@Persistent
 	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_CHART_STATES")
 	private Set<ChartState> importedChartStates = new HashSet<>();
 
+	@Persistent
 	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_PUBLISHERS")
 	private Set<Publisher> importedPublishers = new HashSet<>();
 
+	@Persistent
 	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_RECORD_COMPANIES")
 	private Set<RecordCompany> importedRecordCompanies = new HashSet<>();
 
-	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_SHOW_BROADCASTS")
+	@Persistent
+	@RelatedToVia(direction = Direction.OUTGOING, type = "IMPORTED_SHOW_BROADCASTS")
 	private Set<ShowBroadcast> importedShowBroadcasts = new HashSet<>();
 
-	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_SONG_BROADCASTS")
+	@Persistent
+	@RelatedToVia(direction = Direction.OUTGOING, type = "IMPORTED_SONG_BROADCASTS")
 	private Set<SongBroadcast> importedSongBroadcasts = new HashSet<>();
 
+	@Persistent
 	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_SONGS")
 	private Set<Song> importedSongs = new HashSet<>();
 
+	@Persistent
 	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_STATIONS")
 	private Set<Station> importedStations = new HashSet<>();
 
@@ -61,12 +75,16 @@ public class RecordImport extends PersistentNode {
 		return importedArtists;
 	}
 
-	public List<ChartState> getImportedChartStateList() {
-		if (importedChartStates != null) {
-			return CollectionUtils.asList(importedChartStates);
+	public List<ChartPosition> getImportedChartPositionList() {
+		if (importedChartPositions != null) {
+			return CollectionUtils.asList(importedChartPositions);
 		} else {
 			return Collections.emptyList();
 		}
+	}
+
+	public Set<ChartState> getImportedChartStateList() {
+		return importedChartStates;
 	}
 
 	public Set<Publisher> getImportedPublisherList() {
@@ -115,6 +133,10 @@ public class RecordImport extends PersistentNode {
 
 	public void importBroadcast(SongBroadcast broadcast) {
 		importedSongBroadcasts.add(broadcast);
+	}
+
+	public void importChartPosition(ChartPosition chartPosition) {
+		importedChartPositions.add(chartPosition);
 	}
 
 	public void importChartState(ChartState chartState) {

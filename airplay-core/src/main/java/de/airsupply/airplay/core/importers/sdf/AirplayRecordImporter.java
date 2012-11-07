@@ -5,14 +5,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.text.StrTokenizer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -24,24 +24,66 @@ import de.airsupply.airplay.core.model.Publisher;
 import de.airsupply.airplay.core.model.RecordCompany;
 import de.airsupply.airplay.core.model.RecordImport;
 import de.airsupply.airplay.core.model.Song;
+import de.airsupply.airplay.core.model.SongBroadcast;
 import de.airsupply.airplay.core.model.Station;
-import de.airsupply.airplay.core.services.ChartService;
-import de.airsupply.airplay.core.services.ContentService;
-import de.airsupply.airplay.core.services.StationService;
 
 @Service
 public class AirplayRecordImporter {
 
-	@Autowired
-	private ChartService chartService;
+	private static class CacheContext {
 
-	@Autowired
-	private ContentService contentService;
+		private Map<Class<?>, NameCache<?>> map = new HashMap<>();
+
+		@SuppressWarnings({ "unchecked" })
+		public <T> NameCache<T> getCache(Class<T> key) {
+			NameCache<?> cache = map.get(key);
+			if (cache == null) {
+				cache = new DefaultNameCache<T>(key);
+				map.put(key, cache);
+			}
+			return (NameCache<T>) cache;
+		}
+
+	}
+
+	private static class DefaultNameCache<T> extends NameCache<T> {
+
+		private Class<T> type;
+
+		public DefaultNameCache(Class<T> type) {
+			this.type = type;
+		}
+
+		@Override
+		protected T create(String name) {
+			try {
+				return type.getConstructor(String.class).newInstance(name);
+			} catch (Exception exception) {
+				return null;
+			}
+		}
+
+	}
+
+	private static abstract class NameCache<T> {
+
+		private Map<String, T> map = new HashMap<>();
+
+		protected abstract T create(String name);
+
+		public T get(String name) {
+			T value = map.get(name);
+			if (value == null) {
+				value = create(name);
+				Assert.notNull(value);
+				map.put(name, value);
+			}
+			return value;
+		}
+
+	}
 
 	private Log log = LogFactory.getLog(getClass());
-
-	@Autowired
-	private StationService stationService;
 
 	public AirplayRecordImporter() {
 		super();
@@ -56,8 +98,7 @@ public class AirplayRecordImporter {
 	}
 
 	private void processAirplayRecord(RecordImport recordImport, ChartState chartState, List<String> stationNames,
-			StrTokenizer tokenizer) {
-		Date week = recordImport.getWeekDate();
+			StrTokenizer tokenizer, CacheContext context) {
 
 		String[] tokens = tokenizer.getTokenArray();
 		String artistName = tokens[56].trim();
@@ -67,19 +108,9 @@ public class AirplayRecordImporter {
 		String publisherName = tokens[58].trim();
 		String airplayChartPosition = tokens[0].trim();
 
-		contentService.find(new Artist(artistName));
-
-		// Artist artist = contentService.findOrCreate(new Artist(artistName));
-		// Publisher publisher = contentService.findOrCreate(new
-		// Publisher(publisherName));
-		// RecordCompany recordCompany = contentService.findOrCreate(new
-		// RecordCompany(recordCompanyName));
-		// Song song = contentService.findOrCreate(new Song(artist, songName,
-		// discIdentifier, recordCompany, publisher));
-
-		RecordCompany recordCompany = new RecordCompany(recordCompanyName);
-		Publisher publisher = new Publisher(publisherName);
-		Artist artist = new Artist(artistName);
+		RecordCompany recordCompany = context.getCache(RecordCompany.class).get(recordCompanyName);
+		Publisher publisher = context.getCache(Publisher.class).get(publisherName);
+		Artist artist = context.getCache(Artist.class).get(artistName);
 		Song song = new Song(artist, songName, discIdentifier, recordCompany, publisher);
 
 		recordImport.importRecordCompany(recordCompany);
@@ -88,25 +119,19 @@ public class AirplayRecordImporter {
 		recordImport.importSong(song);
 
 		for (int i = 0; i < stationNames.size(); i++) {
-			// Station station = stationService.findOrCreate(new
-			// Station(stationNames.get(i), null));
-			recordImport.importStation(new Station(stationNames.get(i), null));
+			Station station = context.getCache(Station.class).get(stationNames.get(i));
+			recordImport.importStation(station);
 
 			int broadcastCount = Integer.valueOf(tokens[i + 62].trim()).intValue();
-
-			// if (broadcastCount > 0) {
-			// SongBroadcast songBroadcast = new SongBroadcast(station, song,
-			// week, broadcastCount);
-			// Assert.isNull(stationService.find(songBroadcast),
-			// "Broadcasts may not be imported twice!");
-			// songBroadcast = stationService.save(songBroadcast);
-			// recordImport.importBroadcast(songBroadcast);
-			// }
+			if (broadcastCount > 0) {
+				recordImport.importBroadcast(new SongBroadcast(station, song, recordImport.getWeekDate(),
+						broadcastCount));
+			}
 		}
 
-		ChartPosition chartPosition = chartService.findOrCreate(new ChartPosition(chartState, song, Integer.valueOf(
-				airplayChartPosition).intValue()));
-		log.info("Importing: " + chartPosition);
+		ChartPosition chartPosition = new ChartPosition(chartState, song, Integer.valueOf(airplayChartPosition)
+				.intValue());
+		recordImport.importChartPosition(chartPosition);
 	}
 
 	private void processAirplayRecordHeader(List<String> stationNames, StrTokenizer tokenizer) {
@@ -145,7 +170,7 @@ public class AirplayRecordImporter {
 					processAirplayRecordHeader(stationNames, tokenizer);
 					firstLine = false;
 				} else {
-					processAirplayRecord(recordImport, chartState, stationNames, tokenizer);
+					processAirplayRecord(recordImport, chartState, stationNames, tokenizer, new CacheContext());
 				}
 			}
 			recordImport.importChartState(chartState);
@@ -160,18 +185,6 @@ public class AirplayRecordImporter {
 				}
 			}
 		}
-	}
-
-	public void commitRecordImport(RecordImport recordImport) {
-		Assert.notNull(recordImport);
-
-		contentService.findOrCreate(recordImport.getImportedPublisherList());
-		contentService.findOrCreate(recordImport.getImportedRecordCompanyList());
-		contentService.findOrCreate(recordImport.getImportedArtistList());
-		contentService.findOrCreate(recordImport.getImportedSongList());
-		stationService.findOrCreate(recordImport.getImportedStationList());
-		stationService.findOrCreate(recordImport.getImportedSongBroadcastList());
-		stationService.findOrCreate(recordImport.getImportedShowBroadcastList());
 	}
 
 }

@@ -51,7 +51,7 @@ public class ImportServiceTests {
 		Date week = DateUtils.getStartOfWeek(new Date());
 		InputStream inputStream = getClass().getResourceAsStream("COMMON_AIRPLAY_SET.SDF");
 
-		// importService.importRecords(chart, week, inputStream);
+		importService.importRecords(chart, week, inputStream);
 
 		assertEquals(1, chartService.getChartCount());
 		assertEquals(1, chartService.getChartStateCount());
@@ -76,8 +76,8 @@ public class ImportServiceTests {
 		Date week = DateUtils.getStartOfWeek(new Date());
 		InputStream inputStream = getClass().getResourceAsStream("INTEGRITY_CHECK_AIRPLAY_SET.SDF");
 
-		// importService.importRecords(chart, week, inputStream);
-		// importService.importRecords(chart, week, inputStream);
+		importService.importRecords(chart, week, inputStream);
+		importService.importRecords(chart, week, inputStream);
 	}
 
 }

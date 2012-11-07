@@ -12,25 +12,25 @@ import org.springframework.util.Assert;
 
 public abstract class CollectionUtils {
 
-	public static <T extends Object> List<T> asList(ClosableIterable<T> iterable) {
+	public static <T> List<T> asList(ClosableIterable<T> iterable) {
 		Assert.notNull(iterable);
 		return asList(iterable, null);
 	}
 
-	public static <T extends Object, F extends Object> List<F> asList(ClosableIterable<T> iterable, Class<F> type) {
+	public static <T, F> List<F> asList(ClosableIterable<T> iterable, Class<F> type) {
 		Assert.notNull(iterable);
 		List<F> result = asList((Iterable<T>) iterable, type);
 		iterable.close();
 		return result;
 	}
 
-	public static <T extends Object> List<T> asList(Iterable<T> iterable) {
+	public static <T> List<T> asList(Iterable<T> iterable) {
 		Assert.notNull(iterable);
 		return asList(iterable, null);
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T extends Object, F extends Object> List<F> asList(Iterable<T> iterable, Class<F> type) {
+	public static <T, F> List<F> asList(Iterable<T> iterable, Class<F> type) {
 		Assert.notNull(iterable);
 		Iterator<T> iterator = iterable.iterator();
 		List<F> result = new ArrayList<>();
@@ -45,25 +45,25 @@ public abstract class CollectionUtils {
 		return Collections.unmodifiableList(result);
 	}
 
-	public static <T extends Object> Set<T> asSet(ClosableIterable<T> iterable) {
+	public static <T> Set<T> asSet(ClosableIterable<T> iterable) {
 		Assert.notNull(iterable);
 		return asSet(iterable, null);
 	}
 
-	public static <T extends Object, F extends Object> Set<F> asSet(ClosableIterable<T> iterable, Class<F> type) {
+	public static <T, F> Set<F> asSet(ClosableIterable<T> iterable, Class<F> type) {
 		Assert.notNull(iterable);
 		Set<F> result = asSet((Iterable<T>) iterable, type);
 		iterable.close();
 		return result;
 	}
 
-	public static <T extends Object> Set<T> asSet(Iterable<T> iterable) {
+	public static <T> Set<T> asSet(Iterable<T> iterable) {
 		Assert.notNull(iterable);
 		return asSet(iterable, null);
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T extends Object, F extends Object> Set<F> asSet(Iterable<T> iterable, Class<F> type) {
+	public static <T, F> Set<F> asSet(Iterable<T> iterable, Class<F> type) {
 		Assert.notNull(iterable);
 		Iterator<T> iterator = iterable.iterator();
 		Set<F> result = new HashSet<>();

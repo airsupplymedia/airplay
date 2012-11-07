@@ -34,7 +34,7 @@ public abstract class QueryUtils {
 		return new UniquenessEvaluator<>(object, neo4jTemplate).exists();
 	}
 
-	public static <T extends Object> T getExisting(Neo4jTemplate neo4jTemplate, T object) {
+	public static <T> T getExisting(Neo4jTemplate neo4jTemplate, T object) {
 		Assert.isTrue(!isPersistent(neo4jTemplate, object));
 		return new UniquenessEvaluator<>(object, neo4jTemplate).getExisting();
 	}
@@ -43,10 +43,19 @@ public abstract class QueryUtils {
 		return neo4jTemplate.getEntityStateHandler().getPersistentState(value);
 	}
 
-	public static boolean isPersistent(Neo4jTemplate neo4jTemplate, Object object) {
+	public static boolean isPersistable(Neo4jTemplate neo4jTemplate, Object object) {
 		return !BeanUtils.isSimpleValueType(object.getClass())
 				&& (neo4jTemplate.isNodeEntity(object.getClass()) || neo4jTemplate.isRelationshipEntity(object
-						.getClass())) && neo4jTemplate.getEntityStateHandler().hasPersistentState(object);
+						.getClass()));
+	}
+
+	public static boolean isPersistent(Neo4jTemplate neo4jTemplate, Object object) {
+		return isPersistable(neo4jTemplate, object) && neo4jTemplate.getEntityStateHandler().hasPersistentState(object);
+	}
+
+	public static boolean isTransient(Neo4jTemplate neo4jTemplate, Object object) {
+		return isPersistable(neo4jTemplate, object)
+				&& !neo4jTemplate.getEntityStateHandler().hasPersistentState(object);
 	}
 
 }

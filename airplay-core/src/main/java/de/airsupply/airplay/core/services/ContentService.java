@@ -2,11 +2,11 @@ package de.airsupply.airplay.core.services;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
-import org.neo4j.helpers.collection.ClosableIterable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.neo4j.conversion.EndResult;
+import org.springframework.data.neo4j.conversion.Handler;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -76,16 +76,19 @@ public class ContentService extends Neo4jServiceSupport {
 			query = QueryUtils.buildDefaultQuery(query);
 		}
 
-		List<Song> result = new ArrayList<>();
-
+		final List<Song> result = new ArrayList<>();
 		result.addAll(CollectionUtils.asList(songRepository.findAllByQuery("name", query)));
 
-		ClosableIterable<Artist> artists = artistRepository.findAllByQuery("name", query);
-		Iterator<Artist> iterator = artists.iterator();
-		while (iterator.hasNext()) {
-			result.addAll(findSongs(iterator.next()));
-		}
-		artists.close();
+		EndResult<Artist> artists = artistRepository.findAllByQuery("name", query);
+		artists.handle(new Handler<Artist>() {
+
+			@Override
+			public void handle(Artist artist) {
+				result.addAll(findSongs(artist));
+			}
+
+		});
+		artists.finish();
 
 		return Collections.unmodifiableList(result);
 	}

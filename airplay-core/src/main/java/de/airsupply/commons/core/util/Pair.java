@@ -1,6 +1,6 @@
 package de.airsupply.commons.core.util;
 
-public class Pair<F extends Object, S extends Object> {
+public class Pair<F, S> {
 
 	private final F first;
 

@@ -33,43 +33,22 @@ public class ImportService extends Neo4jServiceSupport {
 	@Autowired
 	private StationService stationService;
 
-	public void commitImport(final RecordImport recordImport) {
-		contentService.findOrCreate(recordImport.getImportedArtistList());
-		contentService.findOrCreate(recordImport.getImportedPublisherList());
-		contentService.findOrCreate(recordImport.getImportedRecordCompanyList());
-		contentService.findOrCreate(recordImport.getImportedSongList());
-
-		stationService.findOrCreate(recordImport.getImportedStationList());
-		stationService.findOrCreate(recordImport.getImportedShowBroadcastList());
-		stationService.findOrCreate(recordImport.getImportedSongBroadcastList());
-
-		recordImportRepository.save(recordImport);
+	private void commitImport(final RecordImport recordImport) {
+		Assert.notNull(recordImport);
+		findOrCreate(recordImport, true);
 	}
 
 	public long getRecordImportCount() {
 		return recordImportRepository.count();
 	}
 
-	/*
-	 * @Transactional public RecordImport importRecords(final Chart chart, Date
-	 * week, final InputStream inputStream) { Assert.notNull(chart);
-	 * Assert.notNull(week); Assert.notNull(inputStream);
-	 * 
-	 * week = DateUtils.getStartOfWeek(week);
-	 * 
-	 * RecordImport recordImport = new RecordImport(week);
-	 * 
-	 * Assert.isTrue(!exists(recordImport), "Import for week " +
-	 * DateUtils.getWeekOfYearFormat(week) + " has been performed before!");
-	 * 
-	 * ChartState chartState = chartService.save(new ChartState(chart, week));
-	 * 
-	 * importer.processRecords(inputStream, chartState, recordImport);
-	 * 
-	 * recordImportRepository.save(recordImport); return recordImport; }
-	 */
+	public RecordImport importRecords(final Chart chart, Date week, final InputStream inputStream) {
+		RecordImport recordImport = prepareImport(chart, week, inputStream);
+		commitImport(recordImport);
+		return recordImport;
+	}
 
-	public RecordImport prepareImport(final Chart chart, Date week, final InputStream inputStream) {
+	private RecordImport prepareImport(final Chart chart, Date week, final InputStream inputStream) {
 		Assert.notNull(chart);
 		Assert.notNull(week);
 		Assert.notNull(inputStream);

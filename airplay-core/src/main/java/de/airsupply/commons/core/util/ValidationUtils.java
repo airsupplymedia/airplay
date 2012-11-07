@@ -14,7 +14,7 @@ public abstract class ValidationUtils {
 
 	private static final Log LOG = LogFactory.getLog(ValidationUtils.class);
 
-	public static <T extends Object> void validate(Validator validator, T object, Class<?>... groups) {
+	public static <T> void validate(Validator validator, T object, Class<?>... groups) {
 		Set<ConstraintViolation<T>> results = validator.validate(object, groups);
 		if (!results.isEmpty()) {
 			Set<ConstraintViolation<?>> violations = new HashSet<>();

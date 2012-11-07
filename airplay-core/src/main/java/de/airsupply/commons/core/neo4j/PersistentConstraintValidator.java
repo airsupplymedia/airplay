@@ -17,14 +17,23 @@ public class PersistentConstraintValidator implements ConstraintValidator<Persis
 	public void initialize(Persistent constraintAnnotation) {
 	}
 
-	private boolean isPersistentNeo4jObject(Object fieldValue) {
-		return (neo4jTemplate.isNodeEntity(fieldValue.getClass()) || neo4jTemplate.isRelationshipEntity(fieldValue
-				.getClass())) && neo4jTemplate.getEntityStateHandler().hasPersistentState(fieldValue);
-	}
-
 	@Override
 	public boolean isValid(Object value, ConstraintValidatorContext context) {
-		return value == null || isPersistentNeo4jObject(value);
+		if (value == null) {
+			return true;
+		}
+		if (value instanceof Iterable) {
+			Iterable<?> iterable = (Iterable<?>) value;
+			for (Object object : iterable) {
+				if (!QueryUtils.isPersistent(neo4jTemplate, object)) {
+					return false;
+				}
+			}
+			return true;
+		} else if (QueryUtils.isPersistent(neo4jTemplate, value)) {
+			return true;
+		}
+		return false;
 	}
 
 }

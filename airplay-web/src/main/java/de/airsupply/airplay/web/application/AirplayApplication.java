@@ -7,6 +7,7 @@ import org.springframework.util.Assert;
 import com.vaadin.Application;
 import com.vaadin.ui.themes.Reindeer;
 
+import de.airsupply.airplay.core.importers.dbf.AirplayLegacyMigrator;
 import de.airsupply.airplay.web.application.model.AirplayDataProvider;
 import de.airsupply.airplay.web.ui.WorkbenchWindow;
 
@@ -17,8 +18,8 @@ public class AirplayApplication extends Application {
 	@Autowired
 	private transient AirplayDataProvider dataProvider;
 
-	// @Autowired
-	// private transient AirplayLegacyMigrator migrator;
+	@Autowired
+	private transient AirplayLegacyMigrator migrator;
 
 	@Override
 	public void close() {
@@ -41,7 +42,7 @@ public class AirplayApplication extends Application {
 		// migrator.migrateSongs();
 		// migrator.migrateChartStates();
 		// migrator.migrateChartPositions();
-		// migrator.migrateSongBroadcasts();
+		// // migrator.migrateSongBroadcasts();
 		// }
 		// });
 	}

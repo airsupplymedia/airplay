@@ -1,7 +1,6 @@
 package de.airsupply.airplay.core.model;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 import org.hibernate.validator.constraints.NotEmpty;
@@ -26,10 +25,15 @@ public class Station extends PersistentNode {
 	private String name;
 
 	@RelatedTo(direction = Direction.BOTH, type = "SHOWS")
-	private Iterable<Show> shows = new HashSet<>();
+	private Iterable<Show> shows = null;
 
 	Station() {
 		super();
+	}
+
+	public Station(String name) {
+		super();
+		this.name = name;
 	}
 
 	public Station(String name, String longName) {

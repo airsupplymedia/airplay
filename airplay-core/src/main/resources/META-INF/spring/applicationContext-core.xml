@@ -21,8 +21,6 @@
 	<neo4j:config storeDirectory="C:/Development/Storage/Neo4j/config-test" />
 	<neo4j:repositories base-package="de.airsupply.airplay.core.graph.repository" />
 
-	<!-- <context:component-scan base-package="de.airsupply.airplay.core.services" /> -->
-	<!-- FIXME! -->
 	<context:component-scan base-package="de.airsupply.airplay.core" />
 
 	<bean

@@ -23,7 +23,7 @@ import org.springframework.util.StringUtils;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 import de.airsupply.commons.core.util.CollectionUtils;
 
-class UniquenessEvaluator<T extends Object> {
+class UniquenessEvaluator<T> {
 
 	private static final String INDEX_QUERY_INITIALIZER = ":";
 
@@ -74,7 +74,7 @@ class UniquenessEvaluator<T extends Object> {
 		if (QueryUtils.isPersistent(neo4jTemplate, value)) {
 			return value;
 		} else {
-			List<? extends Object> result;
+			List<?> result;
 			if (useQuery) {
 				result = runQuery();
 			} else {
@@ -125,7 +125,7 @@ class UniquenessEvaluator<T extends Object> {
 
 	public boolean isUnique() {
 		if (QueryUtils.isPersistent(neo4jTemplate, value)) {
-			List<? extends Object> result;
+			List<?> result;
 			if (useQuery) {
 				result = runQuery();
 			} else {
@@ -141,19 +141,19 @@ class UniquenessEvaluator<T extends Object> {
 		}
 	}
 
-	private List<? extends Object> runPropertyAccess() {
+	private List<?> runPropertyAccess() {
 		HashMap<String, Object> argumentMap = new HashMap<>();
 		boolean isArgumentValid = handleArgument(value, argumentMap, arguments[0]);
 		if (isArgumentValid) {
-			GraphRepository<? extends Object> repository = neo4jTemplate.repositoryFor(value.getClass());
-			List<? extends Object> result = CollectionUtils.asList(repository.findAllByPropertyValue(arguments[0],
+			GraphRepository<?> repository = neo4jTemplate.repositoryFor(value.getClass());
+			List<?> result = CollectionUtils.asList(repository.findAllByPropertyValue(arguments[0],
 					argumentMap.get(arguments[0])));
 			return result;
 		}
 		return Collections.emptyList();
 	}
 
-	private List<? extends Object> runQuery() {
+	private List<?> runQuery() {
 		HashMap<String, Object> argumentMap = new HashMap<>();
 		argumentMap.put("this", value);
 

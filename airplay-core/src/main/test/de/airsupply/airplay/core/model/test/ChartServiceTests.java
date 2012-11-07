@@ -1,6 +1,6 @@
 package de.airsupply.airplay.core.model.test;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Date;
 import java.util.GregorianCalendar;
