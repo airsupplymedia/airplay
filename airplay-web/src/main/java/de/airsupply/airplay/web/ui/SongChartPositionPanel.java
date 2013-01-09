@@ -2,27 +2,32 @@ package de.airsupply.airplay.web.ui;
 
 import java.util.Arrays;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
+
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.ui.Table;
 
 import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.core.model.Song;
-import de.airsupply.airplay.web.application.model.AirplayDataProvider;
-import de.airsupply.airplay.web.application.model.AirplayDataProvider.SongChartPositionContainer;
+import de.airsupply.airplay.web.application.model.Containers.SongChartPositionContainer;
 import de.airsupply.airplay.web.ui.WorkbenchWindow.ContentPanel;
 import de.airsupply.commons.web.ui.WeekOfYearColumnGenerator;
 
+@Configurable
 @SuppressWarnings("serial")
 public class SongChartPositionPanel extends ContentPanel implements ValueChangeListener {
 
-	private Chart chart;
+	private transient Chart chart;
+
+	@Autowired
+	private SongChartPositionContainer songChartPositionContainer;
 
 	private Table table;
 
-	public SongChartPositionPanel(Chart chart, AirplayDataProvider dataProvider) {
-		super(dataProvider);
-		this.chart = chart;
+	public SongChartPositionPanel() {
+		super();
 		setSizeFull();
 		setMargin(false);
 		setSpacing(false);
@@ -38,13 +43,17 @@ public class SongChartPositionPanel extends ContentPanel implements ValueChangeL
 		table = new Table();
 		table.setEnabled(false);
 		table.setSizeFull();
-		table.setContainerDataSource(getDataProvider().createSongChartPositionContainer());
+		table.setContainerDataSource(songChartPositionContainer);
 		table.setVisibleColumns(propertyIds);
 		table.setColumnHeaders(columnHeaders);
 		table.sort(propertyIds, sortDirections);
 		table.addGeneratedColumn("chartState.weekDate", new WeekOfYearColumnGenerator());
 
 		addComponent(table);
+	}
+
+	public void update(Chart chart) {
+		this.chart = chart;
 	}
 
 	@Override

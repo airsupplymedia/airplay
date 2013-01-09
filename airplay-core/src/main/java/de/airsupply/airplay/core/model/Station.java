@@ -1,5 +1,7 @@
 package de.airsupply.airplay.core.model;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.Collections;
 import java.util.List;
 
@@ -60,7 +62,12 @@ public class Station extends PersistentNode {
 
 	@Override
 	public String toString() {
-		return "Station [name=" + name + ", getIdentifier()=" + getIdentifier() + "]";
+		return "Station [name=" + name + ", longName=" + longName + "]";
+	}
+
+	private void writeObject(ObjectOutputStream outputStream) throws IOException {
+		shows = null;
+		outputStream.defaultWriteObject();
 	}
 
 }

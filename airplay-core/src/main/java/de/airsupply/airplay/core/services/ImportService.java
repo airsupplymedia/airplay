@@ -22,16 +22,10 @@ public class ImportService extends Neo4jServiceSupport {
 	private ChartService chartService;
 
 	@Autowired
-	private ContentService contentService;
-
-	@Autowired
 	private AirplayRecordImporter importer;
 
 	@Autowired
 	private RecordImportRepository recordImportRepository;
-
-	@Autowired
-	private StationService stationService;
 
 	private void commitImport(final RecordImport recordImport) {
 		Assert.notNull(recordImport);

@@ -2,23 +2,29 @@ package de.airsupply.airplay.web.ui;
 
 import java.util.Arrays;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.ui.Table;
 
 import de.airsupply.airplay.core.model.Song;
-import de.airsupply.airplay.web.application.model.AirplayDataProvider;
-import de.airsupply.airplay.web.application.model.AirplayDataProvider.SongBroadcastContainer;
+import de.airsupply.airplay.web.application.model.Containers.SongBroadcastContainer;
 import de.airsupply.airplay.web.ui.WorkbenchWindow.ContentPanel;
 import de.airsupply.commons.web.ui.WeekOfYearColumnGenerator;
 
+@Component
 @SuppressWarnings("serial")
 public class SongBroadcastPanel extends ContentPanel implements ValueChangeListener {
 
+	@Autowired
+	private SongBroadcastContainer songBroadcastContainer;
+
 	private Table table;
 
-	public SongBroadcastPanel(AirplayDataProvider dataProvider) {
-		super(dataProvider);
+	public SongBroadcastPanel() {
+		super();
 		setSizeFull();
 		setMargin(false);
 		setSpacing(false);
@@ -34,7 +40,7 @@ public class SongBroadcastPanel extends ContentPanel implements ValueChangeListe
 		table = new Table();
 		table.setEnabled(false);
 		table.setSizeFull();
-		table.setContainerDataSource(getDataProvider().createSongBroadcastContainer());
+		table.setContainerDataSource(songBroadcastContainer);
 		table.setVisibleColumns(propertyIds);
 		table.setColumnHeaders(columnHeaders);
 		table.sort(propertyIds, sortDirections);

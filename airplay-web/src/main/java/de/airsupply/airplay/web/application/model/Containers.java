@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import com.vaadin.data.util.BeanItemContainer;
@@ -20,20 +20,30 @@ import de.airsupply.airplay.core.services.ChartService;
 import de.airsupply.airplay.core.services.ContentService;
 import de.airsupply.airplay.core.services.StationService;
 
-@Service
 @SuppressWarnings("serial")
-public class AirplayDataProvider implements Serializable {
+public class Containers implements Serializable {
 
-	public class ChartContainer extends BeanItemContainer<Chart> {
+	@Component
+	public static class ChartContainer extends BeanItemContainer<Chart> {
+
+		@Autowired
+		private transient ChartService chartService;
 
 		public ChartContainer() {
 			super(Chart.class);
-			addAll(getChartService().getCharts());
+		}
+		
+		public void update() {
+			addAll(chartService.getCharts());
 		}
 
 	}
 
-	public class ChartPositionContainer extends BeanItemContainer<ChartPosition> {
+	@Component
+	public static class ChartPositionContainer extends BeanItemContainer<ChartPosition> {
+
+		@Autowired
+		private transient ChartService chartService;
 
 		public ChartPositionContainer() {
 			super(ChartPosition.class);
@@ -43,42 +53,56 @@ public class AirplayDataProvider implements Serializable {
 
 		public boolean update(Chart chart, Date date) {
 			removeAllItems();
-			List<ChartPosition> chartPositions = getChartService().findChartPositions(chart, date);
+			List<ChartPosition> chartPositions = chartService.findChartPositions(chart, date);
 			addAll(chartPositions);
 			return !chartPositions.isEmpty();
 		}
 
 	}
 
-	public class ShowBroadcastContainer extends BeanItemContainer<ShowBroadcast> {
+	@Component
+	public static class ShowBroadcastContainer extends BeanItemContainer<ShowBroadcast> {
+
+		@Autowired
+		private transient StationService stationService;
 
 		public ShowBroadcastContainer() {
 			super(ShowBroadcast.class);
 			addNestedContainerProperty("station.name");
+			addNestedContainerProperty("station.longName");
 		}
 
 		public void update(Show show) {
 			removeAllItems();
-			addAll(getStationService().findBroadcasts(show));
+			addAll(stationService.findBroadcasts(show));
 		}
 
 	}
 
-	public class SongBroadcastContainer extends BeanItemContainer<SongBroadcast> {
+	@Component
+	public static class SongBroadcastContainer extends BeanItemContainer<SongBroadcast> {
+
+		@Autowired
+		private transient StationService stationService;
 
 		public SongBroadcastContainer() {
 			super(SongBroadcast.class);
 			addNestedContainerProperty("station.name");
+			addNestedContainerProperty("station.longName");
 		}
 
 		public void update(Song song) {
 			removeAllItems();
-			addAll(getStationService().findBroadcasts(song));
+			addAll(stationService.findBroadcasts(song));
 		}
 
 	}
 
-	public class SongChartPositionContainer extends BeanItemContainer<ChartPosition> {
+	@Component
+	public static class SongChartPositionContainer extends BeanItemContainer<ChartPosition> {
+
+		@Autowired
+		private transient ChartService chartService;
 
 		public SongChartPositionContainer() {
 			super(ChartPosition.class);
@@ -87,12 +111,16 @@ public class AirplayDataProvider implements Serializable {
 
 		public void update(Chart chart, Song song) {
 			removeAllItems();
-			addAll(getChartService().findChartPositions(chart, song));
+			addAll(chartService.findChartPositions(chart, song));
 		}
 
 	}
 
-	public class SongContainer extends BeanItemContainer<Song> {
+	@Component
+	public static class SongContainer extends BeanItemContainer<Song> {
+
+		@Autowired
+		private transient ContentService contentService;
 
 		public SongContainer() {
 			super(Song.class);
@@ -103,7 +131,7 @@ public class AirplayDataProvider implements Serializable {
 			if (StringUtils.hasText(query)) {
 				removeAllFilters();
 				removeAllItems();
-				List<Song> songs = getContentService().findSongs(query, advancedSearch);
+				List<Song> songs = contentService.findSongs(query, advancedSearch);
 				addAll(songs);
 				return !songs.isEmpty();
 			} else {
@@ -114,49 +142,8 @@ public class AirplayDataProvider implements Serializable {
 
 	}
 
-	@Autowired
-	private transient ChartService chartService;
-
-	@Autowired
-	private transient ContentService contentService;
-
-	@Autowired
-	private transient StationService stationService;
-
-	public ChartContainer createChartContainer() {
-		return new ChartContainer();
-	}
-
-	public ChartPositionContainer createChartPositionContainer() {
-		return new ChartPositionContainer();
-	}
-
-	public ShowBroadcastContainer createShowBroadcastContainer() {
-		return new ShowBroadcastContainer();
-	}
-
-	public SongBroadcastContainer createSongBroadcastContainer() {
-		return new SongBroadcastContainer();
-	}
-
-	public SongChartPositionContainer createSongChartPositionContainer() {
-		return new SongChartPositionContainer();
-	}
-
-	public SongContainer createSongContainer() {
-		return new SongContainer();
-	}
-
-	public ChartService getChartService() {
-		return chartService;
-	}
-
-	public ContentService getContentService() {
-		return contentService;
-	}
-
-	public StationService getStationService() {
-		return stationService;
+	private Containers() {
+		super();
 	}
 
 }
