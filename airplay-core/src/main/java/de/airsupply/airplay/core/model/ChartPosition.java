@@ -1,6 +1,5 @@
 package de.airsupply.airplay.core.model;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.data.neo4j.annotation.EndNode;
@@ -21,7 +20,6 @@ public class ChartPosition extends PersistentNode {
 	@StartNode
 	private ChartState chartState;
 
-	@Min(1)
 	private int position;
 
 	@NotNull

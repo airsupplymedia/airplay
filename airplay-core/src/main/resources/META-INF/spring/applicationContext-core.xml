@@ -16,11 +16,9 @@
     http://www.springframework.org/schema/data/neo4j/spring-neo4j-2.0.xsd">
 
 	<context:annotation-config />
-	<tx:annotation-driven />
-
+	<tx:annotation-driven mode="aspectj" />
 	<neo4j:config storeDirectory="C:/Development/Storage/Neo4j/config-production" />
 	<neo4j:repositories base-package="de.airsupply.airplay.core.graph.repository" />
-
 	<context:component-scan base-package="de.airsupply.airplay.core" />
 
 </beans>
