@@ -1,29 +1,32 @@
-package de.airsupply.airplay.web.ui;
+package de.airsupply.airplay.web.ui.panel;
 
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Configurable;
 
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.ui.Table;
 
+import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.core.model.Song;
-import de.airsupply.airplay.web.application.model.Containers.SongBroadcastContainer;
-import de.airsupply.airplay.web.ui.WorkbenchWindow.ContentPanel;
-import de.airsupply.commons.web.ui.WeekOfYearColumnGenerator;
+import de.airsupply.airplay.web.application.model.Containers.ChartPositionContainer;
+import de.airsupply.airplay.web.ui.panel.WorkbenchWindow.ContentPanel;
+import de.airsupply.airplay.web.ui.util.WeekOfYearColumnGenerator;
 
-@Component
+@Configurable
 @SuppressWarnings("serial")
-public class SongBroadcastPanel extends ContentPanel implements ValueChangeListener {
+public class SongChartPositionPanel extends ContentPanel implements ValueChangeListener {
+
+	private transient Chart chart;
 
 	@Autowired
-	private SongBroadcastContainer songBroadcastContainer;
+	private ChartPositionContainer chartPositionContainer;
 
 	private Table table;
 
-	public SongBroadcastPanel() {
+	public SongChartPositionPanel() {
 		super();
 		setSizeFull();
 		setMargin(false);
@@ -32,30 +35,32 @@ public class SongBroadcastPanel extends ContentPanel implements ValueChangeListe
 
 	@Override
 	protected void init() {
-		final String[] propertyIds = new String[] { "station.name", "fromDate", "toDate", "count" };
-		final String[] columnHeaders = new String[] { "Station", "From", "To", "Count" };
+		final String[] propertyIds = new String[] { "chartState.weekDate", "position" };
+		final String[] columnHeaders = new String[] { "Week", "Position" };
 		final boolean[] sortDirections = new boolean[propertyIds.length];
 		Arrays.fill(sortDirections, true);
 
 		table = new Table();
 		table.setEnabled(false);
 		table.setSizeFull();
-		table.setContainerDataSource(songBroadcastContainer);
+		table.setContainerDataSource(chartPositionContainer);
 		table.setVisibleColumns(propertyIds);
 		table.setColumnHeaders(columnHeaders);
 		table.sort(propertyIds, sortDirections);
-		table.addGeneratedColumn("fromDate", new WeekOfYearColumnGenerator());
-		table.addGeneratedColumn("toDate", new WeekOfYearColumnGenerator());
+		table.addGeneratedColumn("chartState.weekDate", new WeekOfYearColumnGenerator());
 
 		addComponent(table);
+	}
+
+	public void update(Chart chart) {
+		this.chart = chart;
 	}
 
 	@Override
 	public void valueChange(ValueChangeEvent event) {
 		if (event.getProperty().getValue() instanceof Song) {
 			Song song = (Song) event.getProperty().getValue();
-			SongBroadcastContainer dataSource = (SongBroadcastContainer) table.getContainerDataSource();
-			dataSource.update(song);
+			chartPositionContainer.update(chart, song);
 			table.setEnabled(true);
 			table.sort();
 		} else {

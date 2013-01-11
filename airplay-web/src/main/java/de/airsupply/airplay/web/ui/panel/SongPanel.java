@@ -1,4 +1,4 @@
-package de.airsupply.airplay.web.ui;
+package de.airsupply.airplay.web.ui.panel;
 
 import java.util.Arrays;
 import java.util.List;
@@ -16,7 +16,7 @@ import com.vaadin.ui.TextField;
 import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.core.services.ChartService;
 import de.airsupply.airplay.web.application.model.Containers.SongContainer;
-import de.airsupply.airplay.web.ui.WorkbenchWindow.ContentPanel;
+import de.airsupply.airplay.web.ui.panel.WorkbenchWindow.ContentPanel;
 
 @Component
 @SuppressWarnings("serial")

@@ -11,8 +11,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.text.StrTokenizer;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -26,6 +25,7 @@ import de.airsupply.airplay.core.model.RecordImport;
 import de.airsupply.airplay.core.model.Song;
 import de.airsupply.airplay.core.model.SongBroadcast;
 import de.airsupply.airplay.core.model.Station;
+import de.airsupply.commons.core.context.Loggable;
 
 @Service
 public class AirplayRecordImporter {
@@ -83,7 +83,8 @@ public class AirplayRecordImporter {
 
 	}
 
-	private Log log = LogFactory.getLog(getClass());
+	@Loggable
+	private Logger logger;
 
 	public AirplayRecordImporter() {
 		super();
@@ -148,7 +149,7 @@ public class AirplayRecordImporter {
 		Assert.notNull(chartState);
 		Assert.notNull(recordImport);
 
-		log.info("Running import for week: " + recordImport.getWeekDate());
+		logger.info("Running import for week: " + recordImport.getWeekDate());
 
 		BufferedReader reader = null;
 		try {

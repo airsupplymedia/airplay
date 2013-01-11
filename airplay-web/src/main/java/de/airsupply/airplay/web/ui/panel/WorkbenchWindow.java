@@ -1,4 +1,4 @@
-package de.airsupply.airplay.web.ui;
+package de.airsupply.airplay.web.ui.panel;
 
 import javax.annotation.PostConstruct;
 
@@ -34,6 +34,9 @@ public class WorkbenchWindow extends Window {
 		private ChartPanel chartPanel;
 
 		@Autowired
+		private RecordImportPanel recordImportPanel;
+
+		@Autowired
 		private SongPanel songPanel;
 
 		public MainPanel() {
@@ -48,6 +51,7 @@ public class WorkbenchWindow extends Window {
 			tabSheet.setSizeFull();
 			tabSheet.addTab(songPanel, "Song Database");
 			tabSheet.addTab(chartPanel, "Chart Database");
+			tabSheet.addTab(recordImportPanel, "Record Imports");
 
 			addComponent(tabSheet);
 		}

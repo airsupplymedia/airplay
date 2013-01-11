@@ -1,4 +1,4 @@
-package de.airsupply.commons.web.ui;
+package de.airsupply.airplay.web.ui.util;
 
 import java.util.Date;
 
