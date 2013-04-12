@@ -6,7 +6,6 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.data.neo4j.annotation.EndNode;
-import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.util.Assert;
 
@@ -105,7 +104,6 @@ public abstract class Broadcast extends PersistentNode {
 
 	@NotNull
 	@Persistent
-	@Fetch
 	@EndNode
 	private Station station;
 

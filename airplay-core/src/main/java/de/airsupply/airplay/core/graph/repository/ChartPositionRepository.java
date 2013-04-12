@@ -13,7 +13,7 @@ public interface ChartPositionRepository extends GraphRepository<ChartPosition>,
 	@Query("START chart=node({0}) MATCH chart-[:CHART_STATES]->chartState-[chartPosition:CHART_POSITIONS]->() WHERE chartState.week={1} RETURN chartPosition ORDER BY chartPosition.position")
 	Iterable<ChartPosition> find(Chart chart, long week);
 
-	@Query("START chart=node({0}), song=node({1}) MATCH chart-[:CHART_STATES]->chartState-[chartPosition:CHART_POSITIONS]->song RETURN chartPosition ORDER BY chartState.week DESC")
+	@Query("START chart=node({0}), song=node({1}) MATCH song<-[chartPosition:CHART_POSITIONS]-chartState-[:CHART_STATES]-chart RETURN chartPosition ORDER BY chartState.week DESC")
 	Iterable<ChartPosition> find(Chart chart, Song song);
 
 }

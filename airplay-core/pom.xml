@@ -49,7 +49,7 @@
 		<dependency>
 			<groupId>org.neo4j</groupId>
 			<artifactId>neo4j-cypher-dsl</artifactId>
-			<version>${neo4j-version}</version>
+			<version>${neo4j-cypher-dsl-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>

@@ -20,7 +20,7 @@ public class AirplayRecordMigratorBatch {
 	}
 
 	@Autowired
-	ChartService chartService;
+	private ChartService chartService;
 
 	@Autowired
 	private AirplayRecordMigrator migrator;
