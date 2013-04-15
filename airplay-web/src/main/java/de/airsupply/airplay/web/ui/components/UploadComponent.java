@@ -1,4 +1,4 @@
-package de.airsupply.airplay.web.ui.component;
+package de.airsupply.airplay.web.ui.components;
 
 import org.springframework.util.Assert;
 
@@ -165,7 +165,7 @@ public class UploadComponent extends VerticalLayout implements UploadProgressPro
 		cancelProcessing = new Button("Cancel");
 		cancelProcessing.setVisible(false);
 		cancelProcessing.setStyleName("small");
-		cancelProcessing.addListener(new Button.ClickListener() {
+		cancelProcessing.addClickListener(new Button.ClickListener() {
 
 			public void buttonClick(ClickEvent event) {
 				upload.interruptUpload();
@@ -182,19 +182,19 @@ public class UploadComponent extends VerticalLayout implements UploadProgressPro
 		textualProgress.setVisible(false);
 
 		if (context.getStartedListener() != null) {
-			upload.addListener(context.getStartedListener());
+			upload.addStartedListener(context.getStartedListener());
 		}
 		if (context.getProgressListener() != null) {
-			upload.addListener(context.getProgressListener());
+			upload.addProgressListener(context.getProgressListener());
 		}
 		if (context.getSucceededListener() != null) {
-			upload.addListener(context.getSucceededListener());
+			upload.addSucceededListener(context.getSucceededListener());
 		}
 		if (context.getFailedListener() != null) {
-			upload.addListener(context.getFailedListener());
+			upload.addFailedListener(context.getFailedListener());
 		}
 		if (context.getFinishedListener() != null) {
-			upload.addListener(context.getFinishedListener());
+			upload.addFinishedListener(context.getFinishedListener());
 		}
 
 		stateLayout.addComponent(state);

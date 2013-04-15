@@ -1,4 +1,4 @@
-package de.airsupply.airplay.web.ui.component;
+package de.airsupply.airplay.web.ui.components;
 
 import com.vaadin.ui.Upload.FailedEvent;
 import com.vaadin.ui.Upload.FinishedEvent;

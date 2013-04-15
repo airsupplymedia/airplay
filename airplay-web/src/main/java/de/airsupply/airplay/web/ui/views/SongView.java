@@ -1,13 +1,18 @@
-package de.airsupply.airplay.web.ui.panel;
+package de.airsupply.airplay.web.ui.views;
 
 import java.util.Arrays;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
+import ru.xpoft.vaadin.VaadinView;
 
 import com.vaadin.event.FieldEvents.TextChangeEvent;
 import com.vaadin.event.FieldEvents.TextChangeListener;
+import com.vaadin.navigator.View;
+import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.ui.Accordion;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Table;
@@ -15,12 +20,16 @@ import com.vaadin.ui.TextField;
 
 import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.core.services.ChartService;
-import de.airsupply.airplay.web.application.model.Containers.SongContainer;
-import de.airsupply.airplay.web.ui.panel.WorkbenchWindow.ContentPanel;
+import de.airsupply.airplay.web.ui.components.ContentPanel;
+import de.airsupply.airplay.web.ui.model.Containers.SongContainer;
 
 @Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+@VaadinView(SongView.NAME)
 @SuppressWarnings("serial")
-class SongPanel extends ContentPanel {
+public class SongView extends ContentPanel implements View {
+
+	public static final String NAME = "songView";
 
 	@Autowired
 	private transient ChartService chartService;
@@ -30,6 +39,10 @@ class SongPanel extends ContentPanel {
 
 	@Autowired
 	private SongContainer songContainer;
+
+	@Override
+	public void enter(ViewChangeEvent event) {
+	}
 
 	@Override
 	protected void init() {
@@ -46,28 +59,26 @@ class SongPanel extends ContentPanel {
 		table.setColumnHeaders(columnHeaders);
 		table.setSelectable(true);
 		table.setImmediate(true);
+		table.addValueChangeListener(songBroadcastPanel);
 
-		final Accordion accordion = new Accordion();
-		table.addListener(songBroadcastPanel);
+		Accordion accordion = new Accordion();
 		accordion.addTab(songBroadcastPanel, "Broadcasts");
-
-		List<Chart> charts = chartService.getCharts();
-		for (Chart chart : charts) {
+		for (Chart chart : chartService.getCharts()) {
 			final SongChartPositionPanel panel = new SongChartPositionPanel();
 			panel.update(chart);
-			table.addListener(panel);
+			table.addValueChangeListener(panel);
 			accordion.addTab(panel, chart.getName());
 		}
 		accordion.setSizeFull();
 
 		final CheckBox checkBox = new CheckBox("Advanced Search", false);
-		final TextField searchField = new TextField("Search");
+		TextField searchField = new TextField("Search");
 		searchField.setRequired(true);
-		searchField.addListener(new TextChangeListener() {
+		searchField.addTextChangeListener(new TextChangeListener() {
 
 			@Override
 			public void textChange(TextChangeEvent event) {
-				table.setEnabled(songContainer.search(event.getText(), checkBox.booleanValue()));
+				table.setEnabled(songContainer.search(event.getText(), checkBox.getValue().booleanValue()));
 				table.select(table.getNullSelectionItemId());
 				table.sort(propertyIds, sortDirections);
 			}

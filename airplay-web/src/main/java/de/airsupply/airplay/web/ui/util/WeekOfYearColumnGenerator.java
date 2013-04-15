@@ -13,7 +13,7 @@ public final class WeekOfYearColumnGenerator implements ColumnGenerator {
 
 	@Override
 	public Object generateCell(Table source, Object itemId, Object columnId) {
-		Property property = source.getItem(itemId).getItemProperty(columnId);
+		Property<?> property = source.getItem(itemId).getItemProperty(columnId);
 		if (property != null && property.getValue() instanceof Date) {
 			return DateUtils.getWeekOfYearFormat((Date) property.getValue());
 		}

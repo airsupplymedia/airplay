@@ -1,4 +1,4 @@
-package de.airsupply.airplay.web.ui.panel;
+package de.airsupply.airplay.web.ui.views;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,29 +13,40 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
+import ru.xpoft.vaadin.VaadinView;
 
 import com.vaadin.event.Action;
 import com.vaadin.event.Action.Handler;
-import com.vaadin.ui.Panel;
+import com.vaadin.navigator.View;
+import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
+import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.ProgressIndicator;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Upload.SucceededEvent;
-import com.vaadin.ui.Window.Notification;
+import com.vaadin.ui.VerticalLayout;
 
 import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.core.services.ImportService;
-import de.airsupply.airplay.web.application.model.Containers.RecordImportContainer;
-import de.airsupply.airplay.web.ui.component.ChartSelectorComponent;
-import de.airsupply.airplay.web.ui.component.UploadComponent;
-import de.airsupply.airplay.web.ui.component.UploadComponent.UploadContext;
-import de.airsupply.airplay.web.ui.panel.WorkbenchWindow.ContentPanel;
+import de.airsupply.airplay.web.ui.components.ChartSelectorComponent;
+import de.airsupply.airplay.web.ui.components.ContentPanel;
+import de.airsupply.airplay.web.ui.components.UploadComponent;
+import de.airsupply.airplay.web.ui.components.UploadComponent.UploadContext;
+import de.airsupply.airplay.web.ui.model.Containers.RecordImportContainer;
 import de.airsupply.airplay.web.ui.util.WeekOfYearColumnGenerator;
 import de.airsupply.commons.core.context.Loggable;
 
 @Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+@VaadinView(RecordImportView.NAME)
 @SuppressWarnings("serial")
-public class RecordImportPanel extends ContentPanel {
+public class RecordImportView extends ContentPanel implements View {
+
+	public static final String NAME = "recordImportView";
 
 	@Configurable
 	private final class RecordImportUploadContext extends UploadContext {
@@ -59,11 +70,8 @@ public class RecordImportPanel extends ContentPanel {
 					importService.importRecords(chart, date, new FileInputStream(file));
 				} catch (Exception exception) {
 					logger.error("Error during migration", exception);
-
-					getWindow().showNotification("Migration was not successful",
-							"Please consult your system administrator for further details",
-							Notification.TYPE_ERROR_MESSAGE);
-
+					Notification.show("Migration was not successful",
+							"Please consult your system administrator for further details", Type.ERROR_MESSAGE);
 					throw new RuntimeException(exception);
 				}
 			}
@@ -84,13 +92,9 @@ public class RecordImportPanel extends ContentPanel {
 				};
 			} catch (IOException exception) {
 				logger.error("Error during upload", exception);
-
 				getProgressProvider().cancel();
-				getWindow()
-						.showNotification("Upload was not successful",
-								"Please consult your system administrator for further details",
-								Notification.TYPE_ERROR_MESSAGE);
-
+				Notification.show("Upload was not successful",
+						"Please consult your system administrator for further details", Type.ERROR_MESSAGE);
 				throw new RuntimeException(exception);
 			}
 		}
@@ -103,11 +107,13 @@ public class RecordImportPanel extends ContentPanel {
 	private RecordImportContainer recordImportContainer;
 
 	@Override
+	public void enter(ViewChangeEvent event) {
+	}
+
+	@Override
 	@PostConstruct
 	protected void init() {
 		UploadComponent uploadComponent = new UploadComponent(new RecordImportUploadContext());
-
-		Panel importPanel = new Panel();
 
 		ProgressIndicator progressIndicator = new ProgressIndicator();
 		progressIndicator.setValue(0f);
@@ -140,7 +146,7 @@ public class RecordImportPanel extends ContentPanel {
 			public void handleAction(Action action, Object sender, Object target) {
 				if (deleteAction == action) {
 					// FIXME Implement Record Import deletion
-					getWindow().showNotification("Not implemented!");
+					Notification.show("Not implemented!", Type.ERROR_MESSAGE);
 				}
 			}
 
@@ -148,10 +154,11 @@ public class RecordImportPanel extends ContentPanel {
 
 		recordImportContainer.update();
 
-		importPanel.addComponent(progressIndicator);
+		VerticalLayout importLayout = new VerticalLayout();
+		importLayout.addComponent(progressIndicator);
 		addComponent(chartSelectorComponent);
 		addComponent(uploadComponent);
-		addComponent(importPanel);
+		addComponent(importLayout);
 		addComponent(table);
 	}
 }

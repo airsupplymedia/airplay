@@ -1,8 +1,10 @@
-package de.airsupply.airplay.web.ui.panel;
+package de.airsupply.airplay.web.ui.views;
 
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.vaadin.data.Property.ValueChangeEvent;
@@ -10,11 +12,12 @@ import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.ui.Table;
 
 import de.airsupply.airplay.core.model.Song;
-import de.airsupply.airplay.web.application.model.Containers.SongBroadcastContainer;
-import de.airsupply.airplay.web.ui.panel.WorkbenchWindow.ContentPanel;
+import de.airsupply.airplay.web.ui.components.ContentPanel;
+import de.airsupply.airplay.web.ui.model.Containers.SongBroadcastContainer;
 import de.airsupply.airplay.web.ui.util.WeekOfYearColumnGenerator;
 
 @Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @SuppressWarnings("serial")
 public class SongBroadcastPanel extends ContentPanel implements ValueChangeListener {
 

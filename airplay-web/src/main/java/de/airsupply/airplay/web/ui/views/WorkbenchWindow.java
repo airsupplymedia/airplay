@@ -1,4 +1,4 @@
-package de.airsupply.airplay.web.ui.panel;
+package de.airsupply.airplay.web.ui.views;
 
 import javax.annotation.PostConstruct;
 
@@ -13,31 +13,17 @@ import com.vaadin.ui.Window;
 @SuppressWarnings("serial")
 public class WorkbenchWindow extends Window {
 
-	static abstract class ContentPanel extends VerticalLayout {
-
-		public ContentPanel() {
-			super();
-			setMargin(true);
-			setSpacing(true);
-			setSizeFull();
-		}
-
-		@PostConstruct
-		protected abstract void init();
-
-	}
-
 	@Component
 	static class MainPanel extends VerticalLayout {
 
 		@Autowired
-		private ChartPanel chartPanel;
+		private ChartView chartPanel;
 
 		@Autowired
-		private RecordImportPanel recordImportPanel;
+		private RecordImportView recordImportPanel;
 
 		@Autowired
-		private SongPanel songPanel;
+		private SongView songPanel;
 
 		public MainPanel() {
 			super();
@@ -68,7 +54,7 @@ public class WorkbenchWindow extends Window {
 
 	@PostConstruct
 	public void init() {
-		addComponent(mainPanel);
+		setContent(mainPanel);
 	}
 
 }

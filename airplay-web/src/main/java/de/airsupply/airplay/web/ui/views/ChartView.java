@@ -1,30 +1,43 @@
-package de.airsupply.airplay.web.ui.panel;
+package de.airsupply.airplay.web.ui.views;
 
 import java.util.Arrays;
 import java.util.Date;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
+import ru.xpoft.vaadin.VaadinView;
 
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
+import com.vaadin.navigator.View;
+import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.ui.Table;
 
 import de.airsupply.airplay.core.model.Chart;
-import de.airsupply.airplay.web.application.model.Containers.ChartPositionContainer;
-import de.airsupply.airplay.web.ui.component.ChartSelectorComponent;
-import de.airsupply.airplay.web.ui.panel.WorkbenchWindow.ContentPanel;
+import de.airsupply.airplay.web.ui.components.ChartSelectorComponent;
+import de.airsupply.airplay.web.ui.components.ContentPanel;
+import de.airsupply.airplay.web.ui.model.Containers.ChartPositionContainer;
 
 @Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+@VaadinView(ChartView.NAME)
 @SuppressWarnings("serial")
-class ChartPanel extends ContentPanel {
+public class ChartView extends ContentPanel implements View {
+
+	public static final String NAME = "chartView";
 
 	@Autowired
 	private ChartPositionContainer chartPositionContainer;
 
 	@Autowired
 	private ChartSelectorComponent chartSelectorComponent;
+
+	@Override
+	public void enter(ViewChangeEvent event) {
+	}
 
 	@Override
 	protected void init() {
@@ -39,7 +52,7 @@ class ChartPanel extends ContentPanel {
 		table.setVisibleColumns(propertyIds);
 		table.setColumnHeaders(columnHeaders);
 
-		chartSelectorComponent.getComboBox().addListener(new ValueChangeListener() {
+		chartSelectorComponent.getComboBox().addValueChangeListener(new ValueChangeListener() {
 
 			@Override
 			public void valueChange(ValueChangeEvent event) {
@@ -48,7 +61,7 @@ class ChartPanel extends ContentPanel {
 			}
 		});
 
-		chartSelectorComponent.getDateField().addListener(new ValueChangeListener() {
+		chartSelectorComponent.getDateField().addValueChangeListener(new ValueChangeListener() {
 
 			@Override
 			public void valueChange(ValueChangeEvent event) {

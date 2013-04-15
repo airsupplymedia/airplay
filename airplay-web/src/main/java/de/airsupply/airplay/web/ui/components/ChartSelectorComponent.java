@@ -1,4 +1,4 @@
-package de.airsupply.airplay.web.ui.component;
+package de.airsupply.airplay.web.ui.components;
 
 import java.util.Date;
 
@@ -9,14 +9,15 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.vaadin.ui.AbstractSelect;
-import com.vaadin.ui.AbstractSelect.Filtering;
+import com.vaadin.shared.ui.combobox.FilteringMode;
+import com.vaadin.shared.ui.datefield.Resolution;
+import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.HorizontalLayout;
 
 import de.airsupply.airplay.core.model.Chart;
-import de.airsupply.airplay.web.application.model.Containers.ChartContainer;
+import de.airsupply.airplay.web.ui.model.Containers.ChartContainer;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -55,8 +56,8 @@ public class ChartSelectorComponent extends HorizontalLayout {
 	protected void init() {
 		comboBox = new ComboBox("Please select a Chart type:");
 		comboBox.setContainerDataSource(chartContainer);
-		comboBox.setFilteringMode(Filtering.FILTERINGMODE_OFF);
-		comboBox.setItemCaptionMode(AbstractSelect.ITEM_CAPTION_MODE_PROPERTY);
+		comboBox.setFilteringMode(FilteringMode.OFF);
+		comboBox.setItemCaptionMode(ItemCaptionMode.PROPERTY);
 		comboBox.setItemCaptionPropertyId("name");
 		comboBox.setNullSelectionAllowed(false);
 		comboBox.setImmediate(true);
@@ -65,7 +66,7 @@ public class ChartSelectorComponent extends HorizontalLayout {
 
 		dateField = new DateField("Please select the date:");
 		dateField.setValue(new Date());
-		dateField.setResolution(DateField.RESOLUTION_DAY);
+		dateField.setResolution(Resolution.DAY);
 		dateField.setShowISOWeekNumbers(true);
 		dateField.setImmediate(true);
 

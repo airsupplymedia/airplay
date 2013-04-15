@@ -1,4 +1,4 @@
-package de.airsupply.airplay.web.application.model;
+package de.airsupply.airplay.web.ui.model;
 
 import java.io.Serializable;
 import java.util.Date;
