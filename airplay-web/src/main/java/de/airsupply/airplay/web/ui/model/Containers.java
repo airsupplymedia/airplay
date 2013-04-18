@@ -7,14 +7,17 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.data.util.BeanContainer;
+import com.vaadin.data.util.BeanItem;
 
 import de.airsupply.airplay.core.model.Artist;
 import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.core.model.ChartPosition;
+import de.airsupply.airplay.core.model.PersistentNode;
 import de.airsupply.airplay.core.model.Publisher;
 import de.airsupply.airplay.core.model.RecordCompany;
 import de.airsupply.airplay.core.model.RecordImport;
@@ -30,9 +33,32 @@ import de.airsupply.airplay.core.services.StationService;
 @SuppressWarnings("serial")
 public class Containers implements Serializable {
 
+	public static abstract class AbstractPersistentNodeContainer<T extends PersistentNode> extends
+			BeanContainer<Long, T> {
+
+		@Autowired
+		private transient Neo4jTemplate neo4jTemplate;
+
+		public AbstractPersistentNodeContainer(Class<? super T> type) {
+			super(type);
+			setBeanIdProperty(PersistentNode.ID_NAME);
+		}
+
+		protected void fetch(Neo4jTemplate neo4jTemplate, T bean) {
+		}
+
+		@Override
+		public BeanItem<T> getItem(Object itemId) {
+			BeanItem<T> item = super.getItem(itemId);
+			fetch(neo4jTemplate, item.getBean());
+			return item;
+		}
+
+	}
+
 	@Component
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-	public static class ArtistContainer extends BeanItemContainer<Artist> {
+	public static class ArtistContainer extends AbstractPersistentNodeContainer<Artist> {
 
 		@Autowired
 		private transient ContentService contentService;
@@ -54,13 +80,17 @@ public class Containers implements Serializable {
 	}
 
 	@Component
-	public static class ChartContainer extends BeanItemContainer<Chart> {
+	public static class ChartContainer extends AbstractPersistentNodeContainer<Chart> {
 
 		@Autowired
 		private transient ChartService chartService;
 
 		public ChartContainer() {
 			super(Chart.class);
+		}
+
+		public List<Chart> getCharts() {
+			return chartService.getCharts();
 		}
 
 		public void update() {
@@ -71,7 +101,7 @@ public class Containers implements Serializable {
 
 	@Component
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-	public static class ChartPositionContainer extends BeanItemContainer<ChartPosition> {
+	public static class ChartPositionContainer extends AbstractPersistentNodeContainer<ChartPosition> {
 
 		@Autowired
 		private transient ChartService chartService;
@@ -82,6 +112,13 @@ public class Containers implements Serializable {
 			addNestedContainerProperty("chartState.weekDate");
 			addNestedContainerProperty("song.artist.name");
 			addNestedContainerProperty("song.name");
+		}
+
+		@Override
+		protected void fetch(Neo4jTemplate neo4jTemplate, ChartPosition bean) {
+			neo4jTemplate.fetch(bean.getChartState());
+			neo4jTemplate.fetch(bean.getSong());
+			neo4jTemplate.fetch(bean.getSong().getArtist());
 		}
 
 		public boolean update(Chart chart, Date date) {
@@ -104,7 +141,7 @@ public class Containers implements Serializable {
 
 	@Component
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-	public static class PublisherContainer extends BeanItemContainer<Publisher> {
+	public static class PublisherContainer extends AbstractPersistentNodeContainer<Publisher> {
 
 		@Autowired
 		private transient ContentService contentService;
@@ -127,7 +164,7 @@ public class Containers implements Serializable {
 
 	@Component
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-	public static class RecordCompanyContainer extends BeanItemContainer<RecordCompany> {
+	public static class RecordCompanyContainer extends AbstractPersistentNodeContainer<RecordCompany> {
 
 		@Autowired
 		private transient ContentService contentService;
@@ -149,7 +186,7 @@ public class Containers implements Serializable {
 	}
 
 	@Component
-	public static class RecordImportContainer extends BeanItemContainer<RecordImport> {
+	public static class RecordImportContainer extends AbstractPersistentNodeContainer<RecordImport> {
 
 		@Autowired
 		private transient ImportService importService;
@@ -166,7 +203,7 @@ public class Containers implements Serializable {
 
 	@Component
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-	public static class ShowBroadcastContainer extends BeanItemContainer<ShowBroadcast> {
+	public static class ShowBroadcastContainer extends AbstractPersistentNodeContainer<ShowBroadcast> {
 
 		@Autowired
 		private transient StationService stationService;
@@ -175,6 +212,11 @@ public class Containers implements Serializable {
 			super(ShowBroadcast.class);
 			addNestedContainerProperty("station.name");
 			addNestedContainerProperty("station.longName");
+		}
+
+		@Override
+		protected void fetch(Neo4jTemplate neo4jTemplate, ShowBroadcast bean) {
+			neo4jTemplate.fetch(bean.getStation());
 		}
 
 		public void update(Show show) {
@@ -186,7 +228,7 @@ public class Containers implements Serializable {
 
 	@Component
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-	public static class SongBroadcastContainer extends BeanItemContainer<SongBroadcast> {
+	public static class SongBroadcastContainer extends AbstractPersistentNodeContainer<SongBroadcast> {
 
 		@Autowired
 		private transient StationService stationService;
@@ -195,6 +237,11 @@ public class Containers implements Serializable {
 			super(SongBroadcast.class);
 			addNestedContainerProperty("station.name");
 			addNestedContainerProperty("station.longName");
+		}
+
+		@Override
+		protected void fetch(Neo4jTemplate neo4jTemplate, SongBroadcast bean) {
+			neo4jTemplate.fetch(bean.getStation());
 		}
 
 		public void update(RecordImport recordImport) {
@@ -211,7 +258,7 @@ public class Containers implements Serializable {
 
 	@Component
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-	public static class SongContainer extends BeanItemContainer<Song> {
+	public static class SongContainer extends AbstractPersistentNodeContainer<Song> {
 
 		@Autowired
 		private transient ContentService contentService;
@@ -219,6 +266,19 @@ public class Containers implements Serializable {
 		public SongContainer() {
 			super(Song.class);
 			addNestedContainerProperty("artist.name");
+		}
+
+		@Override
+		protected void fetch(Neo4jTemplate neo4jTemplate, Song bean) {
+			neo4jTemplate.fetch(bean.getArtist());
+		}
+
+		public Song getSong(Long id) {
+			return contentService.getSong(id);
+		}
+
+		public boolean hasSong(Long id) {
+			return contentService.hasSong(id);
 		}
 
 		public boolean search(String query, boolean advancedSearch) {

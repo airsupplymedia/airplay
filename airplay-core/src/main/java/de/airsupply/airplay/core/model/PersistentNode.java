@@ -7,6 +7,8 @@ import org.springframework.data.neo4j.annotation.GraphId;
 @SuppressWarnings("serial")
 public class PersistentNode implements Serializable {
 
+	public static final String ID_NAME = "identifier";
+
 	@GraphId
 	private Long identifier;
 

@@ -3,7 +3,6 @@ package de.airsupply.airplay.core.model;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.data.neo4j.annotation.EndNode;
-import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.RelationshipEntity;
 import org.springframework.data.neo4j.annotation.StartNode;
 
@@ -16,14 +15,12 @@ import de.airsupply.commons.core.neo4j.annotation.Unique;
 public class ChartPosition extends PersistentNode {
 
 	@NotNull
-	@Fetch
 	@StartNode
 	private ChartState chartState;
 
 	private int position;
 
 	@NotNull
-	@Fetch
 	@EndNode
 	private Song song;
 

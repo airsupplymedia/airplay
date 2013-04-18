@@ -45,7 +45,7 @@ public class ChartSelectorComponent extends HorizontalLayout {
 	}
 
 	public Chart getSelectedChart() {
-		return (Chart) comboBox.getValue();
+		return chartContainer.getItem(comboBox.getValue()).getBean();
 	}
 
 	public Date getSelectedDate() {

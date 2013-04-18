@@ -117,12 +117,24 @@ public class ContentService extends Neo4jServiceSupport {
 		return recordCompanyRepository.count();
 	}
 
+	public Song getSong(Long id) {
+		return songRepository.findOne(id);
+	}
+
 	public long getSongCount() {
 		return songRepository.count();
 	}
 
 	public List<Song> getSongs() {
 		return CollectionUtils.asList(songRepository.findAll());
+	}
+
+	public Iterable<Song> getSongs(Iterable<Long> ids) {
+		return songRepository.findAll(ids);
+	}
+
+	public boolean hasSong(Long id) {
+		return songRepository.exists(id);
 	}
 
 }

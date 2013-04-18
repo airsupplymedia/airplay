@@ -1,7 +1,6 @@
 package de.airsupply.airplay.web.ui.views;
 
 import java.util.Arrays;
-import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -16,7 +15,6 @@ import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.ui.Table;
 
-import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.web.ui.components.ChartSelectorComponent;
 import de.airsupply.airplay.web.ui.components.ContentPanel;
 import de.airsupply.airplay.web.ui.model.Containers.ChartPositionContainer;
@@ -48,6 +46,7 @@ public class ChartView extends ContentPanel implements View {
 
 		final Table table = new Table("Chart Positions");
 		table.setSizeFull();
+		table.setEnabled(false);
 		table.setContainerDataSource(chartPositionContainer);
 		table.setVisibleColumns(propertyIds);
 		table.setColumnHeaders(columnHeaders);
@@ -56,8 +55,8 @@ public class ChartView extends ContentPanel implements View {
 
 			@Override
 			public void valueChange(ValueChangeEvent event) {
-				Chart chart = (Chart) event.getProperty().getValue();
-				table.setEnabled(chartPositionContainer.update(chart, chartSelectorComponent.getSelectedDate()));
+				table.setEnabled(chartPositionContainer.update(chartSelectorComponent.getSelectedChart(),
+						chartSelectorComponent.getSelectedDate()));
 			}
 		});
 
@@ -65,8 +64,8 @@ public class ChartView extends ContentPanel implements View {
 
 			@Override
 			public void valueChange(ValueChangeEvent event) {
-				Date date = (Date) event.getProperty().getValue();
-				table.setEnabled(chartPositionContainer.update(chartSelectorComponent.getSelectedChart(), date));
+				table.setEnabled(chartPositionContainer.update(chartSelectorComponent.getSelectedChart(),
+						chartSelectorComponent.getSelectedDate()));
 			}
 
 		});

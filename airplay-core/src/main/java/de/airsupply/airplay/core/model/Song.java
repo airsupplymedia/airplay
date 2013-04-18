@@ -1,11 +1,9 @@
 package de.airsupply.airplay.core.model;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 import org.neo4j.graphdb.Direction;
-import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
@@ -22,8 +20,6 @@ public class Song extends PersistentNode {
 
 	@NotNull
 	@Persistent
-	@Valid
-	@Fetch
 	@RelatedTo(direction = Direction.BOTH, type = "SONGS")
 	private Artist artist;
 
@@ -33,12 +29,10 @@ public class Song extends PersistentNode {
 	@Indexed(indexType = IndexType.FULLTEXT, indexName = "searchSongByName")
 	private String name;
 
-	@Fetch
 	@Persistent
 	@RelatedTo(direction = Direction.OUTGOING, type = "PUBLISHER")
 	private Publisher publisher;
 
-	@Fetch
 	@Persistent
 	@RelatedTo(direction = Direction.OUTGOING, type = "RECORD_COMPANY")
 	private RecordCompany recordCompany;

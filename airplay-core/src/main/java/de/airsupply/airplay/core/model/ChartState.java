@@ -9,7 +9,6 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import org.neo4j.graphdb.Direction;
-import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
@@ -25,7 +24,6 @@ import de.airsupply.commons.core.util.CollectionUtils;
 public class ChartState extends PersistentNode {
 
 	@NotNull
-	@Fetch
 	@RelatedTo(direction = Direction.INCOMING, type = "CHART_STATES")
 	private Chart chart;
 

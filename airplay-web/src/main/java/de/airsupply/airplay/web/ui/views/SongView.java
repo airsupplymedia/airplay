@@ -13,14 +13,12 @@ import com.vaadin.event.FieldEvents.TextChangeEvent;
 import com.vaadin.event.FieldEvents.TextChangeListener;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
-import com.vaadin.ui.Accordion;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 
-import de.airsupply.airplay.core.model.Chart;
-import de.airsupply.airplay.core.services.ChartService;
 import de.airsupply.airplay.web.ui.components.ContentPanel;
+import de.airsupply.airplay.web.ui.components.SongStatisticsComponent;
 import de.airsupply.airplay.web.ui.model.Containers.SongContainer;
 
 @Component
@@ -32,13 +30,10 @@ public class SongView extends ContentPanel implements View {
 	public static final String NAME = "songView";
 
 	@Autowired
-	private transient ChartService chartService;
-
-	@Autowired
-	private SongBroadcastPanel songBroadcastPanel;
-
-	@Autowired
 	private SongContainer songContainer;
+
+	@Autowired
+	private SongStatisticsComponent songStatisticsComponent;
 
 	@Override
 	public void enter(ViewChangeEvent event) {
@@ -59,17 +54,7 @@ public class SongView extends ContentPanel implements View {
 		table.setColumnHeaders(columnHeaders);
 		table.setSelectable(true);
 		table.setImmediate(true);
-		table.addValueChangeListener(songBroadcastPanel);
-
-		Accordion accordion = new Accordion();
-		accordion.addTab(songBroadcastPanel, "Broadcasts");
-		for (Chart chart : chartService.getCharts()) {
-			final SongChartPositionPanel panel = new SongChartPositionPanel();
-			panel.update(chart);
-			table.addValueChangeListener(panel);
-			accordion.addTab(panel, chart.getName());
-		}
-		accordion.setSizeFull();
+		table.addValueChangeListener(songStatisticsComponent);
 
 		final CheckBox checkBox = new CheckBox("Advanced Search", false);
 		TextField searchField = new TextField("Search");
@@ -88,7 +73,7 @@ public class SongView extends ContentPanel implements View {
 		addComponent(searchField);
 		addComponent(checkBox);
 		addComponent(table);
-		addComponent(accordion);
+		addComponent(songStatisticsComponent);
 	}
 
 }

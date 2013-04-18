@@ -50,11 +50,14 @@ public class AirplayRecordMigratorPerformanceTest {
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start("Find Chart Positions");
-		chartService.findChartPositions(chart, song);
+		for (int i = 0; i <= 100; i++) {
+			chartService.findChartPositions(chart, song);
+		}
 		stopWatch.stop();
-
 		stopWatch.start("Find Song Broadcasts");
-		stationService.findBroadcasts(song);
+		for (int i = 0; i <= 100; i++) {
+			stationService.findBroadcasts(song);
+		}
 		stopWatch.stop();
 
 		logger.info(stopWatch.prettyPrint());
