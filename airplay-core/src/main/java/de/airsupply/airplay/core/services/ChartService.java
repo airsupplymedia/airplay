@@ -3,10 +3,8 @@ package de.airsupply.airplay.core.services;
 import java.util.Date;
 import java.util.List;
 
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import de.airsupply.airplay.core.graph.repository.ChartPositionRepository;
@@ -16,7 +14,6 @@ import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.core.model.ChartPosition;
 import de.airsupply.airplay.core.model.ChartState;
 import de.airsupply.airplay.core.model.Song;
-import de.airsupply.commons.core.context.Loggable;
 import de.airsupply.commons.core.neo4j.Neo4jServiceSupport;
 import de.airsupply.commons.core.util.CollectionUtils;
 import de.airsupply.commons.core.util.DateUtils;
@@ -32,16 +29,6 @@ public class ChartService extends Neo4jServiceSupport {
 
 	@Autowired
 	private ChartStateRepository chartStateRepository;
-
-	@Loggable
-	private Logger logger;
-
-	@Transactional
-	public void createInitialData() {
-		// FIXME Production system will have the possibility to create charts
-		logger.warn("Importing initial chart data...");
-		findOrCreate(new Chart("Airplay Charts"));
-	}
 
 	public List<ChartPosition> findChartPositions(Chart chart, Date date) {
 		Assert.notNull(chart);

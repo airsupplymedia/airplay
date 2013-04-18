@@ -5,7 +5,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Component;
 
 import de.airsupply.airplay.core.importers.dbf.AirplayRecordMigrator;
-import de.airsupply.airplay.core.services.ChartService;
 
 @Component
 public class AirplayRecordMigratorBatch {
@@ -20,13 +19,9 @@ public class AirplayRecordMigratorBatch {
 	}
 
 	@Autowired
-	private ChartService chartService;
-
-	@Autowired
 	private AirplayRecordMigrator migrator;
 
 	private void prefill() {
-		chartService.createInitialData();
 		migrator.migrate();
 	}
 
