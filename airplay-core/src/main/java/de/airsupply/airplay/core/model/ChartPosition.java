@@ -8,8 +8,8 @@ import org.springframework.data.neo4j.annotation.StartNode;
 
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 
-@Unique(query = "START chartState=node({chartState}), song=node({song}) MATCH chartState-[chartPosition:CHART_POSITIONS]->song WHERE chartPosition.position={position} RETURN chartPosition", arguments = {
-		"chartState", "song", "position" })
+@Unique(query = "START chartState=node({chartState}) MATCH chartState-[chartPosition:CHART_POSITIONS]->() WHERE chartPosition.position={position} RETURN chartPosition", arguments = {
+		"chartState", "position" })
 @RelationshipEntity(type = "CHART_POSITIONS")
 @SuppressWarnings("serial")
 public class ChartPosition extends PersistentNode {
