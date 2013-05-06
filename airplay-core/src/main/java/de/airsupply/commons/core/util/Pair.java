@@ -2,6 +2,10 @@ package de.airsupply.commons.core.util;
 
 public class Pair<F, S> {
 
+	public static <F, S> Pair<F, S> of(F first, S second) {
+		return new Pair<>(first, second);
+	}
+
 	private final F first;
 
 	private final S second;
@@ -41,6 +45,10 @@ public class Pair<F, S> {
 		return true;
 	}
 
+	public F first() {
+		return first;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -48,6 +56,10 @@ public class Pair<F, S> {
 		result = prime * result + ((first == null) ? 0 : first.hashCode());
 		result = prime * result + ((second == null) ? 0 : second.hashCode());
 		return result;
+	}
+
+	public S second() {
+		return second;
 	}
 
 }

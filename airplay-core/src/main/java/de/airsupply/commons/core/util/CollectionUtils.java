@@ -1,6 +1,7 @@
 package de.airsupply.commons.core.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -11,6 +12,33 @@ import org.neo4j.helpers.collection.ClosableIterable;
 import org.springframework.util.Assert;
 
 public abstract class CollectionUtils {
+
+	public static interface Filter<T> {
+
+		boolean accept(T object);
+
+	}
+
+	public static interface Function<S, T> {
+
+		T apply(S source);
+
+	}
+
+	public static interface Procedure<T> {
+
+		void run(T object);
+
+	}
+
+	public static <T> Iterable<T> asIterable(Iterator<T> iterator) {
+		Assert.notNull(iterator);
+		Collection<T> collection = new ArrayList<>();
+		while (iterator.hasNext()) {
+			collection.add(iterator.next());
+		}
+		return Collections.unmodifiableCollection(collection);
+	}
 
 	public static <T> List<T> asList(ClosableIterable<T> iterable) {
 		Assert.notNull(iterable);
@@ -76,6 +104,105 @@ public abstract class CollectionUtils {
 			}
 		}
 		return Collections.unmodifiableSet(result);
+	}
+
+	public static <S extends T, T> List<S> filter(Collection<S> source, Collection<T> target, Filter<T> filter) {
+		Assert.notNull(source);
+		Assert.notNull(target);
+		Assert.notNull(filter);
+		return filter(source, target, filter);
+	}
+
+	public static <S extends T, T> List<S> filter(Collection<S> list, Filter<T> filter) {
+		Assert.notNull(list);
+		Assert.notNull(filter);
+		return filter(list, new ArrayList<S>(list.size()), filter);
+	}
+
+	private static <S extends T, T, TC extends Collection<S>> TC filter(Iterable<S> source, TC target, Filter<T> filter) {
+		Assert.isTrue(target.isEmpty());
+		for (S object : source) {
+			if (filter == null || filter.accept((T) object)) {
+				target.add((S) object);
+			}
+		}
+		return target;
+	}
+
+	public static <S extends T, T> List<S> filter(List<S> list, Filter<T> filter) {
+		Assert.notNull(list);
+		Assert.notNull(filter);
+		return filter(list, new ArrayList<S>(list.size()), filter);
+	}
+
+	public static <S extends T, T> Set<S> filter(Set<S> set, Filter<T> filter) {
+		Assert.notNull(set);
+		Assert.notNull(filter);
+		return filter(set, new HashSet<S>(set.size()), filter);
+	}
+
+	public static <T> Filter<T> filterFor(final Class<? extends T> type) {
+		Assert.notNull(type);
+		return new Filter<T>() {
+
+			@Override
+			public boolean accept(T object) {
+				return type.isInstance(object);
+			}
+
+		};
+	}
+
+	@SafeVarargs
+	public static <T> Filter<T> filterStrictly(final Filter<T>... filters) {
+		return new Filter<T>() {
+
+			@Override
+			public boolean accept(T object) {
+				for (Filter<T> filter : filters) {
+					if (!filter.accept(object)) {
+						return false;
+					}
+				}
+				return true;
+			}
+
+		};
+	}
+
+	public static <T> void run(Collection<? extends T> collection, Procedure<T> procedure) {
+		Assert.notNull(collection);
+		Assert.notNull(procedure);
+		for (T object : collection) {
+			procedure.run(object);
+		}
+	}
+
+	public static <S, T> Collection<T> transform(Collection<? extends S> list, Function<S, T> function) {
+		Assert.notNull(list);
+		Assert.notNull(function);
+		return transform(list, new ArrayList<T>(list.size()), function);
+	}
+
+	private static <S, T, TC extends Collection<T>> TC transform(Iterable<? extends S> source, TC target,
+			Function<S, T> function) {
+		Assert.isTrue(target.isEmpty());
+		for (S object : source) {
+			target.add(function.apply(object));
+		}
+		return target;
+	}
+
+	public static <S, T> List<T> transform(List<? extends S> list, Function<S, T> function) {
+		Assert.notNull(list);
+		Assert.notNull(function);
+		return transform(list, new ArrayList<T>(list.size()), function);
+	}
+
+	public static <S, T> Set<T> transform(Set<? extends S> set, Function<S, T> function) {
+		Assert.notNull(set);
+		Assert.notNull(function);
+		return transform(set, new HashSet<T>(set.size()), function);
 	}
 
 }
