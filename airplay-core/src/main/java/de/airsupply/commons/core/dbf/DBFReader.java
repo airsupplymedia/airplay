@@ -20,6 +20,8 @@ import org.springframework.util.Assert;
 
 public class DBFReader {
 
+	private static final String ENCODING = "ISO-8859-1";
+
 	public static interface RecordHandler {
 
 		void handle(Record record, Table table, int index, boolean isLast);
@@ -32,7 +34,7 @@ public class DBFReader {
 		Assert.notNull(file);
 		Assert.notNull(recordHandler);
 
-		final Table table = new Table(file);
+		final Table table = new Table(file, ENCODING);
 		try {
 			table.open(IfNonExistent.ERROR);
 			LOGGER.info("Opened " + file.getAbsolutePath());
@@ -69,7 +71,7 @@ public class DBFReader {
 	public static Table readRecords(File file) {
 		Assert.notNull(file);
 
-		final Table table = new Table(file);
+		final Table table = new Table(file, ENCODING);
 		try {
 			table.open(IfNonExistent.ERROR);
 			LOGGER.info("Opened " + file.getAbsolutePath());
@@ -88,7 +90,7 @@ public class DBFReader {
 		Assert.notNull(file);
 
 		List<Record> results = null;
-		final Table table = new Table(file);
+		final Table table = new Table(file, ENCODING);
 		try {
 			table.open(IfNonExistent.ERROR);
 			LOGGER.info("Opened " + file.getAbsolutePath());
