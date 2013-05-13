@@ -14,6 +14,8 @@ public class DBFUtils {
 		builder.append(record);
 		if (record != null) {
 			builder.append("\n");
+			builder.append("*DEL:");
+			builder.append("\t");
 			builder.append(record.isMarkedDeleted());
 			builder.append("\n");
 			List<Field> fields = table.getFields();
