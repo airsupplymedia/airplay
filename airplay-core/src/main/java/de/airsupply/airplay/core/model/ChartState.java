@@ -12,12 +12,11 @@ import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
-import org.springframework.data.neo4j.annotation.RelatedToVia;
 
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 import de.airsupply.commons.core.util.CollectionUtils;
 
-@Unique(query = "START chart=node({chart}) MATCH chart-[:CHART_STATES]->chartState WHERE chartState.week={week} RETURN chartState", arguments = {
+@Unique(query = "START chart=node({chart}) MATCH chart<-[:CHART_STATES]->chartState WHERE chartState.week={week} RETURN chartState", arguments = {
 		"chart", "week" })
 @NodeEntity
 @SuppressWarnings("serial")
@@ -27,7 +26,7 @@ public class ChartState extends PersistentNode {
 	@RelatedTo(direction = Direction.INCOMING, type = "CHART_STATES")
 	private Chart chart;
 
-	@RelatedToVia(direction = Direction.OUTGOING, type = "CHART_POSITIONS")
+	@RelatedTo(direction = Direction.OUTGOING, type = "CHART_POSITIONS")
 	private Iterable<ChartPosition> chartPositions = null;
 
 	@Indexed

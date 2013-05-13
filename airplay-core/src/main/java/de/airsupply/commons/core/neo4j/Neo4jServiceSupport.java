@@ -5,10 +5,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.Expander;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.graphdb.traversal.Traverser;
+import org.neo4j.kernel.Traversal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.repository.GraphRepository;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
@@ -17,6 +26,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
+import de.airsupply.airplay.core.model.PersistentNode;
 import de.airsupply.commons.core.util.ValidationUtils;
 
 public abstract class Neo4jServiceSupport {
@@ -30,6 +40,10 @@ public abstract class Neo4jServiceSupport {
 
 	public <T> T fetch(T object) {
 		return neo4jTemplate.fetch(object);
+	}
+
+	public <T> T find(Long identifier, Class<T> entityClass) {
+		return neo4jTemplate.findOne(identifier.longValue(), entityClass);
 	}
 
 	public <T> T find(T object) {
@@ -105,14 +119,14 @@ public abstract class Neo4jServiceSupport {
 				Object value = field.get(object);
 				if (value != null) {
 					if (value instanceof Set) {
-						Set<?> set = (Set<?>) value;
-						Set<Object> replacement = new HashSet<>(set.size());
-						for (Object content : set) {
-							if (QueryUtils.isPersistable(neo4jTemplate, object)) {
-								replacement.add(findOrCreateRecursively(content, processed));
+						Set<?> oldSet = (Set<?>) value;
+						Set<Object> newSet = new HashSet<>(oldSet.size());
+						for (Object content : oldSet) {
+							if (QueryUtils.isPersistable(neo4jTemplate, content)) {
+								newSet.add(findOrCreateRecursively(content, processed));
 							}
 						}
-						field.set(object, replacement);
+						field.set(object, newSet);
 					} else if (QueryUtils.isPersistable(neo4jTemplate, value)) {
 						field.set(object, findOrCreateRecursively(value, processed));
 					}
@@ -127,6 +141,56 @@ public abstract class Neo4jServiceSupport {
 		}
 		processed.put(object, result);
 		return result;
+	}
+
+	public Neo4jTemplate getNeo4jTemplate() {
+		return neo4jTemplate;
+	}
+
+	private Iterator<Path> getReferencerIterator(Node node) {
+		TraversalDescription traversalDescription = neo4jTemplate.traversalDescription();
+		Expander expander = Traversal.expanderForAllTypes(Direction.INCOMING);
+		Traverser traverser = traversalDescription.expand(expander).breadthFirst().depthFirst().traverse(node);
+		return traverser.iterator();
+	}
+
+	public <T extends PersistentNode> Set<Node> getReferencers(T object) {
+		Assert.notNull(object);
+		Node node = neo4jTemplate.getNode(object.getIdentifier().longValue());
+		if (node == null) {
+			return Collections.emptySet();
+		}
+		Iterator<Path> iterator = getReferencerIterator(node);
+		Set<Node> result = new HashSet<>();
+		while (iterator.hasNext()) {
+			Path path = iterator.next();
+			for (Relationship relationship : path.relationships()) {
+				Node startNode = relationship.getStartNode();
+				Node endNode = relationship.getEndNode();
+				if (!node.equals(startNode)) {
+					result.add(startNode);
+				} else if (!node.equals(endNode)) {
+					result.add(endNode);
+				}
+			}
+		}
+		return result;
+	}
+
+	public <T extends PersistentNode> boolean isReferenced(T object) {
+		Assert.notNull(object);
+		Node node = neo4jTemplate.getNode(object.getIdentifier().longValue());
+		if (node == null) {
+			return false;
+		}
+		Iterator<Path> iterator = getReferencerIterator(node);
+		while (iterator.hasNext()) {
+			Relationship relationship = iterator.next().lastRelationship();
+			if (relationship != null) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Transactional

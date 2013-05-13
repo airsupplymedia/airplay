@@ -22,7 +22,7 @@ import de.airsupply.airplay.core.services.StationService;
 import de.airsupply.commons.core.util.DateUtils;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "applicationContext-simpleTest.xml" })
+@ContextConfiguration(locations = { "applicationContext-test.xml" })
 @Transactional
 public class StationServiceTests {
 

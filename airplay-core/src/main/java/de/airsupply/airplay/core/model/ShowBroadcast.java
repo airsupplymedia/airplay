@@ -4,21 +4,22 @@ import java.util.Date;
 
 import javax.validation.constraints.NotNull;
 
-import org.springframework.data.neo4j.annotation.RelationshipEntity;
-import org.springframework.data.neo4j.annotation.StartNode;
+import org.neo4j.graphdb.Direction;
+import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import de.airsupply.commons.core.neo4j.annotation.Persistent;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 
 @Unique(query = "START show=node({broadcastedShow}), station=node({station}) MATCH show-[showBroadcast:SHOW_BROADCAST]->station WHERE showBroadcast.from={from} AND showBroadcast.to={to} RETURN showBroadcast", arguments = {
 		"broadcastedShow", "station", "from", "to" })
-@RelationshipEntity(type = "SHOW_BROADCAST")
+@NodeEntity
 @SuppressWarnings("serial")
 public class ShowBroadcast extends Broadcast {
 
 	@NotNull
 	@Persistent
-	@StartNode
+	@RelatedTo(direction = Direction.OUTGOING, type = "SHOW_BROADCAST_OF")
 	private Show broadcastedShow;
 
 	ShowBroadcast() {

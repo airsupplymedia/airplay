@@ -1,7 +1,5 @@
 package de.airsupply.airplay.web.ui.views;
 
-import java.util.Arrays;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -41,17 +39,12 @@ public class SongView extends ContentPanel implements View {
 
 	@Override
 	protected void init() {
-		final String[] propertyIds = new String[] { "artist.name", "name" };
-		final String[] columnHeaders = new String[] { "Artist", "Song" };
-		final boolean[] sortDirections = new boolean[propertyIds.length];
-		Arrays.fill(sortDirections, true);
-
 		final Table table = new Table("Songs");
 		table.setEnabled(false);
 		table.setSizeFull();
 		table.setContainerDataSource(songContainer);
-		table.setVisibleColumns(propertyIds);
-		table.setColumnHeaders(columnHeaders);
+		table.setVisibleColumns(songContainer.getPropertyIds());
+		table.setColumnHeaders(songContainer.getColumnHeaders());
 		table.setSelectable(true);
 		table.setImmediate(true);
 		table.addValueChangeListener(songStatisticsComponent);
@@ -65,7 +58,7 @@ public class SongView extends ContentPanel implements View {
 			public void textChange(TextChangeEvent event) {
 				table.setEnabled(songContainer.search(event.getText(), checkBox.getValue().booleanValue()));
 				table.select(table.getNullSelectionItemId());
-				table.sort(propertyIds, sortDirections);
+				table.sort(songContainer.getPropertyIds(), songContainer.getSortDirections());
 			}
 
 		});

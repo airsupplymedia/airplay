@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.Date;
 
 import javax.annotation.PostConstruct;
@@ -27,16 +26,20 @@ import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.ProgressIndicator;
 import com.vaadin.ui.Table;
+import com.vaadin.ui.Tree;
 import com.vaadin.ui.Upload.SucceededEvent;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Window;
 
 import de.airsupply.airplay.core.model.Chart;
+import de.airsupply.airplay.core.model.RecordImport;
 import de.airsupply.airplay.core.services.ImportService;
 import de.airsupply.airplay.web.ui.components.ChartSelectorComponent;
 import de.airsupply.airplay.web.ui.components.ContentPanel;
 import de.airsupply.airplay.web.ui.components.UploadComponent;
 import de.airsupply.airplay.web.ui.components.UploadComponent.UploadContext;
 import de.airsupply.airplay.web.ui.model.Containers.RecordImportContainer;
+import de.airsupply.airplay.web.ui.model.Containers.RecordImportCategoryContainer;
 import de.airsupply.airplay.web.ui.util.WeekOfYearColumnGenerator;
 import de.airsupply.commons.core.context.Loggable;
 
@@ -110,19 +113,17 @@ public class RecordImportView extends ContentPanel implements View {
 	public void enter(ViewChangeEvent event) {
 	}
 
+	@Autowired
+	private RecordImportCategoryContainer recordImportCategoryContainer;
+
 	@Override
 	@PostConstruct
 	protected void init() {
 		UploadComponent uploadComponent = new UploadComponent(new RecordImportUploadContext());
 
 		ProgressIndicator progressIndicator = new ProgressIndicator();
-		progressIndicator.setValue(0f);
+		progressIndicator.setValue(Float.valueOf(0f));
 		progressIndicator.setPollingInterval(500);
-
-		final String[] propertyIds = new String[] { "weekDate" };
-		final String[] columnHeaders = new String[] { "Week Of Year" };
-		final boolean[] sortDirections = new boolean[propertyIds.length];
-		Arrays.fill(sortDirections, true);
 
 		final Action deleteAction = new Action("Delete");
 		final Action reportAction = new Action("Open Report");
@@ -130,8 +131,8 @@ public class RecordImportView extends ContentPanel implements View {
 		final Table table = new Table("Record Imports");
 		table.setSizeFull();
 		table.setContainerDataSource(recordImportContainer);
-		table.setVisibleColumns(propertyIds);
-		table.setColumnHeaders(columnHeaders);
+		table.setVisibleColumns(recordImportContainer.getPropertyIds());
+		table.setColumnHeaders(recordImportContainer.getColumnHeaders());
 		table.setSelectable(true);
 		table.setImmediate(true);
 		table.addGeneratedColumn("weekDate", new WeekOfYearColumnGenerator());
@@ -145,8 +146,21 @@ public class RecordImportView extends ContentPanel implements View {
 			@Override
 			public void handleAction(Action action, Object sender, Object target) {
 				if (deleteAction == action) {
-					// FIXME Implement Record Import deletion
-					Notification.show("Not implemented!", Type.ERROR_MESSAGE);
+					Tree tree = new Tree();
+					tree.setContainerDataSource(recordImportCategoryContainer);
+					tree.setSizeFull();
+					RecordImport recordImport = recordImportContainer.getItem(target).getBean();
+					recordImportCategoryContainer.update(recordImport);
+
+					VerticalLayout layout = new VerticalLayout();
+					layout.addComponent(tree);
+
+					Window window = new Window();
+					window.setHeight("50%");
+					window.setWidth("50%");
+					window.setContent(layout);
+
+					getUI().addWindow(window);
 				}
 			}
 

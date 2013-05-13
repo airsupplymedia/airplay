@@ -1,6 +1,8 @@
 package de.airsupply.airplay.web.ui.model;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -13,6 +15,7 @@ import org.springframework.util.StringUtils;
 
 import com.vaadin.data.util.BeanContainer;
 import com.vaadin.data.util.BeanItem;
+import com.vaadin.data.util.HierarchicalContainer;
 
 import de.airsupply.airplay.core.model.Artist;
 import de.airsupply.airplay.core.model.Chart;
@@ -36,8 +39,14 @@ public class Containers implements Serializable {
 	public static abstract class AbstractPersistentNodeContainer<T extends PersistentNode> extends
 			BeanContainer<Long, T> {
 
+		private String[] columnHeaders;
+
 		@Autowired
 		private transient Neo4jTemplate neo4jTemplate;
+
+		private String[] propertyIds;
+
+		private boolean[] sortDirections;
 
 		public AbstractPersistentNodeContainer(Class<? super T> type) {
 			super(type);
@@ -47,11 +56,50 @@ public class Containers implements Serializable {
 		protected void fetch(Neo4jTemplate neo4jTemplate, T bean) {
 		}
 
+		public String[] getColumnHeaders() {
+			if (columnHeaders == null) {
+				columnHeaders = new String[] {};
+			}
+			return columnHeaders;
+		}
+
 		@Override
 		public BeanItem<T> getItem(Object itemId) {
 			BeanItem<T> item = super.getItem(itemId);
 			fetch(neo4jTemplate, item.getBean());
 			return item;
+		}
+
+		public String[] getPropertyIds() {
+			if (propertyIds == null) {
+				propertyIds = new String[] {};
+			}
+			return propertyIds;
+		}
+
+		public boolean[] getSortDirections() {
+			if (sortDirections == null) {
+				sortDirections = new boolean[getPropertyIds().length];
+				Arrays.fill(sortDirections, true);
+			}
+			return sortDirections;
+		}
+
+		protected void setColumnHeaders(String[] columnHeaders) {
+			this.columnHeaders = columnHeaders;
+		}
+
+		protected void setPropertyIds(String[] propertyIds) {
+			this.propertyIds = propertyIds;
+		}
+
+		protected void setSortDirections(boolean[] sortDirections) {
+			this.sortDirections = sortDirections;
+		}
+
+		public void update(Collection<T> objects) {
+			removeAllItems();
+			addAll(objects);
 		}
 
 	}
@@ -70,11 +118,6 @@ public class Containers implements Serializable {
 		public void update() {
 			removeAllItems();
 			addAll(contentService.getArtists());
-		}
-
-		public void update(RecordImport recordImport) {
-			removeAllItems();
-			addAll(recordImport.getImportedArtistList());
 		}
 
 	}
@@ -106,12 +149,21 @@ public class Containers implements Serializable {
 		@Autowired
 		private transient ChartService chartService;
 
+		private boolean songAware = false;
+
 		public ChartPositionContainer() {
 			super(ChartPosition.class);
 			addNestedContainerProperty("chartState.chart.name");
 			addNestedContainerProperty("chartState.weekDate");
-			addNestedContainerProperty("song.artist.name");
-			addNestedContainerProperty("song.name");
+			if (songAware) {
+				setPropertyIds(new String[] { "chartState.weekDate", "position" });
+				setColumnHeaders(new String[] { "Week", "Position" });
+			} else {
+				setPropertyIds(new String[] { "position", "song.artist.name", "song.name" });
+				setColumnHeaders(new String[] { "Position", "Artist", "Song" });
+				addNestedContainerProperty("song.artist.name");
+				addNestedContainerProperty("song.name");
+			}
 		}
 
 		@Override
@@ -119,6 +171,10 @@ public class Containers implements Serializable {
 			neo4jTemplate.fetch(bean.getChartState());
 			neo4jTemplate.fetch(bean.getSong());
 			neo4jTemplate.fetch(bean.getSong().getArtist());
+		}
+
+		public void setSongAware(boolean songAware) {
+			this.songAware = songAware;
 		}
 
 		public boolean update(Chart chart, Date date) {
@@ -130,11 +186,6 @@ public class Containers implements Serializable {
 		public void update(Chart chart, Song song) {
 			removeAllItems();
 			addAll(chartService.findChartPositions(chart, song));
-		}
-
-		public void update(RecordImport recordImport) {
-			removeAllItems();
-			addAll(recordImport.getImportedChartPositionList());
 		}
 
 	}
@@ -155,11 +206,6 @@ public class Containers implements Serializable {
 			addAll(contentService.getPublishers());
 		}
 
-		public void update(RecordImport recordImport) {
-			removeAllItems();
-			addAll(recordImport.getImportedPublisherList());
-		}
-
 	}
 
 	@Component
@@ -178,11 +224,6 @@ public class Containers implements Serializable {
 			addAll(contentService.getRecordCompanies());
 		}
 
-		public void update(RecordImport recordImport) {
-			removeAllItems();
-			addAll(recordImport.getImportedRecordCompanyList());
-		}
-
 	}
 
 	@Component
@@ -193,10 +234,39 @@ public class Containers implements Serializable {
 
 		public RecordImportContainer() {
 			super(RecordImport.class);
+			setPropertyIds(new String[] { "weekDate" });
+			setColumnHeaders(new String[] { "Week Of Year" });
 		}
 
 		public void update() {
 			addAll(importService.getRecordImports());
+		}
+
+	}
+
+	@Component
+	public static class RecordImportCategoryContainer extends HierarchicalContainer {
+
+		@Autowired
+		private transient ImportService importService;
+
+		private transient RecordImport recordImport;
+
+		public RecordImportCategoryContainer() {
+			super();
+		}
+
+		@Override
+		public Collection<?> getChildren(Object itemId) {
+			return importService.getImportedRecordsToRevert(recordImport, itemId.toString());
+		}
+
+		public void update(RecordImport recordImport) {
+			removeAllItems();
+			this.recordImport = recordImport;
+			for (String category : recordImport.getCategories()) {
+				addItem(category);
+			}
 		}
 
 	}
@@ -235,6 +305,8 @@ public class Containers implements Serializable {
 
 		public SongBroadcastContainer() {
 			super(SongBroadcast.class);
+			setPropertyIds(new String[] { "station.name", "fromDate", "toDate", "count" });
+			setColumnHeaders(new String[] { "Station", "From", "To", "Count" });
 			addNestedContainerProperty("station.name");
 			addNestedContainerProperty("station.longName");
 		}
@@ -242,11 +314,6 @@ public class Containers implements Serializable {
 		@Override
 		protected void fetch(Neo4jTemplate neo4jTemplate, SongBroadcast bean) {
 			neo4jTemplate.fetch(bean.getStation());
-		}
-
-		public void update(RecordImport recordImport) {
-			removeAllItems();
-			addAll(recordImport.getImportedSongBroadcastList());
 		}
 
 		public void update(Song song) {
@@ -265,6 +332,8 @@ public class Containers implements Serializable {
 
 		public SongContainer() {
 			super(Song.class);
+			setPropertyIds(new String[] { "artist.name", "name" });
+			setColumnHeaders(new String[] { "Artist", "Song" });
 			addNestedContainerProperty("artist.name");
 		}
 
@@ -302,11 +371,6 @@ public class Containers implements Serializable {
 		public void update(Artist artist) {
 			removeAllItems();
 			addAll(contentService.findSongs(artist));
-		}
-
-		public void update(RecordImport recordImport) {
-			removeAllItems();
-			addAll(recordImport.getImportedSongList());
 		}
 
 	}

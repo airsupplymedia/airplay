@@ -225,7 +225,7 @@ public class UploadComponent extends VerticalLayout implements UploadProgressPro
 	public void process(StartedEvent event, String message) {
 		statusPanel.setVisible(true);
 		state.setValue(message);
-		progressIndicator.setValue(0f);
+		progressIndicator.setValue(Float.valueOf(0f));
 		progressIndicator.setVisible(true);
 		progressIndicator.setPollingInterval(500);
 		textualProgress.setVisible(true);

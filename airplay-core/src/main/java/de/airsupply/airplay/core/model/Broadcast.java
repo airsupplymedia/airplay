@@ -5,8 +5,9 @@ import java.util.Date;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import org.springframework.data.neo4j.annotation.EndNode;
+import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Indexed;
+import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.util.Assert;
 
 import de.airsupply.commons.core.neo4j.annotation.Persistent;
@@ -44,6 +45,7 @@ public abstract class Broadcast extends PersistentNode {
 			this.type = type;
 		}
 
+		@Override
 		public int getType() {
 			return type;
 		}
@@ -82,6 +84,8 @@ public abstract class Broadcast extends PersistentNode {
 
 	public static interface IBroadcastType {
 
+		public int getType();
+
 		public boolean isDaily();
 
 		public boolean isExactBegin();
@@ -104,7 +108,7 @@ public abstract class Broadcast extends PersistentNode {
 
 	@NotNull
 	@Persistent
-	@EndNode
+	@RelatedTo(direction = Direction.OUTGOING, type = "BROADCAST_ON")
 	private Station station;
 
 	@Indexed

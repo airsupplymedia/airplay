@@ -2,26 +2,26 @@ package de.airsupply.airplay.core.model;
 
 import javax.validation.constraints.NotNull;
 
-import org.springframework.data.neo4j.annotation.EndNode;
-import org.springframework.data.neo4j.annotation.RelationshipEntity;
-import org.springframework.data.neo4j.annotation.StartNode;
+import org.neo4j.graphdb.Direction;
+import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 
-@Unique(query = "START chartState=node({chartState}) MATCH chartState-[chartPosition:CHART_POSITIONS]->() WHERE chartPosition.position={position} RETURN chartPosition", arguments = {
-		"chartState", "position" })
-@RelationshipEntity(type = "CHART_POSITIONS")
+@Unique(query = "START chartState=node({chartState}), song=node({song}) MATCH chartState-[:CHART_POSITIONS]-chartPosition-[:CHART_POSITION]->song WHERE chartPosition.position={position} RETURN chartPosition", arguments = {
+		"chartState", "position", "song" })
+@NodeEntity
 @SuppressWarnings("serial")
 public class ChartPosition extends PersistentNode {
 
 	@NotNull
-	@StartNode
+	@RelatedTo(direction = Direction.INCOMING, type = "CHART_POSITIONS")
 	private ChartState chartState;
 
 	private int position;
 
 	@NotNull
-	@EndNode
+	@RelatedTo(direction = Direction.OUTGOING, type = "CHART_POSITION")
 	private Song song;
 
 	ChartPosition() {

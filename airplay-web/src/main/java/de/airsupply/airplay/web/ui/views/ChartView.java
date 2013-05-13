@@ -1,7 +1,5 @@
 package de.airsupply.airplay.web.ui.views;
 
-import java.util.Arrays;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -39,17 +37,12 @@ public class ChartView extends ContentPanel implements View {
 
 	@Override
 	protected void init() {
-		final String[] propertyIds = new String[] { "position", "song.artist.name", "song.name" };
-		final String[] columnHeaders = new String[] { "Position", "Artist", "Song" };
-		final boolean[] sortDirections = new boolean[propertyIds.length];
-		Arrays.fill(sortDirections, true);
-
 		final Table table = new Table("Chart Positions");
 		table.setSizeFull();
 		table.setEnabled(false);
 		table.setContainerDataSource(chartPositionContainer);
-		table.setVisibleColumns(propertyIds);
-		table.setColumnHeaders(columnHeaders);
+		table.setVisibleColumns(chartPositionContainer.getPropertyIds());
+		table.setColumnHeaders(chartPositionContainer.getColumnHeaders());
 
 		chartSelectorComponent.getComboBox().addValueChangeListener(new ValueChangeListener() {
 

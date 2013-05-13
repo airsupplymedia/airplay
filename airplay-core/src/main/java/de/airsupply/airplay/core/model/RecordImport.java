@@ -1,16 +1,22 @@
 package de.airsupply.airplay.core.model;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
-import org.springframework.data.neo4j.annotation.RelatedToVia;
 import org.springframework.util.Assert;
 
 import de.airsupply.commons.core.neo4j.annotation.Persistent;
@@ -27,7 +33,7 @@ public class RecordImport extends PersistentNode {
 	private Set<Artist> importedArtists = new HashSet<>();
 
 	@Persistent
-	@RelatedToVia(direction = Direction.OUTGOING, type = "IMPORTED_CHART_POSITIONS")
+	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_CHART_POSITIONS")
 	private Set<ChartPosition> importedChartPositions = new HashSet<>();
 
 	@Persistent
@@ -43,11 +49,11 @@ public class RecordImport extends PersistentNode {
 	private Set<RecordCompany> importedRecordCompanies = new HashSet<>();
 
 	@Persistent
-	@RelatedToVia(direction = Direction.OUTGOING, type = "IMPORTED_SHOW_BROADCASTS")
+	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_SHOW_BROADCASTS")
 	private Set<ShowBroadcast> importedShowBroadcasts = new HashSet<>();
 
 	@Persistent
-	@RelatedToVia(direction = Direction.OUTGOING, type = "IMPORTED_SONG_BROADCASTS")
+	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_SONG_BROADCASTS")
 	private Set<SongBroadcast> importedSongBroadcasts = new HashSet<>();
 
 	@Persistent
@@ -57,6 +63,8 @@ public class RecordImport extends PersistentNode {
 	@Persistent
 	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_STATIONS")
 	private Set<Station> importedStations = new HashSet<>();
+
+	private transient Map<String, String> map;
 
 	@Indexed
 	private long week;
@@ -71,10 +79,19 @@ public class RecordImport extends PersistentNode {
 		this.week = week.getTime();
 	}
 
+	public Iterable<String> getCategories() {
+		if (map == null) {
+			initializeCategories();
+		}
+		return map.keySet();
+	}
+
+	@RecordImportCategory("IMPORTED_ARTISTS")
 	public Set<Artist> getImportedArtistList() {
 		return importedArtists;
 	}
 
+	@RecordImportCategory("IMPORTED_CHART_POSITIONS")
 	public List<ChartPosition> getImportedChartPositionList() {
 		if (importedChartPositions != null) {
 			return CollectionUtils.asList(importedChartPositions);
@@ -83,18 +100,50 @@ public class RecordImport extends PersistentNode {
 		}
 	}
 
+	@RecordImportCategory("IMPORTED_CHART_STATES")
 	public Set<ChartState> getImportedChartStateList() {
 		return importedChartStates;
 	}
 
+	@RecordImportCategory("IMPORTED_PUBLISHERS")
 	public Set<Publisher> getImportedPublisherList() {
 		return importedPublishers;
 	}
 
+	@RecordImportCategory("IMPORTED_RECORD_COMPANIES")
 	public Set<RecordCompany> getImportedRecordCompanyList() {
 		return importedRecordCompanies;
 	}
 
+	public Collection<PersistentNode> getImportedRecords() {
+		Collection<PersistentNode> importedRecords = new HashSet<>();
+		for (String category : getCategories()) {
+			importedRecords.addAll(getImportedRecords(category));
+		}
+		return importedRecords;
+	}
+
+	@SuppressWarnings("unchecked")
+	public Collection<PersistentNode> getImportedRecords(String category) {
+		if (map == null) {
+			initializeCategories();
+		}
+		String methodName = map.get(category);
+		if (methodName != null) {
+			try {
+				Object result = getClass().getMethod(methodName).invoke(this);
+				if (result instanceof Collection) {
+					return (Collection<PersistentNode>) result;
+				}
+			} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException exception) {
+				exception.printStackTrace();
+			}
+		}
+		return Collections.emptyList();
+	}
+
+	@RecordImportCategory("IMPORTED_SHOW_BROADCASTS")
 	public List<ShowBroadcast> getImportedShowBroadcastList() {
 		if (importedShowBroadcasts != null) {
 			return CollectionUtils.asList(importedShowBroadcasts);
@@ -103,6 +152,7 @@ public class RecordImport extends PersistentNode {
 		}
 	}
 
+	@RecordImportCategory("IMPORTED_SONG_BROADCASTS")
 	public List<SongBroadcast> getImportedSongBroadcastList() {
 		if (importedSongBroadcasts != null) {
 			return CollectionUtils.asList(importedSongBroadcasts);
@@ -111,10 +161,12 @@ public class RecordImport extends PersistentNode {
 		}
 	}
 
+	@RecordImportCategory("IMPORTED_SONGS")
 	public Set<Song> getImportedSongList() {
 		return importedSongs;
 	}
 
+	@RecordImportCategory("IMPORTED_STATIONS")
 	public Set<Station> getImportedStationList() {
 		return importedStations;
 	}
@@ -157,6 +209,32 @@ public class RecordImport extends PersistentNode {
 
 	public void importStation(Station station) {
 		importedStations.add(station);
+	}
+
+	private void initializeCategories() {
+		map = new HashMap<>();
+		Method[] methods = getClass().getMethods();
+		for (Method method : methods) {
+			if (Collection.class.isAssignableFrom(method.getReturnType()) && method.getParameterTypes().length == 0) {
+				RecordImportCategory annotation = method.getAnnotation(RecordImportCategory.class);
+				if (annotation != null) {
+					map.put(annotation.value(), method.getName());
+				}
+			}
+		}
+	}
+
+	private void writeObject(ObjectOutputStream outputStream) throws IOException {
+		importedArtists = null;
+		importedChartPositions = null;
+		importedChartStates = null;
+		importedPublishers = null;
+		importedRecordCompanies = null;
+		importedShowBroadcasts = null;
+		importedSongBroadcasts = null;
+		importedSongs = null;
+		importedStations = null;
+		outputStream.defaultWriteObject();
 	}
 
 }

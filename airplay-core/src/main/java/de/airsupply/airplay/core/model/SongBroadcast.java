@@ -4,21 +4,22 @@ import java.util.Date;
 
 import javax.validation.constraints.NotNull;
 
-import org.springframework.data.neo4j.annotation.RelationshipEntity;
-import org.springframework.data.neo4j.annotation.StartNode;
+import org.neo4j.graphdb.Direction;
+import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import de.airsupply.commons.core.neo4j.annotation.Persistent;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 
-@Unique(query = "START song=node({broadcastedSong}), station=node({station}) MATCH song-[songBroadcast:SONG_BROADCAST]->station WHERE songBroadcast.from={from} AND songBroadcast.to={to} RETURN songBroadcast", arguments = {
+@Unique(query = "START song=node({broadcastedSong}), station=node({station}) MATCH song<-[:SONG_BROADCAST_OF]-songBroadcast-[:BROADCAST_ON]->station WHERE songBroadcast.from={from} AND songBroadcast.to={to} RETURN songBroadcast", arguments = {
 		"broadcastedSong", "station", "from", "to" })
-@RelationshipEntity(type = "SONG_BROADCAST")
+@NodeEntity
 @SuppressWarnings("serial")
 public class SongBroadcast extends Broadcast {
 
 	@NotNull
 	@Persistent
-	@StartNode
+	@RelatedTo(direction = Direction.OUTGOING, type = "SONG_BROADCAST_OF")
 	private Song broadcastedSong;
 
 	SongBroadcast() {

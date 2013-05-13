@@ -25,7 +25,7 @@ import de.airsupply.airplay.core.services.ChartService;
 import de.airsupply.commons.core.util.DateUtils;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "applicationContext-simpleTest.xml" })
+@ContextConfiguration(locations = { "applicationContext-test.xml" })
 @Transactional
 public class ChartServiceTests {
 
@@ -44,6 +44,8 @@ public class ChartServiceTests {
 		Artist artist = service.save(new Artist("JACKSON, MICHAEL"));
 		Song song = service.save(new Song(artist, "THRILLER"));
 		service.save(new ChartPosition(chartState, song, 1));
+		assertEquals(1, service.getCharts().get(0).getChartStateList().size());
+		assertEquals(1, service.getChartStates().get(0).getChartPositionList().size());
 	}
 
 	@Test
@@ -67,6 +69,7 @@ public class ChartServiceTests {
 		List<ChartPosition> chartPositions = service.findChartPositions(chart, week);
 		assertEquals(2, chartPositions.size());
 		assertEquals(song, chartPositions.get(1).getSong());
+		assertEquals(chartState, chartPositions.get(0).getChartState());
 	}
 
 	@Test
@@ -90,6 +93,7 @@ public class ChartServiceTests {
 		List<ChartPosition> chartPositions = service.findChartPositions(chart, song);
 		assertEquals(1, chartPositions.size());
 		assertEquals(song, chartPositions.get(0).getSong());
+		assertEquals(chartState, chartPositions.get(0).getChartState());
 	}
 
 	public void testChartStateCount() {
@@ -103,6 +107,7 @@ public class ChartServiceTests {
 	public void testChartStateCreation() {
 		Chart chart = service.save(new Chart("Airplay Charts"));
 		service.save(new ChartState(chart, DateUtils.getStartOfWeek(new Date())));
+		assertEquals(1, service.getCharts().get(0).getChartStateList().size());
 	}
 
 	@Test(expected = ValidationException.class)

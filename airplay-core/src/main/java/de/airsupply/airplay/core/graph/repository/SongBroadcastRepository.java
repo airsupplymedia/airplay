@@ -9,7 +9,7 @@ import de.airsupply.airplay.core.model.SongBroadcast;
 
 public interface SongBroadcastRepository extends GraphRepository<SongBroadcast>, CypherDslRepository<SongBroadcast> {
 
-	@Query("START broadcastedSong=node({0}) MATCH broadcastedSong-[songBroadcast:SONG_BROADCAST]->() RETURN songBroadcast")
+	@Query("START broadcastedSong=node({0}) MATCH broadcastedSong<-[:SONG_BROADCAST_OF]-songBroadcast RETURN songBroadcast")
 	Iterable<SongBroadcast> find(Song song);
 
 }
