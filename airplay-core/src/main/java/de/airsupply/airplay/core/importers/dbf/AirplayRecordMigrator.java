@@ -3,7 +3,6 @@ package de.airsupply.airplay.core.importers.dbf;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -25,19 +24,15 @@ import de.airsupply.airplay.core.model.Artist;
 import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.core.model.ChartPosition;
 import de.airsupply.airplay.core.model.ChartState;
-import de.airsupply.airplay.core.model.PersistentNode;
 import de.airsupply.airplay.core.model.RecordCompany;
 import de.airsupply.airplay.core.model.Song;
 import de.airsupply.airplay.core.model.SongBroadcast;
 import de.airsupply.airplay.core.model.Station;
-import de.airsupply.airplay.core.services.ChartService;
-import de.airsupply.airplay.core.services.ContentService;
-import de.airsupply.airplay.core.services.StationService;
 import de.airsupply.commons.core.context.Loggable;
 import de.airsupply.commons.core.dbf.DBFReader;
 import de.airsupply.commons.core.dbf.DBFReader.RecordHandler;
+import de.airsupply.commons.core.neo4j.Neo4jBatchInserter;
 import de.airsupply.commons.core.util.DateUtils;
-import de.airsupply.commons.core.util.Pair;
 
 @Service
 public class AirplayRecordMigrator {
@@ -56,38 +51,37 @@ public class AirplayRecordMigrator {
 
 	private static final String STATE_TYPE_SONG_BROADCAST_WEEKLY = "B";
 
-	@Autowired
-	private ChartService chartService;
-
-	private Map<Pair<String, Chart>, ChartState> chartStateMap = new HashMap<>();
-
-	@Autowired
-	private ContentService contentService;
-
-	private final String fileDirectory = "C:\\Development\\Storage\\Git\\airplay\\airplay-dbf";
+	private AirplayRecordMigratorContext context;
 
 	@Loggable
 	private Logger logger;
 
-	private Map<Integer, Song> songMap = new HashMap<>(30000);
-
-	private Map<String, Station> stationMap = new HashMap<>(300);
-
 	@Autowired
-	private StationService stationService;
+	private Neo4jBatchInserter neo4jBatchInserter;
+
+	private Map<Integer, Song> songMap = new HashMap<>(30000);
 
 	public AirplayRecordMigrator() {
 		super();
 	}
 
-	public void migrate() {
-		migrateStations();
-		migrateSongs();
-		migrateStates();
+	public void migrate(String fileDirectory, String storeDirectory) {
+		context = new AirplayRecordMigratorContext(new ArrayList<>(5200000));
+
+		migrateStations(fileDirectory);
+		migrateSongs(fileDirectory);
+		migrateStates(fileDirectory);
+
+		List<Object> objects = context.getObjects();
+
+		context = null;
+		songMap = null;
+
+		neo4jBatchInserter.runBatch(storeDirectory, objects);
 	}
 
 	@Transactional
-	private void migrateSongs() {
+	private void migrateSongs(String fileDirectory) {
 		logger.info("Migrating songs and artists.");
 
 		File file = new File(fileDirectory, DATABASE_FILE_ARCHIVE);
@@ -101,57 +95,47 @@ public class AirplayRecordMigrator {
 			String discIdentifier = record.getStringValue("PLNR").trim();
 
 			if (StringUtils.hasText(artistName) && StringUtils.hasText(songName)) {
-				Artist artist = contentService.findOrCreate(new Artist(artistName));
+				Artist artist = context.getOrPersist(new Artist(artistName));
 				RecordCompany recordCompany = null;
 				if (StringUtils.hasText(recordCompanyName)) {
-					recordCompany = contentService.findOrCreate(new RecordCompany(recordCompanyName));
+					recordCompany = context.getOrPersist(new RecordCompany(recordCompanyName));
 				}
-				Song song = contentService
-						.findOrCreate(new Song(artist, songName, discIdentifier, recordCompany, null));
+				Song song = context.getOrPersist(new Song(artist, songName, discIdentifier, recordCompany, null));
 				songMap.put(Integer.valueOf(songIdentifier), song);
 			}
 		}
 	}
 
-	private ChartPosition migrateStateOfChartPosition(Chart chart, Record record, Table table) {
+	private void migrateStateOfChartPosition(Chart chart, Record record, Table table) {
 		String songIdentifier = record.getStringValue("ARNR").trim();
 		String chartStateDate = record.getStringValue("DATE").trim();
 		String chartPositionIndex = record.getStringValue("TIME").trim();
 
 		Song song = songMap.get(Integer.valueOf(songIdentifier));
 
-		Pair<String, Chart> key = new Pair<>(chartStateDate, chart);
-		ChartState chartState = chartStateMap.get(key);
+		Date date = DateUtils.getStartOfWeek(parseDateFormat(chartStateDate));
+		ChartState chartState = context.get(new ChartState(chart, date));
 
 		Assert.notNull(song);
 		Assert.notNull(chartState);
 
-		return new ChartPosition(chartState, song, Integer.valueOf(chartPositionIndex).intValue());
+		context.persist(new ChartPosition(chartState, song, Integer.valueOf(chartPositionIndex).intValue()));
 	}
 
 	private void migrateStateOfChartState(Chart chart, Record record, Table table) {
 		String chartStateDate = record.getStringValue("DATE").trim();
-
-		Pair<String, Chart> key = new Pair<>(chartStateDate, chart);
-		if (!chartStateMap.containsKey(key)) {
-			Date date = DateUtils.getStartOfWeek(parseDateFormat(chartStateDate));
-			ChartState chartState = chartService.save(new ChartState(chart, date));
-			chartStateMap.put(key, chartState);
-		}
+		Date date = DateUtils.getStartOfWeek(parseDateFormat(chartStateDate));
+		context.getOrPersist(new ChartState(chart, date));
 	}
 
-	private SongBroadcast migrateStateOfSongBroadcast(Record record, Table table, boolean exact) {
+	private void migrateStateOfSongBroadcast(Record record, Table table, boolean exact) {
 		String songIdentifier = record.getStringValue("ARNR").trim();
 		String stationName = record.getStringValue("SEND").trim();
 		String broadcastDate = record.getStringValue("DATE").trim();
 		String broadcastTime = record.getStringValue("TIME").trim();
 		Number count = record.getNumberValue("ZAHL");
 
-		Station station = stationMap.get(stationName);
-		if (station == null) {
-			station = stationService.save(new Station(stationName, null));
-			stationMap.put(stationName, station);
-		}
+		Station station = context.getOrPersist(new Station(stationName, null));
 		Song song = songMap.get(Integer.valueOf(songIdentifier));
 
 		Assert.notNull(station);
@@ -159,52 +143,41 @@ public class AirplayRecordMigrator {
 
 		if (exact) {
 			Date date = parseDateFormat(broadcastDate, broadcastTime);
-			return new SongBroadcast(station, song, date);
+			context.getOrPersist(new SongBroadcast(station, song, date));
 		} else {
 			Date date = DateUtils.getStartOfWeek(parseDateFormat(broadcastDate));
-			return new SongBroadcast(station, song, date, count.intValue());
+			context.getOrPersist(new SongBroadcast(station, song, date, count.intValue()));
 		}
 	}
 
-	private void migrateStates() {
+	private void migrateStates(String fileDirectory) {
 		logger.info("Migrating States.");
 
-		final Chart airplayChart = chartService.findOrCreate(new Chart("Airplay Charts"));
-		final Chart salesChart = chartService.findOrCreate(new Chart("Sales Charts"));
-
-		final int interval = 50000;
-		final List<PersistentNode> states = new ArrayList<>(interval);
+		final Chart airplayChart = context.persist(new Chart("Airplay Charts"));
+		final Chart salesChart = context.persist(new Chart("Sales Charts"));
 
 		File file = new File(fileDirectory, DATABASE_FILE_STATE);
 		DBFReader.processRecords(file, new RecordHandler() {
 
 			@Override
 			public void handle(Record record, Table table, int index, boolean isLast) {
-				if (states.size() >= interval) {
-					migrateStates(states);
-				}
-
 				switch (record.getStringValue("ART")) {
 				case STATE_TYPE_AIRPLAY_CHART:
 					migrateStateOfChartState(airplayChart, record, table);
-					states.add(migrateStateOfChartPosition(airplayChart, record, table));
+					migrateStateOfChartPosition(airplayChart, record, table);
 					break;
 				case STATE_TYPE_SALES_CHART:
 					migrateStateOfChartState(salesChart, record, table);
-					states.add(migrateStateOfChartPosition(salesChart, record, table));
+					migrateStateOfChartPosition(salesChart, record, table);
 					break;
 				case STATE_TYPE_SONG_BROADCAST_EXACT:
-					states.add(migrateStateOfSongBroadcast(record, table, true));
+					migrateStateOfSongBroadcast(record, table, true);
 					break;
 				case STATE_TYPE_SONG_BROADCAST_WEEKLY:
-					states.add(migrateStateOfSongBroadcast(record, table, false));
+					migrateStateOfSongBroadcast(record, table, false);
 					break;
 				default:
 					break;
-				}
-
-				if (isLast) {
-					migrateStates(states);
 				}
 			}
 
@@ -212,20 +185,7 @@ public class AirplayRecordMigrator {
 	}
 
 	@Transactional
-	private void migrateStates(Collection<PersistentNode> states) {
-		logger.info("Migrating " + states.size() + " states");
-		for (PersistentNode state : states) {
-			try {
-				chartService.save(state);
-			} catch (Exception exception) {
-				logger.error("Error migrating state: " + state, exception);
-			}
-		}
-		states.clear();
-	}
-
-	@Transactional
-	private void migrateStations() {
+	private void migrateStations(String fileDirectory) {
 		logger.info("Migrating stations.");
 
 		File file = new File(fileDirectory, DATABASE_FILE_STATIONS);
@@ -233,9 +193,7 @@ public class AirplayRecordMigrator {
 		for (Record record : records) {
 			String name = record.getStringValue("NAME").trim();
 			String longName = record.getStringValue("BEZE").trim();
-
-			Station station = stationService.findOrCreate(new Station(name, longName));
-			stationMap.put(name, station);
+			context.getOrPersist(new Station(name, longName));
 		}
 	}
 

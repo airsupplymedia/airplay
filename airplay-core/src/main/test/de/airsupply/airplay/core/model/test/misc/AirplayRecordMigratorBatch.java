@@ -11,7 +11,7 @@ public class AirplayRecordMigratorBatch {
 
 	public static void main(String[] args) {
 		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(
-				"classpath*:META-INF/spring/applicationContext*.xml");
+				"classpath*:de/airsupply/airplay/core/model/test/misc/applicationContext-batch.xml");
 		applicationContext.start();
 		applicationContext.getBean(AirplayRecordMigratorBatch.class).prefill();
 		applicationContext.stop();
@@ -22,7 +22,7 @@ public class AirplayRecordMigratorBatch {
 	private AirplayRecordMigrator migrator;
 
 	private void prefill() {
-		migrator.migrate();
+		migrator.migrate("C:\\Development\\Storage\\Git\\airplay\\airplay-dbf",
+				"C:/Development/Storage/Neo4j/config-batch");
 	}
-
 }

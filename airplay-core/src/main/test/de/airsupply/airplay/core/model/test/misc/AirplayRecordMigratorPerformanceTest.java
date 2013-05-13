@@ -16,9 +16,12 @@ import de.airsupply.commons.core.context.Loggable;
 @Component
 public class AirplayRecordMigratorPerformanceTest {
 
+	@Loggable
+	private static Logger logger;
+
 	public static void main(String[] args) {
 		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(
-				"classpath*:META-INF/spring/applicationContext*.xml");
+				"classpath*:de/airsupply/airplay/core/model/test/misc/applicationContext-batch.xml");
 		applicationContext.start();
 		try {
 			applicationContext.getBean(AirplayRecordMigratorPerformanceTest.class).benchmark();
@@ -37,9 +40,6 @@ public class AirplayRecordMigratorPerformanceTest {
 
 	@Autowired
 	private StationService stationService;
-
-	@Loggable
-	private static Logger logger;
 
 	private void benchmark() {
 		Chart chart = chartService.getCharts().get(1);

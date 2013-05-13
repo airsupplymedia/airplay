@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:neo4j="http://www.springframework.org/schema/data/neo4j"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/data/neo4j
+    http://www.springframework.org/schema/data/neo4j/spring-neo4j-2.1.xsd">
+
+	<context:annotation-config />
+	<tx:annotation-driven mode="aspectj" transaction-manager="neo4jTransactionManager" />
+	<neo4j:config graphDatabaseService="graphDatabaseService" />
+
+	<bean id="graphDatabaseService" class="org.neo4j.kernel.EmbeddedGraphDatabase" destroy-method="shutdown">
+		<constructor-arg index="0" value="C:/Development/Storage/Neo4j/config-simpletest" />
+		<constructor-arg index="1">
+			<map>
+				<entry key="keep_logical_logs" value="7 days" />
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<neo4j:repositories base-package="de.airsupply.airplay.core.graph.repository" />
+	<context:component-scan base-package="de.airsupply.airplay.core,de.airsupply.commons.core" />
+
+</beans>
