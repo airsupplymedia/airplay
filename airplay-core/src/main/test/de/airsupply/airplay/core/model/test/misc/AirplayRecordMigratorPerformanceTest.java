@@ -1,5 +1,7 @@
 package de.airsupply.airplay.core.model.test.misc;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -8,6 +10,7 @@ import org.springframework.util.StopWatch;
 
 import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.core.model.Song;
+import de.airsupply.airplay.core.model.SongBroadcast;
 import de.airsupply.airplay.core.services.ChartService;
 import de.airsupply.airplay.core.services.ContentService;
 import de.airsupply.airplay.core.services.StationService;
@@ -43,7 +46,7 @@ public class AirplayRecordMigratorPerformanceTest {
 
 	private void benchmark() {
 		Chart chart = chartService.getCharts().get(1);
-		Song song = contentService.findSongs("JACKSON, MICHAEL", false).get(0);
+		Song song = contentService.findSongs("JUST A LITTLE WHILE", false).get(0);
 
 		logger.info(chart.toString());
 		logger.info(song.toString());
@@ -57,6 +60,14 @@ public class AirplayRecordMigratorPerformanceTest {
 		stopWatch.start("Find Song Broadcasts");
 		for (int i = 0; i <= 100; i++) {
 			stationService.findBroadcasts(song);
+		}
+		stopWatch.stop();
+		stopWatch.start("Find Song Broadcasts and fetch Stations");
+		for (int i = 0; i <= 100; i++) {
+			List<SongBroadcast> broadcasts = stationService.findBroadcasts(song);
+			for (SongBroadcast broadcast : broadcasts) {
+				stationService.fetch(broadcast.getStation());
+			}
 		}
 		stopWatch.stop();
 
