@@ -153,6 +153,10 @@ public class Containers implements Serializable {
 
 		public ChartPositionContainer() {
 			super(ChartPosition.class);
+		}
+
+		public void initialize(boolean songAware) {
+			this.songAware = songAware;
 			addNestedContainerProperty("chartState.chart.name");
 			addNestedContainerProperty("chartState.weekDate");
 			if (songAware) {
@@ -168,13 +172,12 @@ public class Containers implements Serializable {
 
 		@Override
 		protected void fetch(Neo4jTemplate neo4jTemplate, ChartPosition bean) {
-			neo4jTemplate.fetch(bean.getChartState());
-			neo4jTemplate.fetch(bean.getSong());
-			neo4jTemplate.fetch(bean.getSong().getArtist());
-		}
-
-		public void setSongAware(boolean songAware) {
-			this.songAware = songAware;
+			if (songAware) {
+				neo4jTemplate.fetch(bean.getChartState());
+			} else {
+				neo4jTemplate.fetch(bean.getSong());
+				neo4jTemplate.fetch(bean.getSong().getArtist());
+			}
 		}
 
 		public boolean update(Chart chart, Date date) {

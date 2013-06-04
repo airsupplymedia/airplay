@@ -13,6 +13,7 @@ import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.ui.Table;
 
+import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.web.ui.components.ChartSelectorComponent;
 import de.airsupply.airplay.web.ui.components.ContentPanel;
 import de.airsupply.airplay.web.ui.model.Containers.ChartPositionContainer;
@@ -37,6 +38,8 @@ public class ChartView extends ContentPanel implements View {
 
 	@Override
 	protected void init() {
+		chartPositionContainer.initialize(false);
+
 		final Table table = new Table("Chart Positions");
 		table.setSizeFull();
 		table.setEnabled(false);
@@ -48,8 +51,9 @@ public class ChartView extends ContentPanel implements View {
 
 			@Override
 			public void valueChange(ValueChangeEvent event) {
-				table.setEnabled(chartPositionContainer.update(chartSelectorComponent.getSelectedChart(),
-						chartSelectorComponent.getSelectedDate()));
+				Chart selectedChart = chartSelectorComponent.getSelectedChart();
+				chartSelectorComponent.getDateField().setEnabled(selectedChart != null);
+				table.setEnabled(chartPositionContainer.update(selectedChart, chartSelectorComponent.getSelectedDate()));
 			}
 		});
 

@@ -74,12 +74,12 @@ public class SongStatisticsComponent extends TabSheet implements ValueChangeList
 		@Override
 		@PostConstruct
 		protected void init() {
-			chartPositionContainer.setSongAware(true);
 			if (table == null) {
+				chartPositionContainer.initialize(true);
+
 				table = createTable(chartPositionContainer);
 				table.addGeneratedColumn("chartState.weekDate", new WeekOfYearColumnGenerator());
 			}
-
 			addComponent(table);
 		}
 
@@ -114,7 +114,6 @@ public class SongStatisticsComponent extends TabSheet implements ValueChangeList
 				table.addGeneratedColumn("fromDate", new WeekOfYearColumnGenerator());
 				table.addGeneratedColumn("toDate", new WeekOfYearColumnGenerator());
 			}
-
 			addComponent(table);
 		}
 

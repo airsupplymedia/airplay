@@ -24,7 +24,6 @@ import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.ProgressIndicator;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Tree;
 import com.vaadin.ui.Upload.SucceededEvent;
@@ -38,8 +37,8 @@ import de.airsupply.airplay.web.ui.components.ChartSelectorComponent;
 import de.airsupply.airplay.web.ui.components.ContentPanel;
 import de.airsupply.airplay.web.ui.components.UploadComponent;
 import de.airsupply.airplay.web.ui.components.UploadComponent.UploadContext;
-import de.airsupply.airplay.web.ui.model.Containers.RecordImportContainer;
 import de.airsupply.airplay.web.ui.model.Containers.RecordImportCategoryContainer;
+import de.airsupply.airplay.web.ui.model.Containers.RecordImportContainer;
 import de.airsupply.airplay.web.ui.util.WeekOfYearColumnGenerator;
 import de.airsupply.commons.core.context.Loggable;
 
@@ -121,10 +120,6 @@ public class RecordImportView extends ContentPanel implements View {
 	protected void init() {
 		UploadComponent uploadComponent = new UploadComponent(new RecordImportUploadContext());
 
-		ProgressIndicator progressIndicator = new ProgressIndicator();
-		progressIndicator.setValue(Float.valueOf(0f));
-		progressIndicator.setPollingInterval(500);
-
 		final Action deleteAction = new Action("Delete");
 		final Action reportAction = new Action("Open Report");
 
@@ -169,7 +164,6 @@ public class RecordImportView extends ContentPanel implements View {
 		recordImportContainer.update();
 
 		VerticalLayout importLayout = new VerticalLayout();
-		importLayout.addComponent(progressIndicator);
 		addComponent(chartSelectorComponent);
 		addComponent(uploadComponent);
 		addComponent(importLayout);
