@@ -65,6 +65,7 @@ public class ChartSelectorComponent extends HorizontalLayout {
 		chartContainer.update();
 
 		dateField = new DateField("Please select the date:");
+		dateField.setEnabled(false);
 		dateField.setValue(new Date());
 		dateField.setResolution(Resolution.DAY);
 		dateField.setShowISOWeekNumbers(true);
