@@ -1,5 +1,7 @@
 package de.airsupply.airplay.web.ui.views;
 
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -7,14 +9,13 @@ import org.springframework.stereotype.Component;
 
 import ru.xpoft.vaadin.VaadinView;
 
-import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.ui.Table;
 
 import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.web.ui.components.ChartSelectorComponent;
+import de.airsupply.airplay.web.ui.components.ChartSelectorComponent.ChartSelectorListener;
 import de.airsupply.airplay.web.ui.components.ContentPanel;
 import de.airsupply.airplay.web.ui.model.Containers.ChartPositionContainer;
 
@@ -47,22 +48,11 @@ public class ChartView extends ContentPanel implements View {
 		table.setVisibleColumns(chartPositionContainer.getPropertyIds());
 		table.setColumnHeaders(chartPositionContainer.getColumnHeaders());
 
-		chartSelectorComponent.getComboBox().addValueChangeListener(new ValueChangeListener() {
+		chartSelectorComponent.addListener(new ChartSelectorListener() {
 
 			@Override
-			public void valueChange(ValueChangeEvent event) {
-				Chart selectedChart = chartSelectorComponent.getSelectedChart();
-				chartSelectorComponent.getDateField().setEnabled(selectedChart != null);
-				table.setEnabled(chartPositionContainer.update(selectedChart, chartSelectorComponent.getSelectedDate()));
-			}
-		});
-
-		chartSelectorComponent.getDateField().addValueChangeListener(new ValueChangeListener() {
-
-			@Override
-			public void valueChange(ValueChangeEvent event) {
-				table.setEnabled(chartPositionContainer.update(chartSelectorComponent.getSelectedChart(),
-						chartSelectorComponent.getSelectedDate()));
+			public void valueChange(Chart selectedChart, Date selectedDate) {
+				table.setEnabled(chartPositionContainer.update(selectedChart, selectedDate));
 			}
 
 		});
@@ -70,5 +60,4 @@ public class ChartView extends ContentPanel implements View {
 		addComponent(chartSelectorComponent);
 		addComponent(table);
 	}
-
 }
