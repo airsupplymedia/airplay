@@ -1,6 +1,7 @@
 package de.airsupply.airplay.core.model.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -35,6 +36,7 @@ public class ChartServiceTests {
 	@Test
 	public void testChartCreation() {
 		service.save(new Chart("Airplay Charts"));
+		assertTrue(service.exists(new Chart("Airplay Charts")));
 	}
 
 	@Test
