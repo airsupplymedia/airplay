@@ -28,7 +28,7 @@ import de.airsupply.commons.core.util.DateUtils;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "applicationContext-test.xml" })
 @Transactional
-public class ChartServiceTests {
+public class ChartServiceTest {
 
 	@Autowired
 	private ChartService service;

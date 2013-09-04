@@ -16,7 +16,7 @@
 	<neo4j:config graphDatabaseService="graphDatabaseService" />
 
 	<bean id="graphDatabaseService" class="org.neo4j.kernel.EmbeddedGraphDatabase" destroy-method="shutdown">
-		<constructor-arg index="0" value="C:/Development/Storage/Neo4j/config-test" />
+		<constructor-arg index="0" value="../airplay-store/config-test" />
 		<constructor-arg index="1">
 			<map>
 				<entry key="keep_logical_logs" value="0 days" />

@@ -28,7 +28,7 @@ import de.airsupply.commons.core.util.CollectionUtils;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "applicationContext-test.xml" })
 @Transactional
-public class ContentServiceTests {
+public class ContentServiceTest {
 
 	@Autowired
 	private ContentService service;
