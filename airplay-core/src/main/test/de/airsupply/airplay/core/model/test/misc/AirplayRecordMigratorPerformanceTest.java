@@ -46,12 +46,15 @@ public class AirplayRecordMigratorPerformanceTest {
 
 	private void benchmark() {
 		Chart chart = chartService.getCharts().get(1);
-		Song song = contentService.findSongs("JUST A LITTLE WHILE", false).get(0);
 
 		logger.info(chart.toString());
-		logger.info(song.toString());
 
 		StopWatch stopWatch = new StopWatch();
+
+		stopWatch.start("Find Song");
+		Song song = contentService.findSongs("JUST A LITTLE WHILE", false).get(0);
+		logger.info(song.toString());
+		stopWatch.stop();
 
 		stopWatch.start("Find Chart Positions");
 		chartService.findChartPositions(chart, song);
