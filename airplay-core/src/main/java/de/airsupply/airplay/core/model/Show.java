@@ -8,6 +8,7 @@ import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
+import de.airsupply.commons.core.neo4j.annotation.Persistent;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 
 @Unique(query = "START station=node({station}) MATCH station<-[:SHOWS]->show WHERE show.name={name} RETURN show", arguments = {
@@ -21,7 +22,8 @@ public class Show extends PersistentNode {
 	private String name;
 
 	@NotNull
-	@RelatedTo(direction = Direction.BOTH, type = "SHOWS")
+	@Persistent
+	@RelatedTo(direction = Direction.OUTGOING, type = "STATION")
 	private Station station;
 
 	Show() {

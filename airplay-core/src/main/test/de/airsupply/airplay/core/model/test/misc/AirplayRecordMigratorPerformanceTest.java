@@ -1,9 +1,8 @@
 package de.airsupply.airplay.core.model.test.misc;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
@@ -23,8 +22,9 @@ public class AirplayRecordMigratorPerformanceTest {
 	private static Logger logger;
 
 	public static void main(String[] args) {
-		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(
+		AbstractApplicationContext applicationContext = new ClassPathXmlApplicationContext(
 				"classpath*:de/airsupply/airplay/core/model/test/misc/applicationContext-batch.xml");
+		applicationContext.registerShutdownHook();
 		applicationContext.start();
 		try {
 			applicationContext.getBean(AirplayRecordMigratorPerformanceTest.class).benchmark();
@@ -52,22 +52,20 @@ public class AirplayRecordMigratorPerformanceTest {
 		logger.info(song.toString());
 
 		StopWatch stopWatch = new StopWatch();
+
 		stopWatch.start("Find Chart Positions");
-		for (int i = 0; i <= 100; i++) {
-			chartService.findChartPositions(chart, song);
-		}
+		chartService.findChartPositions(chart, song);
 		stopWatch.stop();
+
 		stopWatch.start("Find Song Broadcasts");
-		for (int i = 0; i <= 100; i++) {
-			stationService.findBroadcasts(song);
-		}
+		stationService.findBroadcasts(song);
 		stopWatch.stop();
+
 		stopWatch.start("Find Song Broadcasts and fetch Stations");
-		for (int i = 0; i <= 100; i++) {
-			List<SongBroadcast> broadcasts = stationService.findBroadcasts(song);
-			for (SongBroadcast broadcast : broadcasts) {
-				stationService.fetch(broadcast.getStation());
-			}
+		for (SongBroadcast broadcast : stationService.findBroadcasts(song)) {
+			stationService.fetch(broadcast.getStation());
+			stationService.fetch(broadcast.getBroadcastedSong());
+			stationService.fetch(broadcast.getBroadcastedSong().getArtist());
 		}
 		stopWatch.stop();
 
