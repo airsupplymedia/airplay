@@ -30,6 +30,11 @@ public class ChartService extends Neo4jServiceSupport {
 	@Autowired
 	private ChartStateRepository chartStateRepository;
 
+	private void createDefaultCharts() {
+		save(new Chart("Airplay Charts"));
+		save(new Chart("Sales Charts"));
+	}
+
 	public List<ChartPosition> findChartPositions(Chart chart, Date date) {
 		Assert.notNull(chart);
 		Assert.notNull(date);
@@ -51,7 +56,11 @@ public class ChartService extends Neo4jServiceSupport {
 	}
 
 	public List<Chart> getCharts() {
-		return CollectionUtils.asList(chartRepository.findAll());
+		List<Chart> charts = CollectionUtils.asList(chartRepository.findAll());
+		if (charts.isEmpty()) {
+			createDefaultCharts();
+		}
+		return charts;
 	}
 
 	public long getChartStateCount() {

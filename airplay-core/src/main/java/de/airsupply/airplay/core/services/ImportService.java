@@ -20,6 +20,7 @@ import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.core.model.ChartState;
 import de.airsupply.airplay.core.model.PersistentNode;
 import de.airsupply.airplay.core.model.RecordImport;
+import de.airsupply.airplay.core.model.util.RecordImportProgressProvider;
 import de.airsupply.commons.core.neo4j.Neo4jServiceSupport;
 import de.airsupply.commons.core.util.CollectionUtils;
 import de.airsupply.commons.core.util.CollectionUtils.Filter;
@@ -74,9 +75,11 @@ public class ImportService extends Neo4jServiceSupport {
 	}
 
 	@Transactional
-	public RecordImport importRecords(Chart chart, Date week, InputStream inputStream) {
-		RecordImport recordImport = prepareImport(chart, week, inputStream);
-		return commitImport(recordImport);
+	public RecordImport importRecords(Chart chart, Date week, InputStream inputStream,
+			RecordImportProgressProvider progressProvider) {
+		RecordImport recordImport = commitImport(prepareImport(chart, week, inputStream, progressProvider));
+		progressProvider.imported(recordImport);
+		return recordImport;
 	}
 
 	private boolean mayRevertImport(PersistentNode persistentNode, RecordImport recordImport) {
@@ -92,7 +95,8 @@ public class ImportService extends Neo4jServiceSupport {
 		return referencerIdentifiers.isEmpty();
 	}
 
-	private RecordImport prepareImport(Chart chart, Date week, InputStream inputStream) {
+	private RecordImport prepareImport(Chart chart, Date week, InputStream inputStream,
+			RecordImportProgressProvider progressProvider) {
 		Assert.notNull(chart);
 		Assert.notNull(week);
 		Assert.notNull(inputStream);
@@ -105,7 +109,7 @@ public class ImportService extends Neo4jServiceSupport {
 				+ " has been performed before!");
 
 		ChartState chartState = chartService.save(new ChartState(chart, week));
-		importer.processRecords(inputStream, chartState, recordImport);
+		importer.processRecords(inputStream, chartState, recordImport, progressProvider);
 
 		return recordImport;
 	}

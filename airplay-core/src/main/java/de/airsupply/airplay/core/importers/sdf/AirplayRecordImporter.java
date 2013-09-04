@@ -3,10 +3,10 @@ package de.airsupply.airplay.core.importers.sdf;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.text.StrTokenizer;
 import org.slf4j.Logger;
@@ -24,6 +24,7 @@ import de.airsupply.airplay.core.model.RecordImport;
 import de.airsupply.airplay.core.model.Song;
 import de.airsupply.airplay.core.model.SongBroadcast;
 import de.airsupply.airplay.core.model.Station;
+import de.airsupply.airplay.core.model.util.RecordImportProgressProvider;
 import de.airsupply.airplay.core.services.ContentService;
 import de.airsupply.commons.core.context.Loggable;
 
@@ -49,7 +50,7 @@ public class AirplayRecordImporter {
 	private ContentService contentService;
 
 	private void processAirplayRecord(RecordImport recordImport, ChartState chartState, List<String> stationNames,
-			StrTokenizer tokenizer) {
+			StrTokenizer tokenizer, RecordImportProgressProvider progressProvider) {
 
 		String[] tokens = tokenizer.getTokenArray();
 		String artistName = tokens[56].trim();
@@ -75,14 +76,16 @@ public class AirplayRecordImporter {
 
 			int broadcastCount = Integer.valueOf(tokens[i + 62].trim()).intValue();
 			if (broadcastCount > 0) {
-				SongBroadcast songBroadcast = new SongBroadcast(station, song, recordImport.getWeekDate(),
-						broadcastCount);
-				recordImport.importBroadcast(contentService.save(songBroadcast));
+				SongBroadcast songBroadcast = contentService.save(new SongBroadcast(station, song, recordImport
+						.getWeekDate(), broadcastCount));
+				recordImport.importBroadcast(songBroadcast);
+				progressProvider.imported(songBroadcast);
 			}
 		}
-		ChartPosition chartPosition = new ChartPosition(chartState, song, Integer.valueOf(airplayChartPosition)
-				.intValue());
-		recordImport.importChartPosition(contentService.save(chartPosition));
+		ChartPosition chartPosition = contentService.save(new ChartPosition(chartState, song, Integer.valueOf(
+				airplayChartPosition).intValue()));
+		recordImport.importChartPosition(chartPosition);
+		progressProvider.imported(chartPosition);
 	}
 
 	private void processAirplayRecordHeader(List<String> stationNames, StrTokenizer tokenizer) {
@@ -94,24 +97,28 @@ public class AirplayRecordImporter {
 		}
 	}
 
-	public void processRecords(InputStream inputStream, ChartState chartState, RecordImport recordImport) {
+	public void processRecords(InputStream inputStream, ChartState chartState, RecordImport recordImport,
+			RecordImportProgressProvider progressProvider) {
 		Assert.notNull(inputStream);
 		Assert.notNull(chartState);
 		Assert.notNull(recordImport);
+		Assert.notNull(progressProvider);
 
+		progressProvider.reset();
 		logger.info("Running import for week: " + recordImport.getWeekDate());
 
 		BufferedReader reader = null;
 		try {
 			final List<String> stationNames = new ArrayList<>();
+			List<String> lines = IOUtils.readLines(inputStream);
+			IOUtils.closeQuietly(inputStream);
 
-			reader = new BufferedReader(new InputStreamReader(inputStream));
+			progressProvider.setNumberOfRecords(lines.size() - 1);
+
 			boolean firstLine = true;
 			String separator = null;
 			StrTokenizer tokenizer = StrTokenizer.getCSVInstance();
-
-			while (reader.ready()) {
-				String line = reader.readLine();
+			for (String line : lines) {
 				if (separator == null) {
 					separator = identifySeparator(line);
 				}
@@ -121,7 +128,8 @@ public class AirplayRecordImporter {
 					processAirplayRecordHeader(stationNames, tokenizer);
 					firstLine = false;
 				} else {
-					processAirplayRecord(recordImport, chartState, stationNames, tokenizer);
+					processAirplayRecord(recordImport, chartState, stationNames, tokenizer, progressProvider);
+					progressProvider.incrementIndex();
 				}
 			}
 			recordImport.importChartState(chartState);
