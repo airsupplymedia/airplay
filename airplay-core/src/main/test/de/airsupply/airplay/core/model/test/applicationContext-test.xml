@@ -19,7 +19,7 @@
 		<constructor-arg index="0" value="C:/Development/Storage/Neo4j/config-test" />
 		<constructor-arg index="1">
 			<map>
-				<entry key="keep_logical_logs" value="7 days" />
+				<entry key="keep_logical_logs" value="0 days" />
 			</map>
 		</constructor-arg>
 	</bean>
