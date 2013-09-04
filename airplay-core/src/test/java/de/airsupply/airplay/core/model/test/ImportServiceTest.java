@@ -55,7 +55,7 @@ public class ImportServiceTest {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 
 		Date week = DateUtils.getStartOfWeek(new Date());
-		InputStream inputStream = getClass().getResourceAsStream("COMMON_AIRPLAY_SET.SDF");
+		InputStream inputStream = getClass().getResourceAsStream("/COMMON_AIRPLAY_SET.SDF");
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
@@ -93,7 +93,7 @@ public class ImportServiceTest {
 	public void testRepeatedImport() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		InputStream inputStream = getClass().getResourceAsStream("INTEGRITY_CHECK_AIRPLAY_SET.SDF");
+		InputStream inputStream = getClass().getResourceAsStream("/INTEGRITY_CHECK_AIRPLAY_SET.SDF");
 
 		importService.importRecords(chart, week, inputStream, progressProvider);
 		importService.importRecords(chart, week, inputStream, progressProvider);
@@ -103,7 +103,7 @@ public class ImportServiceTest {
 	public void testRevertedImport() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		InputStream inputStream = getClass().getResourceAsStream("COMMON_AIRPLAY_SET.SDF");
+		InputStream inputStream = getClass().getResourceAsStream("/COMMON_AIRPLAY_SET.SDF");
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
@@ -148,7 +148,7 @@ public class ImportServiceTest {
 	public void testRevertedImportWithDependencies() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		InputStream inputStream = getClass().getResourceAsStream("INTEGRITY_CHECK_AIRPLAY_SET.SDF");
+		InputStream inputStream = getClass().getResourceAsStream("/INTEGRITY_CHECK_AIRPLAY_SET.SDF");
 
 		importService.importRecords(chart, week, inputStream, progressProvider);
 
