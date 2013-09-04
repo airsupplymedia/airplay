@@ -15,8 +15,12 @@ public interface UploadProgressProvider {
 
 	public void process(StartedEvent event, String message);
 
+	public void process(String message, int ticks);
+
 	public void process(String message, long readBytes, long contentLength);
 
 	public void process(SucceededEvent event, String message);
+
+	public void reset(int count);
 
 }

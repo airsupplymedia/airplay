@@ -1,5 +1,7 @@
 package de.airsupply.airplay.web.ui.components;
 
+import java.io.OutputStream;
+
 import org.springframework.util.Assert;
 
 import com.vaadin.ui.Button;
@@ -8,7 +10,7 @@ import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
-import com.vaadin.ui.ProgressIndicator;
+import com.vaadin.ui.ProgressBar;
 import com.vaadin.ui.Upload;
 import com.vaadin.ui.Upload.FailedEvent;
 import com.vaadin.ui.Upload.FinishedEvent;
@@ -18,7 +20,7 @@ import com.vaadin.ui.Upload.SucceededEvent;
 import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
-public class UploadComponent extends VerticalLayout implements UploadProgressProvider {
+public class UploadComponent extends VerticalLayout implements Receiver, UploadProgressProvider {
 
 	public static abstract class UploadContext implements Receiver {
 
@@ -108,9 +110,21 @@ public class UploadComponent extends VerticalLayout implements UploadProgressPro
 			}
 		}
 
+		public void process(String message, int ticks) {
+			if (progressProvider != null) {
+				progressProvider.process(message, ticks);
+			}
+		}
+
 		protected void process(SucceededEvent event) {
 			if (progressProvider != null) {
 				progressProvider.process(event, "Uploaded: " + event.getFilename());
+			}
+		}
+
+		public void reset(int count) {
+			if (progressProvider != null) {
+				progressProvider.reset(count);
 			}
 		}
 
@@ -124,7 +138,9 @@ public class UploadComponent extends VerticalLayout implements UploadProgressPro
 
 	private final UploadContext context;
 
-	private ProgressIndicator progressIndicator;
+	private int count;
+
+	private ProgressBar progressBar;
 
 	private Label state;
 
@@ -158,9 +174,9 @@ public class UploadComponent extends VerticalLayout implements UploadProgressPro
 		HorizontalLayout stateLayout = new HorizontalLayout();
 		stateLayout.setSpacing(true);
 
-		upload = new Upload(null, context);
+		upload = new Upload("Upload File", context);
 		upload.setImmediate(true);
-		upload.setButtonCaption("Upload File");
+		upload.setEnabled(true);
 
 		cancelProcessing = new Button("Cancel");
 		cancelProcessing.setVisible(false);
@@ -175,32 +191,22 @@ public class UploadComponent extends VerticalLayout implements UploadProgressPro
 
 		state = new Label("Idle");
 
-		progressIndicator = new ProgressIndicator();
-		progressIndicator.setVisible(false);
+		progressBar = new ProgressBar();
+		progressBar.setVisible(false);
 
 		textualProgress = new Label();
 		textualProgress.setVisible(false);
 
-		if (context.getStartedListener() != null) {
-			upload.addStartedListener(context.getStartedListener());
-		}
-		if (context.getProgressListener() != null) {
-			upload.addProgressListener(context.getProgressListener());
-		}
-		if (context.getSucceededListener() != null) {
-			upload.addSucceededListener(context.getSucceededListener());
-		}
-		if (context.getFailedListener() != null) {
-			upload.addFailedListener(context.getFailedListener());
-		}
-		if (context.getFinishedListener() != null) {
-			upload.addFinishedListener(context.getFinishedListener());
-		}
+		upload.addStartedListener(context.getStartedListener());
+		upload.addProgressListener(context.getProgressListener());
+		upload.addSucceededListener(context.getSucceededListener());
+		upload.addFailedListener(context.getFailedListener());
+		upload.addFinishedListener(context.getFinishedListener());
 
 		stateLayout.addComponent(state);
 		stateLayout.addComponent(cancelProcessing);
 		formLayout.addComponent(stateLayout);
-		formLayout.addComponent(progressIndicator);
+		formLayout.addComponent(progressBar);
 		formLayout.addComponent(textualProgress);
 
 		statusPanel.setContent(formLayout);
@@ -216,7 +222,7 @@ public class UploadComponent extends VerticalLayout implements UploadProgressPro
 
 	@Override
 	public void process(FinishedEvent event, String message) {
-		progressIndicator.setVisible(false);
+		progressBar.setVisible(false);
 		textualProgress.setVisible(false);
 		cancelProcessing.setVisible(false);
 	}
@@ -225,22 +231,45 @@ public class UploadComponent extends VerticalLayout implements UploadProgressPro
 	public void process(StartedEvent event, String message) {
 		statusPanel.setVisible(true);
 		state.setValue(message);
-		progressIndicator.setValue(Float.valueOf(0f));
-		progressIndicator.setVisible(true);
-		progressIndicator.setPollingInterval(500);
+		progressBar.setValue(Float.valueOf(0f));
+		progressBar.setVisible(true);
 		textualProgress.setVisible(true);
 		cancelProcessing.setVisible(true);
 	}
 
 	@Override
+	public void process(String message, int ticks) {
+		float newValue = (float) (progressBar.getValue().intValue() + ticks);
+		progressBar.setValue(Float.valueOf(count / newValue));
+		textualProgress.setValue(message);
+	}
+
+	@Override
 	public void process(String message, long readBytes, long contentLength) {
-		progressIndicator.setValue(new Float(readBytes / (float) contentLength));
+		progressBar.setValue(Float.valueOf(readBytes / (float) contentLength));
 		textualProgress.setValue(message);
 	}
 
 	@Override
 	public void process(SucceededEvent event, String message) {
 		state.setValue(message);
+	}
+
+	@Override
+	public void reset(int count) {
+		this.count = count;
+		progressBar.setValue(Float.valueOf(0f));
+	}
+
+	@Override
+	public void setEnabled(boolean enabled) {
+		super.setEnabled(enabled);
+		upload.setEnabled(enabled);
+	}
+
+	@Override
+	public OutputStream receiveUpload(String filename, String mimeType) {
+		return null;
 	}
 
 }

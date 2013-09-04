@@ -21,6 +21,7 @@ import de.airsupply.airplay.core.model.Publisher;
 import de.airsupply.airplay.core.model.RecordCompany;
 import de.airsupply.airplay.core.model.RecordImport;
 import de.airsupply.airplay.core.model.Song;
+import de.airsupply.airplay.core.model.util.LoggingRecordImportProgressProvider;
 import de.airsupply.airplay.core.services.ChartService;
 import de.airsupply.airplay.core.services.ContentService;
 import de.airsupply.airplay.core.services.ImportService;
@@ -46,6 +47,9 @@ public class ImportServiceTest {
 	@Autowired
 	private StationService stationService;
 
+	@Autowired
+	private LoggingRecordImportProgressProvider progressProvider;
+
 	@Test
 	public void testInitialImport() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
@@ -55,7 +59,7 @@ public class ImportServiceTest {
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
-		importService.importRecords(chart, week, inputStream);
+		importService.importRecords(chart, week, inputStream, progressProvider);
 		stopWatch.stop();
 		log.info("Import took: " + stopWatch.prettyPrint());
 
@@ -91,8 +95,8 @@ public class ImportServiceTest {
 		Date week = DateUtils.getStartOfWeek(new Date());
 		InputStream inputStream = getClass().getResourceAsStream("INTEGRITY_CHECK_AIRPLAY_SET.SDF");
 
-		importService.importRecords(chart, week, inputStream);
-		importService.importRecords(chart, week, inputStream);
+		importService.importRecords(chart, week, inputStream, progressProvider);
+		importService.importRecords(chart, week, inputStream, progressProvider);
 	}
 
 	@Test
@@ -103,7 +107,7 @@ public class ImportServiceTest {
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
-		importService.importRecords(chart, week, inputStream);
+		importService.importRecords(chart, week, inputStream, progressProvider);
 		stopWatch.stop();
 		log.info("Import took: " + stopWatch.prettyPrint());
 
@@ -146,7 +150,7 @@ public class ImportServiceTest {
 		Date week = DateUtils.getStartOfWeek(new Date());
 		InputStream inputStream = getClass().getResourceAsStream("INTEGRITY_CHECK_AIRPLAY_SET.SDF");
 
-		importService.importRecords(chart, week, inputStream);
+		importService.importRecords(chart, week, inputStream, progressProvider);
 
 		Artist importedArtist = contentService.getArtists().get(0);
 		RecordCompany importedRecordCompany = contentService.getRecordCompanies().get(0);

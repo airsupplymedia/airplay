@@ -2,13 +2,13 @@ package de.airsupply.airplay.web.ui.views;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Date;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -31,9 +31,12 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 
 import de.airsupply.airplay.core.model.Chart;
+import de.airsupply.airplay.core.model.ChartPosition;
 import de.airsupply.airplay.core.model.RecordImport;
+import de.airsupply.airplay.core.model.util.RecordImportProgressProvider;
 import de.airsupply.airplay.core.services.ImportService;
 import de.airsupply.airplay.web.ui.components.ChartSelectorComponent;
+import de.airsupply.airplay.web.ui.components.ChartSelectorComponent.ChartSelectorListener;
 import de.airsupply.airplay.web.ui.components.ContentPanel;
 import de.airsupply.airplay.web.ui.components.UploadComponent;
 import de.airsupply.airplay.web.ui.components.UploadComponent.UploadContext;
@@ -48,7 +51,43 @@ import de.airsupply.commons.core.context.Loggable;
 @SuppressWarnings("serial")
 public class RecordImportView extends ContentPanel implements View {
 
-	public static final String NAME = "recordImportView";
+	private final class RecordImportActionHandler implements Handler {
+
+		private final Action deleteAction;
+
+		private final Action reportAction;
+
+		private RecordImportActionHandler() {
+			this.deleteAction = new Action("Delete");
+			this.reportAction = new Action("Open Report");
+		}
+
+		@Override
+		public Action[] getActions(Object target, Object sender) {
+			return new Action[] { reportAction, deleteAction };
+		}
+
+		@Override
+		public void handleAction(Action action, Object sender, Object target) {
+			if (deleteAction == action) {
+				Tree tree = new Tree();
+				tree.setContainerDataSource(recordImportCategoryContainer);
+				tree.setSizeFull();
+				RecordImport recordImport = recordImportContainer.getItem(target).getBean();
+				recordImportCategoryContainer.update(recordImport);
+
+				VerticalLayout layout = new VerticalLayout();
+				layout.addComponent(tree);
+
+				Window window = new Window();
+				window.setHeight("50%");
+				window.setWidth("50%");
+				window.setContent(layout);
+
+				getUI().addWindow(window);
+			}
+		}
+	}
 
 	@Configurable
 	private final class RecordImportUploadContext extends UploadContext {
@@ -64,34 +103,53 @@ public class RecordImportView extends ContentPanel implements View {
 		@Override
 		protected void process(SucceededEvent event) {
 			super.process(event);
-
+			final UploadContext uploadContext = this;
 			if (file != null) {
-				try {
-					Chart chart = chartSelectorComponent.getSelectedChart();
-					Date date = chartSelectorComponent.getSelectedDate();
-					importService.importRecords(chart, date, new FileInputStream(file));
-				} catch (Exception exception) {
-					logger.error("Error during migration", exception);
-					Notification.show("Migration was not successful",
-							"Please consult your system administrator for further details", Type.ERROR_MESSAGE);
-					throw new RuntimeException(exception);
-				}
+				new Thread() {
+
+					public void run() {
+						try {
+							Chart chart = chartSelectorComponent.getSelectedChart();
+							Date date = chartSelectorComponent.getSelectedDate();
+							importService.importRecords(chart, date, new FileInputStream(file),
+									new RecordImportProgressProvider() {
+
+										@Override
+										public void imported(ChartPosition chartPosition) {
+											uploadContext.process("Imported Record: " + getCurrentIndex() + " of "
+													+ getNumberOfRecords(), getCurrentIndex());
+										}
+
+										@Override
+										protected void numberOfRecordsChanged(int numberOfRecords) {
+											uploadContext.reset(numberOfRecords);
+										}
+
+										@Override
+										protected void indexChanged(int currentIndex) {
+
+										}
+
+									});
+						} catch (Exception exception) {
+							logger.error("Error during migration", exception);
+							Notification.show("Migration was not successful", exception.getMessage(),
+									Type.ERROR_MESSAGE);
+							throw new RuntimeException(exception);
+						}
+					};
+
+				}.start();
+
 			}
 		}
 
 		@Override
 		public OutputStream receiveUpload(String filename, String mimeType) {
 			try {
-				file = File.createTempFile("ri_" + filename, "am");
+				file = File.createTempFile("ri_" + filename, "asm");
 				file.deleteOnExit();
-				return new FileOutputStream(file) {
-
-					public void close() throws IOException {
-						super.close();
-						// file.delete();
-					};
-
-				};
+				return FileUtils.openOutputStream(file);
 			} catch (IOException exception) {
 				logger.error("Error during upload", exception);
 				getProgressProvider().cancel();
@@ -100,10 +158,16 @@ public class RecordImportView extends ContentPanel implements View {
 				throw new RuntimeException(exception);
 			}
 		}
+
 	}
+
+	public static final String NAME = "recordImportView";
 
 	@Autowired
 	private ChartSelectorComponent chartSelectorComponent;
+
+	@Autowired
+	private RecordImportCategoryContainer recordImportCategoryContainer;
 
 	@Autowired
 	private RecordImportContainer recordImportContainer;
@@ -112,16 +176,11 @@ public class RecordImportView extends ContentPanel implements View {
 	public void enter(ViewChangeEvent event) {
 	}
 
-	@Autowired
-	private RecordImportCategoryContainer recordImportCategoryContainer;
-
 	@Override
 	@PostConstruct
 	protected void init() {
-		UploadComponent uploadComponent = new UploadComponent(new RecordImportUploadContext());
-
-		final Action deleteAction = new Action("Delete");
-		final Action reportAction = new Action("Open Report");
+		final UploadComponent uploadComponent = new UploadComponent(new RecordImportUploadContext());
+		uploadComponent.setEnabled(false);
 
 		final Table table = new Table("Record Imports");
 		table.setSizeFull();
@@ -131,37 +190,16 @@ public class RecordImportView extends ContentPanel implements View {
 		table.setSelectable(true);
 		table.setImmediate(true);
 		table.addGeneratedColumn("weekDate", new WeekOfYearColumnGenerator());
-		table.addActionHandler(new Handler() {
+		table.addActionHandler(new RecordImportActionHandler());
+		recordImportContainer.update();
+		chartSelectorComponent.addListener(new ChartSelectorListener() {
 
 			@Override
-			public Action[] getActions(Object target, Object sender) {
-				return new Action[] { reportAction, deleteAction };
-			}
-
-			@Override
-			public void handleAction(Action action, Object sender, Object target) {
-				if (deleteAction == action) {
-					Tree tree = new Tree();
-					tree.setContainerDataSource(recordImportCategoryContainer);
-					tree.setSizeFull();
-					RecordImport recordImport = recordImportContainer.getItem(target).getBean();
-					recordImportCategoryContainer.update(recordImport);
-
-					VerticalLayout layout = new VerticalLayout();
-					layout.addComponent(tree);
-
-					Window window = new Window();
-					window.setHeight("50%");
-					window.setWidth("50%");
-					window.setContent(layout);
-
-					getUI().addWindow(window);
-				}
+			public void valueChange(Chart selectedChart, Date selectedDate) {
+				uploadComponent.setEnabled(true);
 			}
 
 		});
-
-		recordImportContainer.update();
 
 		VerticalLayout importLayout = new VerticalLayout();
 		addComponent(chartSelectorComponent);

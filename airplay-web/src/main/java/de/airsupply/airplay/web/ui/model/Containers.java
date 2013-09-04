@@ -70,7 +70,7 @@ public class Containers implements Serializable {
 			return item;
 		}
 
-		public String[] getPropertyIds() {
+		public Object[] getPropertyIds() {
 			if (propertyIds == null) {
 				propertyIds = new String[] {};
 			}
