@@ -23,7 +23,7 @@ public class AirplayRecordMigratorPerformanceTest {
 
 	public static void main(String[] args) {
 		AbstractApplicationContext applicationContext = new ClassPathXmlApplicationContext(
-				"classpath*:de/airsupply/airplay/core/model/test/misc/applicationContext-batch.xml");
+				"classpath*:/applicationContext-batch.xml");
 		applicationContext.registerShutdownHook();
 		applicationContext.start();
 		try {

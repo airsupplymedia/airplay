@@ -11,8 +11,8 @@
 	http://www.springframework.org/schema/data/neo4j
     http://www.springframework.org/schema/data/neo4j/spring-neo4j-2.1.xsd">
 
-	<bean class="de.airsupply.commons.core.context.LoggerBeanFactoryPostProcessor" />
 	<context:annotation-config />
+	<bean id="loggerBeanFactoryPostProcessor" class="de.airsupply.commons.core.context.LoggerBeanFactoryPostProcessor" />
 	<tx:annotation-driven mode="aspectj" transaction-manager="neo4jTransactionManager" />
 	<neo4j:config graphDatabaseService="graphDatabaseService" />
 
