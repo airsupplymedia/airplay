@@ -31,6 +31,11 @@
 		<developerConnection>scm:git:ssh://git@bitbucket.org:airsupply/airplay.git</developerConnection>
 	</scm>
 
+	<ciManagement>
+		<system>jenkins</system>
+		<url>https://airsupply.ci.cloudbees.com/job/airplay/</url>
+	</ciManagement>
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<aspectj-version>1.7.2</aspectj-version>
