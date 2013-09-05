@@ -7,10 +7,9 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Date;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -28,6 +27,7 @@ import de.airsupply.airplay.core.services.ChartService;
 import de.airsupply.airplay.core.services.ContentService;
 import de.airsupply.airplay.core.services.ImportService;
 import de.airsupply.airplay.core.services.StationService;
+import de.airsupply.commons.core.context.Loggable;
 import de.airsupply.commons.core.util.DateUtils;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -44,7 +44,8 @@ public class ImportServiceTest {
 	@Autowired
 	private ImportService importService;
 
-	private final Log log = LogFactory.getLog(getClass());
+	@Loggable
+	private Logger logger;
 
 	@Autowired
 	private LoggingRecordImportProgressProvider progressProvider;
@@ -57,15 +58,15 @@ public class ImportServiceTest {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
 		URL url = getClass().getResource("/COMMON_AIRPLAY_SET.SDF");
-		log.info("Using file: " + url.toString());
+		logger.info("Using file: " + url.toString());
 		try (InputStream inputStream = url.openStream()) {
 			StopWatch stopWatch = new StopWatch();
 			stopWatch.start();
 			importService.importRecords(chart, week, inputStream, progressProvider);
 			stopWatch.stop();
-			log.info("Import took: " + stopWatch.prettyPrint());
+			logger.info("Import took: " + stopWatch.prettyPrint());
 		} catch (IOException exception) {
-			log.error(exception.getMessage(), exception);
+			logger.error(exception.getMessage(), exception);
 		}
 		assertEquals(1, chartService.getChartCount());
 		assertEquals(1, chartService.getChartStateCount());
@@ -97,12 +98,12 @@ public class ImportServiceTest {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
 		URL url = getClass().getResource("/INTEGRITY_CHECK_AIRPLAY_SET.SDF");
-		log.info("Using file: " + url.toString());
+		logger.info("Using file: " + url.toString());
 		try (InputStream inputStream = url.openStream()) {
 			importService.importRecords(chart, week, inputStream, progressProvider);
 			importService.importRecords(chart, week, inputStream, progressProvider);
 		} catch (IOException exception) {
-			log.error(exception.getMessage(), exception);
+			logger.error(exception.getMessage(), exception);
 		}
 	}
 
@@ -112,14 +113,14 @@ public class ImportServiceTest {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
 		URL url = getClass().getResource("/COMMON_AIRPLAY_SET.SDF");
-		log.info("Using file: " + url.toString());
+		logger.info("Using file: " + url.toString());
 		try (InputStream inputStream = url.openStream()) {
 			stopWatch.start();
 			importService.importRecords(chart, week, inputStream, progressProvider);
 			stopWatch.stop();
-			log.info("Import took: " + stopWatch.prettyPrint());
+			logger.info("Import took: " + stopWatch.prettyPrint());
 		} catch (IOException exception) {
-			log.error(exception.getMessage(), exception);
+			logger.error(exception.getMessage(), exception);
 		}
 
 		RecordImport recordImport = importService.getRecordImports().get(0);
@@ -139,7 +140,7 @@ public class ImportServiceTest {
 		stopWatch.start();
 		importService.revertImport(recordImport);
 		stopWatch.stop();
-		log.info("Reverting took: " + stopWatch.prettyPrint());
+		logger.info("Reverting took: " + stopWatch.prettyPrint());
 
 		assertEquals(1, chartService.getChartCount());
 		assertEquals(0, chartService.getChartStateCount());
@@ -160,11 +161,11 @@ public class ImportServiceTest {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
 		URL url = getClass().getResource("/INTEGRITY_CHECK_AIRPLAY_SET.SDF");
-		log.info("Using file: " + url.toString());
+		logger.info("Using file: " + url.toString());
 		try (InputStream inputStream = url.openStream()) {
 			importService.importRecords(chart, week, inputStream, progressProvider);
 		} catch (IOException exception) {
-			log.error(exception.getMessage(), exception);
+			logger.error(exception.getMessage(), exception);
 		}
 
 		Artist importedArtist = contentService.getArtists().get(0);

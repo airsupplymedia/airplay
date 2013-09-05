@@ -7,12 +7,12 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class ValidationUtils {
 
-	private static final Log LOG = LogFactory.getLog(ValidationUtils.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ValidationUtils.class);
 
 	public static <T> void validate(Validator validator, T object, Class<?>... groups) {
 		Set<ConstraintViolation<T>> results = validator.validate(object, groups);
@@ -20,7 +20,7 @@ public abstract class ValidationUtils {
 			Set<ConstraintViolation<?>> violations = new HashSet<>();
 			for (ConstraintViolation<T> violation : results) {
 				violations.add(violation);
-				LOG.error(violation);
+				LOGGER.error(violation.toString());
 			}
 			throw new ConstraintViolationException(violations);
 		}
