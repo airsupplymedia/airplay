@@ -1,26 +1,21 @@
 package de.airsupply.airplay.web.ui.components;
 
-import com.vaadin.ui.Upload.FailedEvent;
+import com.vaadin.ui.Upload.FailedListener;
 import com.vaadin.ui.Upload.FinishedEvent;
-import com.vaadin.ui.Upload.StartedEvent;
-import com.vaadin.ui.Upload.SucceededEvent;
+import com.vaadin.ui.Upload.FinishedListener;
+import com.vaadin.ui.Upload.ProgressListener;
+import com.vaadin.ui.Upload.StartedListener;
+import com.vaadin.ui.Upload.SucceededListener;
 
-public interface UploadProgressProvider {
+public interface UploadProgressProvider extends FailedListener, FinishedListener, ProgressListener, StartedListener,
+		SucceededListener {
 
-	public void cancel();
+	void cancel();
 
-	public void process(FailedEvent event, String message);
+	void process(FinishedEvent event);
 
-	public void process(FinishedEvent event, String message);
+	void reportProgress(String message, int ticks);
 
-	public void process(StartedEvent event, String message);
-
-	public void process(String message, int ticks);
-
-	public void process(String message, long readBytes, long contentLength);
-
-	public void process(SucceededEvent event, String message);
-
-	public void reset(int count);
+	void setCount(int count);
 
 }

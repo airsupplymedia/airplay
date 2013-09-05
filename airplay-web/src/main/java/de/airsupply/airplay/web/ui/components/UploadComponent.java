@@ -1,7 +1,5 @@
 package de.airsupply.airplay.web.ui.components;
 
-import java.io.OutputStream;
-
 import org.springframework.util.Assert;
 
 import com.vaadin.ui.Button;
@@ -19,124 +17,26 @@ import com.vaadin.ui.Upload.StartedEvent;
 import com.vaadin.ui.Upload.SucceededEvent;
 import com.vaadin.ui.VerticalLayout;
 
-@SuppressWarnings("serial")
-public class UploadComponent extends VerticalLayout implements Receiver, UploadProgressProvider {
+import de.airsupply.airplay.web.ui.components.UploadComponent.UploadContext;
 
-	public static abstract class UploadContext implements Receiver {
+@SuppressWarnings("serial")
+public class UploadComponent<C extends UploadContext> extends VerticalLayout implements UploadProgressProvider {
+
+	public abstract static class UploadContext implements Receiver {
 
 		private UploadProgressProvider progressProvider;
 
-		public final Upload.FailedListener getFailedListener() {
-			return new Upload.FailedListener() {
-
-				@Override
-				public void uploadFailed(FailedEvent event) {
-					process(event);
-				}
-
-			};
-		}
-
-		public final Upload.FinishedListener getFinishedListener() {
-			return new Upload.FinishedListener() {
-
-				@Override
-				public void uploadFinished(FinishedEvent event) {
-					process(event);
-				}
-
-			};
-		}
-
-		public final Upload.ProgressListener getProgressListener() {
-			return new Upload.ProgressListener() {
-
-				@Override
-				public void updateProgress(long readBytes, long contentLength) {
-					process(readBytes, contentLength);
-				}
-
-			};
-		}
-
-		protected UploadProgressProvider getProgressProvider() {
+		public UploadProgressProvider getProgressProvider() {
 			return progressProvider;
 		}
 
-		public final Upload.StartedListener getStartedListener() {
-			return new Upload.StartedListener() {
-
-				@Override
-				public void uploadStarted(StartedEvent event) {
-					process(event);
-				}
-
-			};
-		}
-
-		public final Upload.SucceededListener getSucceededListener() {
-			return new Upload.SucceededListener() {
-
-				@Override
-				public void uploadSucceeded(SucceededEvent event) {
-					process(event);
-				}
-
-			};
-		}
-
-		protected void process(FailedEvent event) {
-			if (progressProvider != null) {
-				progressProvider.process(event, "Canceled upload of: " + event.getFilename());
-			}
-		}
-
-		protected void process(FinishedEvent event) {
-			if (progressProvider != null) {
-				progressProvider.process(event, "Uploaded: " + event.getFilename());
-			}
-		}
-
-		protected void process(long readBytes, long contentLength) {
-			if (progressProvider != null) {
-				progressProvider.process("Uploaded " + readBytes + " bytes of " + contentLength, readBytes,
-						contentLength);
-			}
-		}
-
-		protected void process(StartedEvent event) {
-			if (progressProvider != null) {
-				progressProvider.process(event, "Uploading: " + event.getFilename());
-			}
-		}
-
-		public void process(String message, int ticks) {
-			if (progressProvider != null) {
-				progressProvider.process(message, ticks);
-			}
-		}
-
-		protected void process(SucceededEvent event) {
-			if (progressProvider != null) {
-				progressProvider.process(event, "Uploaded: " + event.getFilename());
-			}
-		}
-
-		public void reset(int count) {
-			if (progressProvider != null) {
-				progressProvider.reset(count);
-			}
-		}
-
-		private void setProgressProvider(UploadProgressProvider progressProvider) {
+		public void setProgressProvider(UploadProgressProvider progressProvider) {
 			this.progressProvider = progressProvider;
 		}
 
 	}
 
 	private Button cancelProcessing;
-
-	private final UploadContext context;
 
 	private int count;
 
@@ -150,11 +50,13 @@ public class UploadComponent extends VerticalLayout implements Receiver, UploadP
 
 	private Upload upload;
 
-	public UploadComponent(UploadContext context) {
+	private C uploadContext;
+
+	public UploadComponent(C uploadContext) {
 		super();
-		Assert.notNull(context);
-		this.context = context;
-		context.setProgressProvider(this);
+		Assert.notNull(uploadContext);
+		uploadContext.setProgressProvider(this);
+		this.uploadContext = uploadContext;
 		setSpacing(true);
 		init();
 	}
@@ -162,6 +64,16 @@ public class UploadComponent extends VerticalLayout implements Receiver, UploadP
 	public void cancel() {
 		Assert.notNull(upload);
 		upload.interruptUpload();
+	}
+
+	private void finishUpload(FinishedEvent event) {
+		progressBar.setVisible(false);
+		textualProgress.setVisible(false);
+		cancelProcessing.setVisible(false);
+	}
+
+	public C getUploadContext() {
+		return uploadContext;
 	}
 
 	protected void init() {
@@ -174,7 +86,7 @@ public class UploadComponent extends VerticalLayout implements Receiver, UploadP
 		HorizontalLayout stateLayout = new HorizontalLayout();
 		stateLayout.setSpacing(true);
 
-		upload = new Upload("Upload File", context);
+		upload = new Upload("Upload File", uploadContext);
 		upload.setImmediate(true);
 		upload.setEnabled(true);
 
@@ -197,11 +109,11 @@ public class UploadComponent extends VerticalLayout implements Receiver, UploadP
 		textualProgress = new Label();
 		textualProgress.setVisible(false);
 
-		upload.addStartedListener(context.getStartedListener());
-		upload.addProgressListener(context.getProgressListener());
-		upload.addSucceededListener(context.getSucceededListener());
-		upload.addFailedListener(context.getFailedListener());
-		upload.addFinishedListener(context.getFinishedListener());
+		upload.addStartedListener(this);
+		upload.addProgressListener(this);
+		upload.addSucceededListener(this);
+		upload.addFailedListener(this);
+		upload.addFinishedListener(this);
 
 		stateLayout.addComponent(state);
 		stateLayout.addComponent(cancelProcessing);
@@ -215,48 +127,23 @@ public class UploadComponent extends VerticalLayout implements Receiver, UploadP
 		addComponent(statusPanel);
 	}
 
-	@Override
-	public void process(FailedEvent event, String message) {
-		state.setValue(message);
+	protected boolean isPostProcessing() {
+		return false;
 	}
 
 	@Override
-	public void process(FinishedEvent event, String message) {
-		progressBar.setVisible(false);
-		textualProgress.setVisible(false);
-		cancelProcessing.setVisible(false);
+	public void process(FinishedEvent event) {
 	}
 
 	@Override
-	public void process(StartedEvent event, String message) {
-		statusPanel.setVisible(true);
-		state.setValue(message);
-		progressBar.setValue(Float.valueOf(0f));
-		progressBar.setVisible(true);
-		textualProgress.setVisible(true);
-		cancelProcessing.setVisible(true);
-	}
-
-	@Override
-	public void process(String message, int ticks) {
+	public void reportProgress(String message, int ticks) {
 		float newValue = (float) (progressBar.getValue().intValue() + ticks);
 		progressBar.setValue(Float.valueOf(count / newValue));
 		textualProgress.setValue(message);
 	}
 
 	@Override
-	public void process(String message, long readBytes, long contentLength) {
-		progressBar.setValue(Float.valueOf(readBytes / (float) contentLength));
-		textualProgress.setValue(message);
-	}
-
-	@Override
-	public void process(SucceededEvent event, String message) {
-		state.setValue(message);
-	}
-
-	@Override
-	public void reset(int count) {
+	public void setCount(int count) {
 		this.count = count;
 		progressBar.setValue(Float.valueOf(0f));
 	}
@@ -267,9 +154,42 @@ public class UploadComponent extends VerticalLayout implements Receiver, UploadP
 		upload.setEnabled(enabled);
 	}
 
+	private void startUpload(StartedEvent event) {
+		statusPanel.setVisible(true);
+		state.setValue("Uploading: " + event.getFilename());
+		progressBar.setValue(Float.valueOf(0f));
+		progressBar.setVisible(true);
+		textualProgress.setVisible(true);
+		cancelProcessing.setVisible(true);
+	}
+
 	@Override
-	public OutputStream receiveUpload(String filename, String mimeType) {
-		return null;
+	public void updateProgress(long readBytes, long contentLength) {
+		progressBar.setValue(Float.valueOf(readBytes / (float) contentLength));
+		textualProgress.setValue("Uploaded " + readBytes + " bytes of " + contentLength);
+	}
+
+	@Override
+	public void uploadFailed(FailedEvent event) {
+		state.setValue("Canceled upload of: " + event.getFilename());
+	}
+
+	@Override
+	public void uploadFinished(FinishedEvent event) {
+		if (isPostProcessing()) {
+			process(event);
+		}
+		finishUpload(event);
+	}
+
+	@Override
+	public void uploadStarted(StartedEvent event) {
+		startUpload(event);
+	}
+
+	@Override
+	public void uploadSucceeded(SucceededEvent event) {
+		state.setValue("Uploaded: " + event.getFilename());
 	}
 
 }

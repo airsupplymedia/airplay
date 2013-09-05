@@ -26,7 +26,7 @@ import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Tree;
-import com.vaadin.ui.Upload.SucceededEvent;
+import com.vaadin.ui.Upload.FinishedEvent;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 
@@ -94,54 +94,15 @@ public class RecordImportView extends ContentPanel implements View {
 
 		private transient File file;
 
-		@Autowired
-		private transient ImportService importService;
-
 		@Loggable
 		private Logger logger;
 
-		@Override
-		protected void process(SucceededEvent event) {
-			super.process(event);
-			final UploadContext uploadContext = this;
-			if (file != null) {
-				new Thread() {
+		public File getFile() {
+			return file;
+		}
 
-					public void run() {
-						try {
-							Chart chart = chartSelectorComponent.getSelectedChart();
-							Date date = chartSelectorComponent.getSelectedDate();
-							importService.importRecords(chart, date, new FileInputStream(file),
-									new RecordImportProgressProvider() {
-
-										@Override
-										public void imported(ChartPosition chartPosition) {
-											uploadContext.process("Imported Record: " + getCurrentIndex() + " of "
-													+ getNumberOfRecords(), getCurrentIndex());
-										}
-
-										@Override
-										protected void numberOfRecordsChanged(int numberOfRecords) {
-											uploadContext.reset(numberOfRecords);
-										}
-
-										@Override
-										protected void indexChanged(int currentIndex) {
-
-										}
-
-									});
-						} catch (Exception exception) {
-							logger.error("Error during migration", exception);
-							Notification.show("Migration was not successful", exception.getMessage(),
-									Type.ERROR_MESSAGE);
-							throw new RuntimeException(exception);
-						}
-					};
-
-				}.start();
-
-			}
+		public Logger getLogger() {
+			return logger;
 		}
 
 		@Override
@@ -167,6 +128,9 @@ public class RecordImportView extends ContentPanel implements View {
 	private ChartSelectorComponent chartSelectorComponent;
 
 	@Autowired
+	private ImportService importService;
+
+	@Autowired
 	private RecordImportCategoryContainer recordImportCategoryContainer;
 
 	@Autowired
@@ -179,7 +143,58 @@ public class RecordImportView extends ContentPanel implements View {
 	@Override
 	@PostConstruct
 	protected void init() {
-		final UploadComponent uploadComponent = new UploadComponent(new RecordImportUploadContext());
+		final UploadComponent<RecordImportUploadContext> uploadComponent = new UploadComponent<RecordImportUploadContext>(
+				new RecordImportUploadContext()) {
+
+			@Override
+			protected boolean isPostProcessing() {
+				return true;
+			}
+
+			@Override
+			public void process(FinishedEvent event) {
+				if (getUploadContext().getFile() != null) {
+					new Thread() {
+
+						public void run() {
+							try {
+								Chart chart = chartSelectorComponent.getSelectedChart();
+								Date date = chartSelectorComponent.getSelectedDate();
+								importService.importRecords(chart, date, new FileInputStream(getUploadContext()
+										.getFile()), new RecordImportProgressProvider() {
+
+									@Override
+									public void imported(ChartPosition chartPosition) {
+										reportProgress("Imported Record: " + getCurrentIndex() + " of "
+												+ getNumberOfRecords(), getCurrentIndex());
+									}
+
+									@Override
+									protected void indexChanged(int currentIndex) {
+										// TODO Auto-generated method stub
+
+									}
+
+									@Override
+									protected void numberOfRecordsChanged(int numberOfRecords) {
+										setCount(numberOfRecords);
+									}
+
+								});
+							} catch (Exception exception) {
+								getUploadContext().getLogger().error("Error during migration", exception);
+								Notification.show("Migration was not successful", exception.getMessage(),
+										Type.ERROR_MESSAGE);
+								throw new RuntimeException(exception);
+							}
+						};
+
+					}.start();
+
+				}
+			}
+
+		};
 		uploadComponent.setEnabled(false);
 
 		final Table table = new Table("Record Imports");
