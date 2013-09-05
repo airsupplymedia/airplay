@@ -57,7 +57,7 @@ public class ImportServiceTest {
 	public void testInitialImport() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		URL url = getClass().getResource("/COMMON_AIRPLAY_SET.SDF");
+		URL url = getClass().getResource("/COMMON_AIRPLAY_SET.sdf");
 		logger.info("Using file: " + url);
 		try (InputStream inputStream = url.openStream()) {
 			StopWatch stopWatch = new StopWatch();
@@ -97,11 +97,7 @@ public class ImportServiceTest {
 	public void testRepeatedImport() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-
-		// FIXME Remove!
-		logger.info(getClass().getResource("/").toString());
-
-		URL url = getClass().getResource("/INTEGRITY_CHECK_AIRPLAY_SET.SDF");
+		URL url = getClass().getResource("/INTEGRITY_CHECK_AIRPLAY_SET.sdf");
 		logger.info("Using file: " + url);
 		try (InputStream inputStream = url.openStream()) {
 			importService.importRecords(chart, week, inputStream, progressProvider);
@@ -116,7 +112,7 @@ public class ImportServiceTest {
 		StopWatch stopWatch = new StopWatch();
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		URL url = getClass().getResource("/COMMON_AIRPLAY_SET.SDF");
+		URL url = getClass().getResource("/COMMON_AIRPLAY_SET.sdf");
 		logger.info("Using file: " + url);
 		try (InputStream inputStream = url.openStream()) {
 			stopWatch.start();
@@ -164,7 +160,7 @@ public class ImportServiceTest {
 	public void testRevertedImportWithDependencies() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		URL url = getClass().getResource("/INTEGRITY_CHECK_AIRPLAY_SET.SDF");
+		URL url = getClass().getResource("/INTEGRITY_CHECK_AIRPLAY_SET.sdf");
 		logger.info("Using file: " + url);
 		try (InputStream inputStream = url.openStream()) {
 			importService.importRecords(chart, week, inputStream, progressProvider);
