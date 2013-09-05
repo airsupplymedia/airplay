@@ -97,6 +97,10 @@ public class ImportServiceTest {
 	public void testRepeatedImport() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
+
+		// FIXME Remove!
+		logger.info(getClass().getResource("/").toString());
+
 		URL url = getClass().getResource("/INTEGRITY_CHECK_AIRPLAY_SET.SDF");
 		logger.info("Using file: " + url);
 		try (InputStream inputStream = url.openStream()) {
