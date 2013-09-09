@@ -13,6 +13,7 @@
 
 	<context:annotation-config />
 	<bean id="loggerBeanFactoryPostProcessor" class="de.airsupply.commons.core.context.LoggerBeanFactoryPostProcessor" />
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" />
 	<tx:annotation-driven mode="aspectj" transaction-manager="neo4jTransactionManager" />
 	<neo4j:config graphDatabaseService="graphDatabaseService" />
 
