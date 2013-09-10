@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>de.airsupply.airplay</groupId>
 		<artifactId>airplay-parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>0.0.2-SNAPSHOT</version>
 		<relativePath>../airplay-parent/pom.xml</relativePath>
 	</parent>
 
@@ -119,5 +119,13 @@
 	</dependencies>
 
 	<packaging>war</packaging>
+
+	<repositories>
+		<repository>
+			<id>vaadin-addons</id>
+			<name>Vaadin Addons Repository</name>
+			<url>http://maven.vaadin.com/vaadin-addons</url>
+		</repository>
+	</repositories>
 
 </project>

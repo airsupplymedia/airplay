@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>de.airsupply.airplay</groupId>
 		<artifactId>airplay-parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>0.0.2-SNAPSHOT</version>
 		<relativePath>../airplay-parent/pom.xml</relativePath>
 	</parent>
 
@@ -29,9 +29,7 @@
 		<dependency>
 			<groupId>nl.knaw.dans.common</groupId>
 			<artifactId>dans-dbf-lib</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/dans-dbf-lib-1.0.0-beta-09.jar</systemPath>
+			<version>1.0.0-beta-10</version>
 		</dependency>
 		<dependency>
 			<groupId>org.neo4j</groupId>
@@ -129,5 +127,18 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
+
+	<repositories>
+		<repository>
+			<id>neo4j-public</id>
+			<name>Neo4j Public Repository</name>
+			<url>http://m2.neo4j.org/content/groups/public/</url>
+		</repository>
+		<repository>
+			<id>nuiton-public</id>
+			<name>Nuiton Public Repository</name>
+			<url>http://nexus.nuiton.org/nexus/content/groups/public</url>
+		</repository>
+	</repositories>
 
 </project>

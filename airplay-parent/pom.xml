@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.airsupply.airplay</groupId>
 	<artifactId>airplay-parent</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>AirPlay Manager Application</name>
 
@@ -124,11 +124,6 @@
 
 	<repositories>
 		<repository>
-			<id>neo4j-public</id>
-			<name>Neo4j Public Repository</name>
-			<url>http://m2.neo4j.org/content/groups/public/</url>
-		</repository>
-		<repository>
 			<id>spring-release</id>
 			<name>Spring Maven Release Repository</name>
 			<url>http://repo.springsource.org/release</url>
@@ -138,10 +133,6 @@
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
-		</repository>
-		<repository>
-			<id>vaadin-addons</id>
-			<url>http://maven.vaadin.com/vaadin-addons</url>
 		</repository>
 	</repositories>
 
