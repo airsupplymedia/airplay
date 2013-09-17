@@ -128,17 +128,4 @@
 		</dependency>
 	</dependencies>
 
-	<repositories>
-		<repository>
-			<id>neo4j-public</id>
-			<name>Neo4j Public Repository</name>
-			<url>http://m2.neo4j.org/content/groups/public/</url>
-		</repository>
-		<repository>
-			<id>nuiton-public</id>
-			<name>Nuiton Public Repository</name>
-			<url>http://nexus.nuiton.org/nexus/content/groups/public</url>
-		</repository>
-	</repositories>
-
 </project>

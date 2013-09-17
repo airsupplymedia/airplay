@@ -85,6 +85,11 @@
 
 	<repositories>
 		<repository>
+			<id>neo4j-public</id>
+			<name>Neo4j Public Repository</name>
+			<url>http://m2.neo4j.org/content/groups/public/</url>
+		</repository>
+		<repository>
 			<id>spring-release</id>
 			<name>Spring Maven Release Repository</name>
 			<url>http://repo.springsource.org/release</url>
@@ -94,6 +99,11 @@
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
+		</repository>
+		<repository>
+			<id>nuiton-public</id>
+			<name>Nuiton Public Repository</name>
+			<url>http://nexus.nuiton.org/nexus/content/groups/public</url>
 		</repository>
 	</repositories>
 
