@@ -10,19 +10,23 @@ import javax.validation.ValidationException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import de.airsupply.airplay.core.config.ApplicationConfiguration;
 import de.airsupply.airplay.core.model.Artist;
 import de.airsupply.airplay.core.model.Song;
 import de.airsupply.airplay.core.model.SongBroadcast;
 import de.airsupply.airplay.core.model.Station;
+import de.airsupply.airplay.core.model.test.config.TestConfiguration;
 import de.airsupply.airplay.core.services.StationService;
 import de.airsupply.commons.core.util.DateUtils;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/applicationContext-test.xml" })
+@ActiveProfiles("test")
+@ContextConfiguration(classes = { ApplicationConfiguration.class, TestConfiguration.class })
 @Transactional
 public class StationServiceTest {
 

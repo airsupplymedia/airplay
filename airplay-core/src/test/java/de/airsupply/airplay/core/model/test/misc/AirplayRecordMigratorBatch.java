@@ -1,23 +1,24 @@
 package de.airsupply.airplay.core.model.test.misc;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import de.airsupply.airplay.core.importers.dbf.AirplayRecordMigrator;
+import de.airsupply.commons.core.util.CollectionUtils.Procedure;
 
 @Component
 public class AirplayRecordMigratorBatch {
 
 	public static void main(String[] args) {
-		AbstractApplicationContext applicationContext = new ClassPathXmlApplicationContext(
-				"classpath*:/applicationContext-batch.xml");
-		applicationContext.registerShutdownHook();
-		applicationContext.start();
-		applicationContext.getBean(AirplayRecordMigratorBatch.class).prefill();
-		applicationContext.stop();
-		applicationContext.close();
+		BatchRunner.run(new Procedure<ApplicationContext>() {
+
+			@Override
+			public void run(ApplicationContext applicationContext) {
+				applicationContext.getBean(AirplayRecordMigratorBatch.class).prefill();
+			}
+
+		});
 	}
 
 	@Autowired

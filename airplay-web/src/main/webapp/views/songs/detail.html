@@ -1,0 +1,22 @@
+<div class="page-header">
+	<h2>
+		Edit Song <small>{{song.artist.name}} - {{song.name}}</small>
+	</h2>
+</div>
+<form name="form" role="form" ng-submit="put()">
+	<div class="form-group">
+		<label for="name">Name</label>
+		<input class="form-control" type="text" name="name" placeholder="Name" required ng-model="song.name">
+		<span class="error" ng-show="myForm.userName.$error.required">Required!</span><br>
+		<span class="error" ng-show="myForm.userName.$error.NotEmpty">Required!</span><br>
+		<span class="error" ng-repeat="error in errors">
+			{{error.code}}
+			{{error.field}}
+			{{error.message}}
+		</span>
+	</div>
+	<div class="form-group">
+		<button type="button" class="btn btn-default" ng-click="reset()" ng-disabled="unchanged()">Reset</button>
+		<button type="submit" class="btn btn-primary" ng-disabled="form.$invalid || unchanged()">Save</button>
+	</div>
+</form>

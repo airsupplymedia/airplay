@@ -12,10 +12,13 @@ import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.support.index.IndexType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 import de.airsupply.commons.core.util.CollectionUtils;
 
-@Unique(arguments = { "name" })
+@Unique(query = "START artist=node:searchArtistByName({:name}) WHERE LOWER(artist.name)=LOWER({name}) RETURN artist", arguments = {
+		"name", ":name" })
 @NodeEntity
 @SuppressWarnings("serial")
 public class Artist extends PersistentNode {
@@ -25,6 +28,7 @@ public class Artist extends PersistentNode {
 	private String name;
 
 	@RelatedTo(direction = Direction.BOTH, type = "SONGS")
+	@JsonIgnore
 	private Iterable<Song> songs = null;
 
 	Artist() {
@@ -40,12 +44,17 @@ public class Artist extends PersistentNode {
 		return name;
 	}
 
+	@JsonIgnore
 	public List<Song> getSongList() {
 		if (songs != null) {
 			return CollectionUtils.asList(songs);
 		} else {
 			return Collections.emptyList();
 		}
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	@Override

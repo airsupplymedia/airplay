@@ -2,8 +2,7 @@ package de.airsupply.airplay.core.model.test.misc;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
@@ -14,6 +13,7 @@ import de.airsupply.airplay.core.services.ChartService;
 import de.airsupply.airplay.core.services.ContentService;
 import de.airsupply.airplay.core.services.StationService;
 import de.airsupply.commons.core.context.Loggable;
+import de.airsupply.commons.core.util.CollectionUtils.Procedure;
 
 @Component
 public class AirplayRecordMigratorPerformanceTest {
@@ -22,17 +22,18 @@ public class AirplayRecordMigratorPerformanceTest {
 	private static Logger logger;
 
 	public static void main(String[] args) {
-		AbstractApplicationContext applicationContext = new ClassPathXmlApplicationContext(
-				"classpath*:/applicationContext-batch.xml");
-		applicationContext.registerShutdownHook();
-		applicationContext.start();
-		try {
-			applicationContext.getBean(AirplayRecordMigratorPerformanceTest.class).benchmark();
-		} catch (Exception exception) {
-			logger.error(exception.getMessage(), exception);
-		}
-		applicationContext.stop();
-		applicationContext.close();
+		BatchRunner.run(new Procedure<ApplicationContext>() {
+
+			@Override
+			public void run(ApplicationContext applicationContext) {
+				try {
+					applicationContext.getBean(AirplayRecordMigratorPerformanceTest.class).benchmark();
+				} catch (Exception exception) {
+					logger.error(exception.getMessage(), exception);
+				}
+			}
+
+		});
 	}
 
 	@Autowired
@@ -74,5 +75,4 @@ public class AirplayRecordMigratorPerformanceTest {
 
 		logger.info(stopWatch.prettyPrint());
 	}
-
 }

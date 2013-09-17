@@ -4,6 +4,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 import org.neo4j.graphdb.Direction;
+import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
@@ -12,12 +13,13 @@ import org.springframework.data.neo4j.support.index.IndexType;
 import de.airsupply.commons.core.neo4j.annotation.Persistent;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 
-@Unique(query = "START artist=node({artist}) MATCH artist<-[:SONGS]->song WHERE song.name={name} RETURN song", arguments = {
+@Unique(query = "START artist=node({artist}) MATCH artist<-[:SONGS]->song WHERE LOWER(song.name)=LOWER({name}) RETURN song", arguments = {
 		"artist", "name" })
 @NodeEntity
 @SuppressWarnings("serial")
 public class Song extends PersistentNode {
 
+	@Fetch
 	@NotNull
 	@Persistent
 	@RelatedTo(direction = Direction.BOTH, type = "SONGS")
@@ -29,10 +31,12 @@ public class Song extends PersistentNode {
 	@Indexed(indexType = IndexType.FULLTEXT, indexName = "searchSongByName")
 	private String name;
 
+	@Fetch
 	@Persistent
 	@RelatedTo(direction = Direction.OUTGOING, type = "PUBLISHER")
 	private Publisher publisher;
 
+	@Fetch
 	@Persistent
 	@RelatedTo(direction = Direction.OUTGOING, type = "RECORD_COMPANY")
 	private RecordCompany recordCompany;
@@ -81,6 +85,10 @@ public class Song extends PersistentNode {
 
 	public RecordCompany getRecordCompany() {
 		return recordCompany;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	@Override

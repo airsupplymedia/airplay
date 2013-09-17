@@ -11,17 +11,20 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StopWatch;
 
+import de.airsupply.airplay.core.config.ApplicationConfiguration;
 import de.airsupply.airplay.core.model.Artist;
 import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.core.model.Publisher;
 import de.airsupply.airplay.core.model.RecordCompany;
 import de.airsupply.airplay.core.model.RecordImport;
 import de.airsupply.airplay.core.model.Song;
+import de.airsupply.airplay.core.model.test.config.TestConfiguration;
 import de.airsupply.airplay.core.model.util.LoggingRecordImportProgressProvider;
 import de.airsupply.airplay.core.services.ChartService;
 import de.airsupply.airplay.core.services.ContentService;
@@ -31,7 +34,8 @@ import de.airsupply.commons.core.context.Loggable;
 import de.airsupply.commons.core.util.DateUtils;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/applicationContext-test.xml" })
+@ActiveProfiles("test")
+@ContextConfiguration(classes = { ApplicationConfiguration.class, TestConfiguration.class })
 @Transactional
 public class ImportServiceTest {
 

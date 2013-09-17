@@ -2,6 +2,8 @@ package de.airsupply.airplay.core.model.test;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,19 +16,23 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import de.airsupply.airplay.core.config.ApplicationConfiguration;
 import de.airsupply.airplay.core.model.Artist;
 import de.airsupply.airplay.core.model.Publisher;
 import de.airsupply.airplay.core.model.RecordCompany;
 import de.airsupply.airplay.core.model.Song;
+import de.airsupply.airplay.core.model.test.config.TestConfiguration;
 import de.airsupply.airplay.core.services.ContentService;
 import de.airsupply.commons.core.util.CollectionUtils;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/applicationContext-test.xml" })
+@ActiveProfiles("test")
+@ContextConfiguration(classes = { ApplicationConfiguration.class, TestConfiguration.class })
 @Transactional
 public class ContentServiceTest {
 
@@ -39,15 +45,35 @@ public class ContentServiceTest {
 	}
 
 	@Test
+	public void testArtistUpdate() {
+		Artist artist = service.save(new Artist("JACKSON, MICHAEL"));
+		artist.setName("JACKSON, JANET");
+		service.save(artist);
+
+		assertEquals("JACKSON, JANET", service.getArtists().get(0).getName());
+		assertEquals(artist.getIdentifier(), service.getArtists().get(0).getIdentifier());
+
+		assertFalse(service.exists(new Artist("JACKSON, MICHAEL")));
+		assertTrue(service.exists(new Artist("JACKSON, JANET")));
+		assertTrue(service.exists(new Artist("JACKSON, jANET")));
+	}
+
 	public void testArtistCreationWithSimilarNames() {
-		service.save(new Artist("JACKSON, MICHAEL"));
 		service.save(new Artist("JACKSON, MICHAEL FEAT. JANET JACKSON"));
+		service.save(new Artist("JACKSON, MICHAEL"));
+		service.save(new Artist("JACKSON, MICHAEL FEAT. BRUCE SPRINGSTEEN"));
 	}
 
 	@Test(expected = ConstraintViolationException.class)
 	public void testDuplicateArtistCreation() {
 		service.save(new Artist("JACKSON, MICHAEL"));
-		service.save(new Artist("JACKSON, MICHAEL"));
+		service.save(new Artist("JACKSON, mICHAEL"));
+	}
+
+	@Test(expected = ConstraintViolationException.class)
+	public void testDuplicateArtistCreationWithSingleWordName() {
+		service.save(new Artist("SCOOTER"));
+		service.save(new Artist("sCOOTER"));
 	}
 
 	@Test(expected = ConstraintViolationException.class)
@@ -134,6 +160,23 @@ public class ContentServiceTest {
 	}
 
 	@Test
+	public void testSongUpdate() {
+		Artist artist = service.save(new Artist("JACKSON, MICHAEL"));
+		Song song = service.save(new Song(artist, "THRILLER", "ABCDEFG"));
+
+		song.setName("EARTH SONG");
+		service.save(song);
+
+		assertEquals("EARTH SONG", service.getSongs().get(0).getName());
+		assertEquals(song.getIdentifier(), service.getSongs().get(0).getIdentifier());
+
+		assertFalse(service.exists(new Song(artist, "THRILLER")));
+		assertTrue(service.exists(new Song(artist, "EARTH SONG")));
+		assertTrue(service.exists(new Song(artist, "EARTH sONG")));
+		assertFalse(service.exists(new Song(service.save(new Artist("JACKSON, JANET")), "EARTH SONG")));
+	}
+
+	@Test
 	public void testSongRetrieval() {
 		Artist artist;
 		Song song;
@@ -194,7 +237,7 @@ public class ContentServiceTest {
 		song = service.save(new Song(artist, "RAINING DAY", "ABC"));
 		expectedResults.add(song);
 
-		List<Song> songs = service.findSongs("KISS* && ME*", true);
+		List<Song> songs = service.findSongs("name:KISS* AND name:ME*", true);
 
 		assertArrayEquals(expectedResults.toArray(), songs.toArray());
 	}

@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 import org.springframework.data.neo4j.annotation.GraphId;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @SuppressWarnings("serial")
 public class PersistentNode implements Serializable {
 
@@ -52,6 +54,7 @@ public class PersistentNode implements Serializable {
 		return result;
 	}
 
+	@JsonIgnore
 	public boolean isPersistent() {
 		return getIdentifier() != null;
 	}
