@@ -12,20 +12,28 @@ public abstract class QueryUtils {
 
 	private static final String INDEX_QUERY_QUOTE = "\"";
 
-	public static String buildDefaultQuery(final String query) {
+	public static String buildDefaultQuery(String query) {
+		return buildDefaultQuery(query, null);
+	}
+
+	public static String buildDefaultQuery(String query, String fieldName) {
 		String[] queryTokens = StringUtils.split(query);
 		StringBuilder stringBuilder = new StringBuilder(query.length() + queryTokens.length * 2);
 		for (int i = 0; i < queryTokens.length; i++) {
+			if (fieldName != null) {
+				stringBuilder.append(fieldName);
+				stringBuilder.append(INDEX_QUERY);
+			}
 			stringBuilder.append(queryTokens[i]);
 			stringBuilder.append("*");
 			if (i < queryTokens.length - 1) {
-				stringBuilder.append(" && ");
+				stringBuilder.append(" AND ");
 			}
 		}
 		return stringBuilder.toString();
 	}
 
-	public static String buildIndexQuery(String fieldName, Object fieldValue) {
+	public static String buildIndexQuery(String fieldName, String fieldValue) {
 		return fieldName + INDEX_QUERY + INDEX_QUERY_QUOTE + fieldValue + INDEX_QUERY_QUOTE;
 	}
 

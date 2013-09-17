@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.neo4j.conversion.EndResult;
-import org.springframework.data.neo4j.conversion.Handler;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -72,24 +70,19 @@ public class ContentService extends Neo4jServiceSupport {
 
 	public List<Song> findSongs(String query, boolean advancedSearch) {
 		Assert.notNull(query);
+		String search;
+		String searchWithFields;
 		if (!advancedSearch) {
-			query = QueryUtils.buildDefaultQuery(query);
+			search = QueryUtils.buildDefaultQuery(query);
+			searchWithFields = QueryUtils.buildDefaultQuery(query, "name");
+		} else {
+			search = query;
+			searchWithFields = query;
 		}
-
-		final List<Song> result = new ArrayList<>();
-		result.addAll(CollectionUtils.asList(songRepository.findAllByQuery("name", query)));
-
-		EndResult<Artist> artists = artistRepository.findAllByQuery("name", query);
-		artists.handle(new Handler<Artist>() {
-
-			@Override
-			public void handle(Artist artist) {
-				result.addAll(findSongs(artist));
-			}
-
-		});
-		artists.finish();
-
+		// FIXME Use Single Cypher query to increase performance
+		List<Song> result = new ArrayList<>();
+		result.addAll(CollectionUtils.asList(songRepository.findAllByQuery("name", search)));
+		result.addAll(CollectionUtils.asList(songRepository.findByArtistName(searchWithFields)));
 		return Collections.unmodifiableList(result);
 	}
 
