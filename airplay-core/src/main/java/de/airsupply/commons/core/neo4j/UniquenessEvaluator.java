@@ -5,29 +5,131 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.validation.ValidationException;
 
-import org.neo4j.graphdb.PropertyContainer;
-import org.springframework.data.neo4j.conversion.Result;
-import org.springframework.data.neo4j.mapping.MappingPolicy;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 import org.springframework.data.neo4j.repository.GraphRepository;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
+import de.airsupply.airplay.core.model.PersistentNode;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 import de.airsupply.commons.core.util.CollectionUtils;
+import de.airsupply.commons.core.util.CollectionUtils.Function;
+import de.airsupply.commons.core.util.Functions;
 
 class UniquenessEvaluator<T> {
 
+	protected static class Parameter {
+
+		private final Object entity;
+
+		private Class<?> fieldType;
+
+		private Object fieldValue;
+
+		private boolean fieldValueEvaluated;
+
+		private final String name;
+
+		protected Parameter(Object entity, String name) {
+			this.entity = entity;
+			this.name = name;
+		}
+
+		protected Parameter(Object entity, String name, Object fieldValue) {
+			this.entity = entity;
+			this.name = name;
+			this.fieldValue = fieldValue;
+			this.fieldValueEvaluated = true;
+		}
+
+		protected String getFieldName() {
+			if (isIndexQuery()) {
+				return name.substring(1, name.length());
+			} else {
+				return name;
+			}
+		}
+
+		protected Object getFieldValue(Neo4jTemplate neo4jTemplate) {
+			if (!fieldValueEvaluated) {
+				Field field = ReflectionUtils.findField(entity.getClass(), getFieldName());
+				Assert.notNull(field);
+				field.setAccessible(true);
+				try {
+					fieldType = field.getType();
+					fieldValue = field.get(entity);
+					if (fieldValue != null && QueryUtils.isPersistent(neo4jTemplate, fieldValue)) {
+						fieldValue = QueryUtils.getPersistentState(neo4jTemplate, fieldValue);
+					}
+				} catch (IllegalArgumentException | IllegalAccessException cause) {
+					throw new ValidationException(cause);
+				} finally {
+					fieldValueEvaluated = true;
+				}
+			}
+			return fieldValue;
+		}
+
+		protected TermQuery getFieldValueAsQuery(Neo4jTemplate neo4jTemplate) {
+			if (!isIndexQuery() || StringUtils.isEmpty(getFieldValue(neo4jTemplate))) {
+				return null;
+			}
+			String fieldValueString = getFieldValue(neo4jTemplate).toString();
+			if (StringUtils.containsWhitespace(fieldValueString)) {
+				return new TermQuery(new Term(getFieldName(), fieldValueString));
+			} else {
+				return new TermQuery(new Term(getFieldName(), fieldValueString));
+			}
+		}
+
+		protected String getFieldValueAsQueryString(Neo4jTemplate neo4jTemplate) {
+			TermQuery query = getFieldValueAsQuery(neo4jTemplate);
+			return QueryUtils.buildIndexQuery(query.getTerm().field(), query.getTerm().text());
+		}
+
+		protected String getName() {
+			return name;
+		}
+
+		protected String getParameterName() {
+			if (isIndexQuery()) {
+				return INDEX_QUERY_PREFIX + getFieldName();
+			} else {
+				return name;
+			}
+		}
+
+		protected boolean isIndexQuery() {
+			return name.startsWith(INDEX_QUERY_INITIALIZER);
+		}
+
+		protected boolean isValid(Neo4jTemplate neo4jTemplate) {
+			Object fieldValue = getFieldValue(neo4jTemplate);
+			if (fieldValue != null) {
+				if (isIndexQuery()) {
+					return String.class.equals(fieldType) && !StringUtils.isEmpty(fieldValue);
+				}
+				return true;
+			}
+			return false;
+		}
+
+	}
+
 	private static final String INDEX_QUERY_INITIALIZER = ":";
 
-	private static Unique readAnnotation(Object object) {
+	private static final String INDEX_QUERY_PREFIX = "query_";
+
+	protected static Unique readAnnotation(Object object) {
 		Assert.notNull(object);
 		Unique unique = object.getClass().getAnnotation(Unique.class);
 		Assert.notNull(unique);
@@ -38,35 +140,69 @@ class UniquenessEvaluator<T> {
 
 	private Neo4jTemplate neo4jTemplate;
 
-	private final String query;
-
-	private boolean useQuery = true;
+	private String query;
 
 	private final T value;
 
-	UniquenessEvaluator(T value, Neo4jTemplate neo4jTemplate) {
+	protected UniquenessEvaluator(T value, Neo4jTemplate neo4jTemplate) {
 		this(value, neo4jTemplate, readAnnotation(value));
 	}
 
-	UniquenessEvaluator(T value, Neo4jTemplate neo4jTemplate, String query, String[] arguments) {
+	protected UniquenessEvaluator(T value, Neo4jTemplate neo4jTemplate, String query, String[] arguments) {
 		this.value = value;
 		this.neo4jTemplate = neo4jTemplate;
 		this.query = query;
 		this.arguments = arguments;
 		Assert.notEmpty(arguments);
 		Assert.noNullElements(arguments);
-		if (!StringUtils.hasText(query)) {
-			Assert.isTrue(arguments.length == 1);
-			useQuery = false;
-		}
 	}
 
-	UniquenessEvaluator(T value, Neo4jTemplate neo4jTemplate, Unique unique) {
+	protected UniquenessEvaluator(T value, Neo4jTemplate neo4jTemplate, Unique unique) {
 		this(value, neo4jTemplate, unique.query(), unique.arguments());
+	}
+
+	protected Map<String, Object> asParameterMap(Collection<Parameter> parameters) {
+		Map<String, Object> parameterMap = new HashMap<>(parameters.size());
+		for (Parameter parameter : parameters) {
+			Object fieldValue;
+			if (parameter.isIndexQuery()) {
+				fieldValue = parameter.getFieldValueAsQueryString(neo4jTemplate);
+			} else {
+				fieldValue = parameter.getFieldValue(neo4jTemplate);
+			}
+			parameterMap.put(parameter.getParameterName(), fieldValue);
+		}
+		return parameterMap;
 	}
 
 	public boolean exists() {
 		return QueryUtils.isPersistent(neo4jTemplate, value) || getExisting() != null;
+	}
+
+	protected List<?> findExisting() {
+		boolean useQuery = StringUtils.hasText(query);
+		List<?> result;
+		List<Parameter> parameters = new ArrayList<>(arguments.length);
+		if (useQuery) {
+			parameters.add(new Parameter(value, "this", value));
+		}
+		boolean isArgumentsValid = true;
+		for (int i = 0; i < arguments.length && isArgumentsValid; i++) {
+			Parameter parameter = new Parameter(value, arguments[i]);
+			if (parameter.isIndexQuery()) {
+				query = query.replace(parameter.getName(), parameter.getParameterName());
+			}
+			if (!parameter.isValid(neo4jTemplate)) {
+				return Collections.emptyList();
+			}
+			parameters.add(parameter);
+		}
+		if (useQuery) {
+			result = runQuery(asParameterMap(parameters));
+		} else {
+			result = runPropertyAccess(parameters.get(0));
+		}
+		return result;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -74,12 +210,7 @@ class UniquenessEvaluator<T> {
 		if (QueryUtils.isPersistent(neo4jTemplate, value)) {
 			return value;
 		} else {
-			List<?> result;
-			if (useQuery) {
-				result = runQuery();
-			} else {
-				result = runPropertyAccess();
-			}
+			List<?> result = findExisting();
 			Assert.isTrue(result.size() == 0 || result.size() == 1);
 			if (result.size() == 1) {
 				Assert.isInstanceOf(value.getClass(), result.get(0));
@@ -90,48 +221,10 @@ class UniquenessEvaluator<T> {
 		}
 	}
 
-	private boolean handleArgument(Object value, HashMap<String, Object> argumentMap, String fieldName) {
-		boolean isValid = true;
-		boolean isIndexQuery = fieldName.startsWith(INDEX_QUERY_INITIALIZER);
-		if (isIndexQuery) {
-			Assert.isTrue(useQuery);
-			fieldName = fieldName.substring(1, fieldName.length());
-		}
-		Field field = ReflectionUtils.findField(value.getClass(), fieldName);
-		Assert.notNull(field);
-		field.setAccessible(true);
-		try {
-			Object fieldValue = field.get(value);
-			if (fieldValue != null) {
-				if (QueryUtils.isPersistent(neo4jTemplate, fieldValue)) {
-					Assert.isTrue(useQuery);
-					fieldValue = QueryUtils.getPersistentState(neo4jTemplate, fieldValue);
-				}
-				if (isIndexQuery) {
-					Assert.isTrue(useQuery);
-					fieldValue = QueryUtils.buildIndexQuery(fieldName, fieldValue);
-				}
-				argumentMap.put(fieldName, fieldValue);
-			} else {
-				isValid = false;
-			}
-		} catch (IllegalArgumentException cause) {
-			throw new ValidationException(cause);
-		} catch (IllegalAccessException cause) {
-			throw new ValidationException(cause);
-		}
-		return isValid;
-	}
-
 	public boolean isUnique() {
 		if (QueryUtils.isPersistent(neo4jTemplate, value)) {
-			List<?> result;
-			if (useQuery) {
-				result = runQuery();
-			} else {
-				result = runPropertyAccess();
-			}
-			if (result.size() == 1 && result.contains(value)) {
+			List<?> result = findExisting();
+			if (result.size() == 0 || (result.size() == 1 && result.contains(value))) {
 				return true;
 			} else {
 				return false;
@@ -141,42 +234,21 @@ class UniquenessEvaluator<T> {
 		}
 	}
 
-	private List<?> runPropertyAccess() {
-		HashMap<String, Object> argumentMap = new HashMap<>();
-		boolean isArgumentValid = handleArgument(value, argumentMap, arguments[0]);
-		if (isArgumentValid) {
-			GraphRepository<?> repository = neo4jTemplate.repositoryFor(value.getClass());
-			List<?> result = CollectionUtils.asList(repository.findAllByPropertyValue(arguments[0],
-					argumentMap.get(arguments[0])));
-			return result;
+	protected List<?> runPropertyAccess(Parameter parameter) {
+		GraphRepository<? extends Object> repository = neo4jTemplate.repositoryFor(value.getClass());
+		String fieldName = parameter.getFieldName();
+		Object fieldValue = parameter.getFieldValue(neo4jTemplate);
+		Query fieldValueAsQuery = new TermQuery(new Term(fieldName, fieldValue.toString()));
+
+		if (parameter.isIndexQuery()) {
+			return CollectionUtils.asList(repository.findAllByQuery(fieldName, fieldValueAsQuery));
+		} else {
+			return CollectionUtils.asList(repository.findAllByPropertyValue(fieldName, fieldValue));
 		}
-		return Collections.emptyList();
 	}
 
-	private List<?> runQuery() {
-		HashMap<String, Object> argumentMap = new HashMap<>();
-		argumentMap.put("this", value);
-
-		boolean isArgumentsValid = true;
-		for (int i = 0; i < arguments.length && isArgumentsValid; i++) {
-			isArgumentsValid = handleArgument(value, argumentMap, arguments[i]);
-		}
-		if (isArgumentsValid) {
-			Result<Map<String, Object>> result = neo4jTemplate.query(query, argumentMap);
-			List<Object> list = new ArrayList<>();
-			Iterator<Map<String, Object>> iterator = result.iterator();
-			while (iterator.hasNext()) {
-				Map<String, Object> next = iterator.next();
-				Collection<Object> values = next.values();
-				for (Object object : values) {
-					MappingPolicy mappingPolicy = neo4jTemplate.getMappingPolicy(value.getClass());
-					PropertyContainer propertyContainer = (PropertyContainer) object;
-					list.add(neo4jTemplate.createEntityFromState(propertyContainer, value.getClass(), mappingPolicy));
-				}
-			}
-			return list;
-		}
-		return Collections.emptyList();
+	protected List<?> runQuery(Map<String, Object> parameterMap) {
+		Function<Object, PersistentNode> function = Functions.toPersistentState(neo4jTemplate, value.getClass());
+		return CollectionUtils.transform(neo4jTemplate.query(query, parameterMap), function);
 	}
-
 }
