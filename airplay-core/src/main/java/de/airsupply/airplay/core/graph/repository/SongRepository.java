@@ -12,4 +12,7 @@ public interface SongRepository extends GraphRepository<Song>, CypherDslReposito
 	@Query("START artist=node({0}) MATCH artist<-[:SONGS]->song RETURN song ORDER BY song.name")
 	Iterable<Song> findByArtist(Artist artist);
 
+	@Query("START artist=node:searchArtistByName({0}) MATCH artist<-[:SONGS]->song RETURN song ORDER BY song.name")
+	Iterable<Song> findByArtistName(String query);
+
 }
