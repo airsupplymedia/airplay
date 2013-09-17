@@ -20,7 +20,7 @@ public abstract class ValidationUtils {
 			Set<ConstraintViolation<?>> violations = new HashSet<>();
 			for (ConstraintViolation<T> violation : results) {
 				violations.add(violation);
-				LOGGER.error(violation.toString());
+				LOGGER.error(violation.toString() + " [" + object + "]");
 			}
 			throw new ConstraintViolationException(violations);
 		}
