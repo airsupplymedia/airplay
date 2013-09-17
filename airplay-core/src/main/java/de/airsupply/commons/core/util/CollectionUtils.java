@@ -8,7 +8,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.helpers.collection.ClosableIterable;
+import org.springframework.data.neo4j.conversion.EndResult;
 import org.springframework.util.Assert;
 
 public abstract class CollectionUtils {
@@ -69,6 +71,12 @@ public abstract class CollectionUtils {
 			} else if (type.isInstance(next)) {
 				result.add(type.cast(next));
 			}
+		}
+		if (iterable instanceof EndResult) {
+			((EndResult<T>) iterable).finish();
+		}
+		if (iterable instanceof IndexHits) {
+			((IndexHits<T>) iterable).close();
 		}
 		return Collections.unmodifiableList(result);
 	}
@@ -178,10 +186,22 @@ public abstract class CollectionUtils {
 		}
 	}
 
+	public static <S, T> List<T> transform(ClosableIterable<? extends S> iterable, Function<S, T> function) {
+		Assert.notNull(iterable);
+		Assert.notNull(function);
+		return transform(asList(iterable), function);
+	}
+
 	public static <S, T> Collection<T> transform(Collection<? extends S> list, Function<S, T> function) {
 		Assert.notNull(list);
 		Assert.notNull(function);
 		return transform(list, new ArrayList<T>(list.size()), function);
+	}
+
+	public static <S, T> List<T> transform(Iterable<? extends S> iterable, Function<S, T> function) {
+		Assert.notNull(iterable);
+		Assert.notNull(function);
+		return transform(iterable, new ArrayList<T>(), function);
 	}
 
 	private static <S, T, TC extends Collection<T>> TC transform(Iterable<? extends S> source, TC target,
