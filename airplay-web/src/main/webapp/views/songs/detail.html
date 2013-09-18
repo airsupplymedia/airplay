@@ -3,20 +3,34 @@
 		Edit Song <small>{{song.artist.name}} - {{song.name}}</small>
 	</h2>
 </div>
-<form name="form" role="form" ng-submit="put()">
+<form class="form" name="form" novalidate role="form">
 	<div class="form-group">
 		<label for="name">Name</label>
-		<input class="form-control" type="text" name="name" placeholder="Name" required ng-model="song.name">
-		<span class="error" ng-show="myForm.userName.$error.required">Required!</span><br>
-		<span class="error" ng-show="myForm.userName.$error.NotEmpty">Required!</span><br>
-		<span class="error" ng-repeat="error in errors">
-			{{error.code}}
-			{{error.field}}
-			{{error.message}}
-		</span>
+		<input class="form-control" type="text" name="name" placeholder="Name" required ng-model="song.name" as-server-validated>
+		<div class="alert alert-danger" ng-show="form.name.$invalid">
+			<span ng-show="form.name.$error.unique">Unique!<br/></span>
+			<span ng-show="form.name.$error.required">Required!<br/></span>
+			<span ng-show="form.name.$error.notEmpty">Not Empty!<br/></span>
+			<!-- 
+			<span ng-show="errors.length > 0" ng-repeat="error in errors">
+				{{error.code}}
+				{{error.field}}
+				{{error.message}}
+			</span>
+			 -->
+		</div>
 	</div>
 	<div class="form-group">
-		<button type="button" class="btn btn-default" ng-click="reset()" ng-disabled="unchanged()">Reset</button>
-		<button type="submit" class="btn btn-primary" ng-disabled="form.$invalid || unchanged()">Save</button>
+		<label for="artist">Artist</label>
+		<input class="form-control" type="text" name="artist" placeholder="Artist" ng-model="song.artist" typeahead="artist as artist.name for artist in artists($viewValue) | filter:$viewValue | limitTo:8" typeahead-editable="false" as-server-validated>
+		<div class="alert alert-danger" ng-show="form.name.$invalid">
+			<span ng-show="form.artist.$error.unique">Unique!<br/></span>
+			<span ng-show="form.artist.$error.required">Required!<br/></span>
+			<span ng-show="form.artist.$error.notEmpty">Not Empty!<br/></span>
+		</div>
+	</div>
+	<div class="form-group">
+		<button class="btn btn-default" type="button" ng-click="reset()" ng-disabled="unchanged()">Reset</button>
+		<button class="btn btn-primary" type="submit" ng-click="put()" ng-disabled="form.$invalid || unchanged()">Save</button>
 	</div>
 </form>
