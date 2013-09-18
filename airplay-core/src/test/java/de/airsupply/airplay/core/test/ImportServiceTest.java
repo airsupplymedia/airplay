@@ -1,4 +1,4 @@
-package de.airsupply.airplay.core.model.test;
+package de.airsupply.airplay.core.test;
 
 import static org.junit.Assert.assertEquals;
 
@@ -24,12 +24,12 @@ import de.airsupply.airplay.core.model.Publisher;
 import de.airsupply.airplay.core.model.RecordCompany;
 import de.airsupply.airplay.core.model.RecordImport;
 import de.airsupply.airplay.core.model.Song;
-import de.airsupply.airplay.core.model.test.config.TestConfiguration;
 import de.airsupply.airplay.core.model.util.LoggingRecordImportProgressProvider;
 import de.airsupply.airplay.core.services.ChartService;
 import de.airsupply.airplay.core.services.ContentService;
 import de.airsupply.airplay.core.services.ImportService;
 import de.airsupply.airplay.core.services.StationService;
+import de.airsupply.airplay.core.test.config.TestConfiguration;
 import de.airsupply.commons.core.context.Loggable;
 import de.airsupply.commons.core.util.DateUtils;
 

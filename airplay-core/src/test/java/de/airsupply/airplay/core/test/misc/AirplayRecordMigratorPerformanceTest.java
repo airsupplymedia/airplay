@@ -1,4 +1,4 @@
-package de.airsupply.airplay.core.model.test.misc;
+package de.airsupply.airplay.core.test.misc;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

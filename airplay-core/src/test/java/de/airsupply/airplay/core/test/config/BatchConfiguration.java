@@ -1,4 +1,4 @@
-package de.airsupply.airplay.core.model.test.config;
+package de.airsupply.airplay.core.test.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;

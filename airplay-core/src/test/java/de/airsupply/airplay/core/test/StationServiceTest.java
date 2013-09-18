@@ -1,4 +1,4 @@
-package de.airsupply.airplay.core.model.test;
+package de.airsupply.airplay.core.test;
 
 import static org.junit.Assert.assertArrayEquals;
 
@@ -20,8 +20,8 @@ import de.airsupply.airplay.core.model.Artist;
 import de.airsupply.airplay.core.model.Song;
 import de.airsupply.airplay.core.model.SongBroadcast;
 import de.airsupply.airplay.core.model.Station;
-import de.airsupply.airplay.core.model.test.config.TestConfiguration;
 import de.airsupply.airplay.core.services.StationService;
+import de.airsupply.airplay.core.test.config.TestConfiguration;
 import de.airsupply.commons.core.util.DateUtils;
 
 @RunWith(SpringJUnit4ClassRunner.class)

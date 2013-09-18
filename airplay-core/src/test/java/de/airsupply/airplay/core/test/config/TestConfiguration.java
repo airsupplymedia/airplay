@@ -1,4 +1,4 @@
-package de.airsupply.airplay.core.model.test.config;
+package de.airsupply.airplay.core.test.config;
 
 import java.util.HashMap;
 import java.util.Map;

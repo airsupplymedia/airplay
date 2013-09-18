@@ -1,4 +1,4 @@
-package de.airsupply.airplay.core.model.test;
+package de.airsupply.airplay.core.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -24,8 +24,8 @@ import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.core.model.ChartPosition;
 import de.airsupply.airplay.core.model.ChartState;
 import de.airsupply.airplay.core.model.Song;
-import de.airsupply.airplay.core.model.test.config.TestConfiguration;
 import de.airsupply.airplay.core.services.ChartService;
+import de.airsupply.airplay.core.test.config.TestConfiguration;
 import de.airsupply.commons.core.util.DateUtils;
 
 @RunWith(SpringJUnit4ClassRunner.class)

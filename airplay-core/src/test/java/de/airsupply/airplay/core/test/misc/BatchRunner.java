@@ -1,10 +1,10 @@
-package de.airsupply.airplay.core.model.test.misc;
+package de.airsupply.airplay.core.test.misc;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import de.airsupply.airplay.core.config.ApplicationConfiguration;
-import de.airsupply.airplay.core.model.test.config.BatchConfiguration;
+import de.airsupply.airplay.core.test.config.BatchConfiguration;
 import de.airsupply.commons.core.util.CollectionUtils.Procedure;
 
 public class BatchRunner {
