@@ -31,13 +31,14 @@ public class ErrorHandler {
 
 	private void processFieldErrors(ValidationError validationError, List<FieldError> errors) {
 		for (FieldError error : errors) {
-			validationError.addError(error.getCode(), error.getField(), getMessage(error));
+			validationError.addError(error.getObjectName(), error.getCode(), getMessage(error), error.getArguments(),
+					error.getField());
 		}
 	}
 
 	private void processObjectErrors(ValidationError validationError, List<ObjectError> errors) {
 		for (ObjectError error : errors) {
-			validationError.addError(error.getCode(), getMessage(error));
+			validationError.addError(error.getObjectName(), error.getCode(), getMessage(error), error.getArguments());
 		}
 	}
 

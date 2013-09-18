@@ -4,8 +4,8 @@ public class FieldError extends ObjectError {
 
 	private String field;
 
-	public FieldError(String code, String field, String message) {
-		super(code, message);
+	public FieldError(String objectName, String code, String message, Object[] arguments, String field) {
+		super(objectName, code, message, arguments);
 		this.field = field;
 	}
 

@@ -7,12 +7,12 @@ public class ValidationError {
 
 	private List<ObjectError> errors = new ArrayList<>();
 
-	public void addError(String code, String message) {
-		errors.add(new ObjectError(code, message));
+	public void addError(String objectName, String code, String message, Object[] arguments) {
+		errors.add(new ObjectError(objectName, code, message, arguments));
 	}
 
-	public void addError(String code, String field, String message) {
-		errors.add(new FieldError(code, field, message));
+	public void addError(String objectName, String code, String message, Object[] arguments, String field) {
+		errors.add(new FieldError(objectName, code, message, arguments, field));
 	}
 
 	public Iterable<ObjectError> getErrors() {
