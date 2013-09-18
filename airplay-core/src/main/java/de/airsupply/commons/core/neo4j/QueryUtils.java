@@ -1,6 +1,7 @@
 package de.airsupply.commons.core.neo4j;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.lucene.queryParser.QueryParser;
 import org.neo4j.graphdb.PropertyContainer;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
@@ -24,7 +25,7 @@ public abstract class QueryUtils {
 				stringBuilder.append(fieldName);
 				stringBuilder.append(INDEX_QUERY);
 			}
-			stringBuilder.append(queryTokens[i]);
+			stringBuilder.append(QueryParser.escape(queryTokens[i]));
 			stringBuilder.append("*");
 			if (i < queryTokens.length - 1) {
 				stringBuilder.append(" AND ");

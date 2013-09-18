@@ -228,7 +228,7 @@ public class ContentServiceTest {
 		expectedResults.add(song);
 
 		artist = service.save(new Artist("SIXPENCE NON THE RICHER"));
-		song = service.save(new Song(artist, "KISS ME", "ABC"));
+		song = service.save(new Song(artist, "KISS ME (LIVE VERSION)", "ABC"));
 		expectedResults.add(song);
 
 		artist = service.save(new Artist("KISS ME"));
@@ -261,7 +261,7 @@ public class ContentServiceTest {
 		expectedResults.add(song);
 
 		artist = service.save(new Artist("SIXPENCE NON THE RICHER"));
-		song = service.save(new Song(artist, "KISS ME", "ABC"));
+		song = service.save(new Song(artist, "KISS ME (LIVE VERSION)", "ABC"));
 		expectedResults.add(song);
 
 		artist = service.save(new Artist("KISS ME"));
@@ -270,9 +270,8 @@ public class ContentServiceTest {
 		song = service.save(new Song(artist, "RAINING DAY", "ABC"));
 		expectedResults.add(song);
 
-		List<Song> songs = service.findSongs("KISS ME", false);
-
-		assertArrayEquals(expectedResults.toArray(), songs.toArray());
+		assertArrayEquals(expectedResults.toArray(), service.findSongs("KISS ME", false).toArray());
+		assertEquals(1, service.findSongs("KISS ME (", false).toArray().length);
 	}
 
 	@Test(expected = ValidationException.class)
