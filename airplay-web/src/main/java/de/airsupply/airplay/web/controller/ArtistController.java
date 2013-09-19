@@ -9,19 +9,19 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import de.airsupply.airplay.core.model.Song;
+import de.airsupply.airplay.core.model.Artist;
 import de.airsupply.airplay.core.services.ContentService;
 import de.airsupply.commons.core.neo4j.Neo4jServiceSupport;
 
 @Controller
-@RequestMapping("/songs")
-public class SongController extends AbstractController<Song> {
+@RequestMapping("/artists")
+public class ArtistController extends AbstractController<Artist> {
 
 	private ContentService contentService;
 
 	@Autowired
-	public SongController(ContentService contentService) {
-		super(Song.class);
+	public ArtistController(ContentService contentService) {
+		super(Artist.class);
 		this.contentService = contentService;
 	}
 
@@ -32,8 +32,8 @@ public class SongController extends AbstractController<Song> {
 
 	@RequestMapping(method = RequestMethod.GET, params = { "name" })
 	@ResponseBody
-	public Collection<Song> searchByName(@RequestParam("name") String name) {
-		return contentService.findSongs(name, false);
+	public Collection<Artist> searchByName(@RequestParam("name") String name) {
+		return contentService.findArtists(name, false);
 	}
 
 }
