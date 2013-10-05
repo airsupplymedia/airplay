@@ -27,6 +27,7 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
 import de.airsupply.airplay.core.model.PersistentNode;
+import de.airsupply.commons.core.util.CollectionUtils;
 import de.airsupply.commons.core.util.ValidationUtils;
 
 public abstract class Neo4jServiceSupport {
@@ -40,6 +41,10 @@ public abstract class Neo4jServiceSupport {
 
 	public <T> T fetch(T object) {
 		return neo4jTemplate.fetch(object);
+	}
+
+	public <T> List<T> find(Class<T> entityClass) {
+		return CollectionUtils.asList(neo4jTemplate.findAll(entityClass));
 	}
 
 	public <T> T find(Long identifier, Class<T> entityClass) {
