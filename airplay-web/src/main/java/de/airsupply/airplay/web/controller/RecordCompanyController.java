@@ -9,22 +9,22 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import de.airsupply.airplay.core.model.Artist;
+import de.airsupply.airplay.core.model.RecordCompany;
 import de.airsupply.airplay.core.services.ContentService;
 
 @Controller
-@RequestMapping("/contents/artists")
-public class ArtistController extends AbstractController<Artist, ContentService> {
+@RequestMapping("/contents/recordCompanies")
+public class RecordCompanyController extends AbstractController<RecordCompany, ContentService> {
 
 	@Autowired
-	public ArtistController(ContentService contentService) {
-		super(Artist.class, contentService);
+	public RecordCompanyController(ContentService contentService) {
+		super(RecordCompany.class, contentService);
 	}
 
 	@RequestMapping(method = RequestMethod.GET, params = { "name" })
 	@ResponseBody
-	public Collection<Artist> searchByName(@RequestParam("name") String name) {
-		return getService().findArtists(name, false);
+	public Collection<RecordCompany> searchByName(@RequestParam("name") String name) {
+		return getService().findRecordCompanies(name);
 	}
 
 }
