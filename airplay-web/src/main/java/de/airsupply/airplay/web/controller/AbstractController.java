@@ -1,5 +1,7 @@
 package de.airsupply.airplay.web.controller;
 
+import java.util.List;
+
 import javax.validation.Valid;
 
 import org.springframework.http.HttpStatus;
@@ -13,12 +15,15 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import de.airsupply.airplay.core.model.PersistentNode;
 import de.airsupply.commons.core.neo4j.Neo4jServiceSupport;
 
-public abstract class AbstractController<T extends PersistentNode> {
+public abstract class AbstractController<T extends PersistentNode, S extends Neo4jServiceSupport> {
+
+	private S service;
 
 	private Class<T> type;
 
-	public AbstractController(Class<T> type) {
+	public AbstractController(Class<T> type, S service) {
 		this.type = type;
+		this.service = service;
 	}
 
 	@RequestMapping(method = RequestMethod.POST)
@@ -38,13 +43,21 @@ public abstract class AbstractController<T extends PersistentNode> {
 		return "Deleted: " + identifier;
 	}
 
+	@RequestMapping(method = RequestMethod.GET)
+	@ResponseBody
+	public List<T> get() {
+		return getService().find(type);
+	}
+
 	@RequestMapping("/{identifier}")
 	@ResponseBody
-	public T find(@PathVariable Long identifier) {
+	public T get(@PathVariable Long identifier) {
 		return getService().find(identifier, type);
 	}
 
-	protected abstract Neo4jServiceSupport getService();
+	protected S getService() {
+		return service;
+	}
 
 	@RequestMapping(value = "/{identifier}", method = RequestMethod.PUT)
 	@ResponseBody
