@@ -43,24 +43,24 @@ public class ContentService extends Neo4jServiceSupport {
 		return CollectionUtils.asList(artistRepository.findAllByQuery("name", query));
 	}
 
-	public Publisher findPublisher(Publisher object) {
+	public List<Publisher> findPublishers(Publisher object) {
 		Assert.notNull(object);
-		return publisherRepository.findByPropertyValue("name", object.getName());
+		return CollectionUtils.asList(publisherRepository.findAllByPropertyValue("name", object.getName()));
 	}
 
-	public Publisher findPublisher(String name) {
+	public List<Publisher> findPublishers(String name) {
 		Assert.hasText(name);
-		return findPublisher(new Publisher(name));
+		return findPublishers(new Publisher(name));
 	}
 
-	public RecordCompany findRecordCompany(RecordCompany object) {
+	public List<RecordCompany> findRecordCompanies(RecordCompany object) {
 		Assert.notNull(object);
-		return recordCompanyRepository.findByPropertyValue("name", object.getName());
+		return CollectionUtils.asList(recordCompanyRepository.findAllByPropertyValue("name", object.getName()));
 	}
 
-	public RecordCompany findRecordCompany(String name) {
+	public List<RecordCompany> findRecordCompanies(String name) {
 		Assert.hasText(name);
-		return findRecordCompany(new RecordCompany(name));
+		return findRecordCompanies(new RecordCompany(name));
 	}
 
 	public List<Song> findSongs(Artist artist) {
