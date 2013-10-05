@@ -11,6 +11,8 @@ import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 import de.airsupply.commons.core.util.CollectionUtils;
 
@@ -20,6 +22,7 @@ import de.airsupply.commons.core.util.CollectionUtils;
 public class Chart extends PersistentNode {
 
 	@RelatedTo(direction = Direction.OUTGOING, type = "CHART_STATES")
+	@JsonIgnore
 	private Iterable<ChartState> chartStates = null;
 
 	@NotEmpty
