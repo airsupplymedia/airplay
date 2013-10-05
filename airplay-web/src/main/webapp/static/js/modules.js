@@ -1,60 +1,30 @@
-var application = angular.module("airplay", [ "ui.bootstrap", "airplay.artists", "airplay.songs" ]).config(function($routeProvider) {
+var application = angular.module("airplay", [ "ui.bootstrap", "airplay.commons" ]).config(function($routeProvider) {
 	$routeProvider.when('/songs', {
 		templateUrl : '/airplay-web/views/songs/list.html',
 		controller : 'SongListController'
-	}).when('/songs/:identifier', {
+	}).when('/songs/song/:identifier', {
 		templateUrl : '/airplay-web/views/songs/detail.html',
 		controller : 'SongDetailController'
-	}).when('/songs/new/', {
+	}).when('/songs/song/', {
 		templateUrl : '/airplay-web/views/songs/detail.html',
 		controller : 'SongDetailController'
 	});
 });
 
-angular.module("airplay.commons", [ "ngResource" ], function($provide) {
-	$provide.factory('RemoteResource', function($resource) {
-		var RemoteResource = function(collection) {
-			return $resource('/airplay-web/services/:collection/:identifier', {
-				identifier : '@identifier',
-				collection : collection,
-			}, {
-				create : {
-					method : 'POST'
-				},
-				remove : {
-					method : 'DELETE'
-				},
-				put : {
-					method : 'PUT'
-				},
-				search : {
-					method : 'GET',
-					url : '/airplay-web/services/:collection',
-					isArray : true,
-				}
-			});
-		};
-		RemoteResource.prototype.isNew = function() {
-			return (typeof (this.identifier) === 'undefined');
-		};
-		return RemoteResource;
-	});
-});
-
-angular.module("airplay.artists", [ "airplay.commons" ], function($provide) {
-	$provide.factory('Artist', function(RemoteResource) {
-		var Artist = {
-			resource : RemoteResource("artists")
-		};
-		return Artist;
-	});
-});
-
-angular.module("airplay.songs", [ "airplay.commons" ], function($provide) {
-	$provide.factory('Song', function(RemoteResource) {
-		var Song = {
-			resource : RemoteResource("songs")
-		};
-		return Song;
-	});
+application.factory('ContentService', function(RemoteResource) {
+	var ContentService = {
+		artists : function() {
+			return RemoteResource("/contents/artists");
+		},
+		publishers : function() {
+			return RemoteResource("/contents/publishers");
+		},
+		recordCompanies : function() {
+			return RemoteResource("/contents/recordCompanies");
+		},
+		songs : function() {
+			return RemoteResource("/contents/songs");
+		}
+	};
+	return ContentService;
 });

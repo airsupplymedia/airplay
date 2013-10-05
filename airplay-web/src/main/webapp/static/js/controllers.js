@@ -1,8 +1,8 @@
-application.controller('SongListController', [ '$scope', 'Song', function($scope, Song) {
+application.controller('SongListController', [ '$scope', 'ContentService', function($scope, ContentService) {
 	$scope.results = 0;
 	$scope.searchSong = function(name) {
 		if (name) {
-			$scope.songs = Song.resource.search({
+			$scope.songs = ContentService.songs().find({
 				name : name
 			});
 		}
@@ -15,32 +15,45 @@ application.controller('SongListController', [ '$scope', 'Song', function($scope
 } ]);
 
 application.controller('SongDetailController', [
-		'$scope', '$routeParams', '$location', 'limitToFilter', 'Artist', 'Song', function($scope, $routeParams, $location, limitToFilter, Artist, Song) {
+		'$scope', '$routeParams', '$location', 'limitToFilter', 'ContentService', function($scope, $routeParams, $location, limitToFilter, ContentService) {
 			var identifier = $routeParams.identifier;
 			if (identifier) {
-				$scope.song = Song.resource.get({
+				$scope.edit = true;
+				$scope.song = ContentService.songs().get({
 					identifier : identifier
 				}, function($http) {
 					$scope.master = angular.copy($http);
 				});
 			} else {
-				$scope.song = new Song();
+				$scope.create = true;
 			}
 			$scope.artists = function(name) {
-				return Artist.resource.search({
+				return ContentService.artists().find({
 					name : name
 				}).$then(function(response) {
 					return limitToFilter(response.data, 10);
 				});
 			};
-			$scope.put = function() {
-				Song.resource.put({
-					identifier : $scope.song.identifier,
-				}, $scope.song, function() {
-					$location.path('/songs/');
-				}, function($http) {
-					applyServerErrors($http.data.errors, $scope);
+			$scope.publishers = function(name) {
+				return ContentService.publishers().find();
+			};
+			$scope.recordCompanies = function(name) {
+				return ContentService.recordCompanies().find().$then(function(response) {
+					return limitToFilter(response.data, 10);
 				});
+			};
+			$scope.save = function() {
+				if (identifier) {
+					ContentService.songs().put({
+						identifier : $scope.song.identifier,
+					}, $scope.song, function() {
+						$location.path('/songs/');
+					});
+				} else {
+					ContentService.songs().post({}, $scope.song, function() {
+						$location.path('/songs/');
+					});
+				}
 			};
 			$scope.reset = function() {
 				$scope.song = angular.copy($scope.master);

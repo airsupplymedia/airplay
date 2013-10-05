@@ -1,6 +1,6 @@
 <div class="page-header">
 	<h2>
-		Songs <a class="btn btn-primary pull-right" href="#/songs/new"><i class="icon-plus-sign icon-white"></i> Add New</a>
+		Songs <a class="btn btn-primary pull-right" href="#/songs/song/"><i class="icon-plus-sign icon-white"></i> Add New</a>
 	</h2>
 </div>
 <form role="form">
@@ -16,7 +16,7 @@
 			<td>{{song.name}}</td>
 			<td>
 				<div class="pull-right">
-					<a class="btn btn-info btn-sm" href="#/songs/{{song.identifier}}"> <span class="glyphicon glyphicon-edit"></span></a>
+					<a class="btn btn-info btn-sm" href="#/songs/song/{{song.identifier}}"> <span class="glyphicon glyphicon-edit"></span></a>
 					<button class="btn btn-danger btn-sm" ng-click="deleteSong(song)">
 						<span class="glyphicon glyphicon-remove"></span>
 					</button>
