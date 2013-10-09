@@ -1,4 +1,4 @@
-var application = angular.module("airplay", [ "ui.bootstrap", "airplay.commons" ]).config(function($routeProvider) {
+var application = angular.module('airplay', [ 'ui.bootstrap', 'airplay.commons' ]).config(function($routeProvider) {
 	$routeProvider.when('/songs', {
 		templateUrl : '/airplay-web/views/songs/list.html',
 		controller : 'SongListController'
@@ -11,20 +11,12 @@ var application = angular.module("airplay", [ "ui.bootstrap", "airplay.commons" 
 	});
 });
 
-application.factory('ContentService', function(RemoteResource) {
+application.factory('ContentService', [ 'RemoteResource', 'RemoteService', 'limitToFilter', function(RemoteResource, RemoteService, limitToFilter) {
 	var ContentService = {
-		artists : function() {
-			return RemoteResource("/contents/artists");
-		},
-		publishers : function() {
-			return RemoteResource("/contents/publishers");
-		},
-		recordCompanies : function() {
-			return RemoteResource("/contents/recordCompanies");
-		},
-		songs : function() {
-			return RemoteResource("/contents/songs");
-		}
+		artists : RemoteService.using('/contents/artists'),
+		publishers : RemoteService.using('/contents/publishers'),
+		recordCompanies : RemoteService.using('/contents/recordCompanies'),
+		songs : RemoteService.using('/contents/songs')
 	};
 	return ContentService;
-});
+} ]);

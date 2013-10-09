@@ -1,5 +1,6 @@
 <div class="page-header">
-	<h2>
+	<h2 ng-show="create">New Song</h2>
+	<h2 ng-show="edit">
 		Edit Song <small>{{song.artist.name}} - {{song.name}}</small>
 	</h2>
 </div>
@@ -7,7 +8,7 @@
 	<div class="form-group">
 		<label class="col-lg-1 control-label" for="name">Name</label>
 		<div class="col-lg-10">
-			<input class="form-control" type="text" name="name" placeholder="Name" required ng-model="song.name" as-server-validated />
+			<input class="form-control" type="text" name="name" placeholder="Name" ng-model="song.name" required as-server-validated />
 			<span class="label label-danger" ng-show="form.name.$error.unique">This value has to be unique</span>
 			<span class="label label-danger" ng-show="form.name.$error.required">This field is required</span>
 		</div>
@@ -15,8 +16,9 @@
 	<div class="form-group">
 		<label class="col-lg-1 control-label" for="artist">Artist</label>
 		<div class="col-lg-10">
-			<input class="form-control" type="text" name="artist" placeholder="Artist" ng-model="song.artist" typeahead="artist as artist.name for artist in artists($viewValue)" as-server-validated />
+			<input class="form-control" type="text" name="artist" placeholder="Artist" ng-model="song.artist" typeahead="artist as artist.name for artist in artists($viewValue)" required as-server-validated />
 			<span class="label label-danger" ng-show="form.artist.$error.unique">This value has to be unique</span>
+			<span class="label label-danger" ng-show="form.artist.$error.persistent">This value does not exist yet</span>
 			<span class="label label-danger" ng-show="form.artist.$error.required">This field is required</span>
 		</div>
 	</div>

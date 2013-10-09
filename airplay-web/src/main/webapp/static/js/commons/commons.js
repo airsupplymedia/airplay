@@ -1,4 +1,4 @@
-var commons = angular.module("airplay.commons", [ "ngResource" ], function($httpProvider) {
+var commons = angular.module('airplay.commons', [ 'ngResource' ], function($httpProvider) {
 	$httpProvider.interceptors.push(function($q, $rootScope, ServerValidator) {
 		return {
 			'responseError' : function(rejection) {
@@ -9,12 +9,12 @@ var commons = angular.module("airplay.commons", [ "ngResource" ], function($http
 	});
 });
 
-commons.directive('asServerValidated', function(ServerValidator) {
+commons.directive('asServerValidated', [ 'ServerValidator', function(ServerValidator) {
 	return {
 		require : 'ngModel',
 		link : function(scope, element, attributes, controller) {
 			var errors = new Array();
-			scope.$on("asServerValidation", function(event, args) {
+			scope.$on('asServerValidation', function(event, args) {
 				errors = args;
 				angular.forEach(errors, function(error) {
 					scope.form[error.field].$setValidity(error.code, false);
@@ -31,7 +31,7 @@ commons.directive('asServerValidated', function(ServerValidator) {
 			});
 		}
 	};
-});
+} ]);
 
 commons.factory('ServerValidator', function() {
 	return {
@@ -39,7 +39,12 @@ commons.factory('ServerValidator', function() {
 			var errors = new Array();
 			angular.forEach(rejection.data.errors, function(error) {
 				if (!angular.isUndefined(error.field)) {
-
+					if (!angular.isUndefined(form[error.field])) {
+						errors.push({
+							code : toFirstLower(error.code),
+							field : error.field
+						});
+					}
 				} else {
 					angular.forEach(error.arguments[1], function(field) {
 						if (!angular.isUndefined(form[field])) {
@@ -51,13 +56,13 @@ commons.factory('ServerValidator', function() {
 					});
 				}
 			});
-			scope.$broadcast("asServerValidation", errors);
+			scope.$broadcast('asServerValidation', errors);
 			errors = undefined;
 		},
 	};
 });
 
-commons.factory('RemoteResource', function($resource) {
+commons.factory('RemoteResource', [ '$resource', function($resource) {
 	var RemoteResource = function(url) {
 		url = '/airplay-web/services' + url + '/:identifier';
 		return $resource(url, {
@@ -85,4 +90,35 @@ commons.factory('RemoteResource', function($resource) {
 		return (typeof (this.identifier) === 'undefined');
 	};
 	return RemoteResource;
-});
+} ]);
+
+commons.factory('RemoteService', [ 'RemoteResource', 'limitToFilter', function(RemoteResource, limitToFilter) {
+	var RemoteService = {
+		using : function(url) {
+			return this.on(RemoteResource(url));
+		},
+		on : function(remoteResource) {
+			return {
+				resource : function() {
+					return remoteResource;
+				},
+				search : function(name, limit, promise) {
+					if (!name) {
+						return;
+					}
+					var result = remoteResource.find({
+						name : name
+					});
+					if (!promise) {
+						return result.$then(function(response) {
+							return limitToFilter(response.data, limit);
+						});
+					} else {
+						return result;
+					}
+				}
+			};
+		}
+	};
+	return RemoteService;
+} ]);
