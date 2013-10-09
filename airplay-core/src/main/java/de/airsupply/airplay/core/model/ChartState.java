@@ -13,6 +13,7 @@ import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
+import de.airsupply.commons.core.neo4j.annotation.Persistent;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 import de.airsupply.commons.core.util.CollectionUtils;
 
@@ -22,6 +23,7 @@ import de.airsupply.commons.core.util.CollectionUtils;
 @SuppressWarnings("serial")
 public class ChartState extends PersistentNode {
 
+	@Persistent
 	@NotNull
 	@RelatedTo(direction = Direction.INCOMING, type = "CHART_STATES")
 	private Chart chart;
