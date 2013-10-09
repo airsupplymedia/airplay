@@ -118,6 +118,9 @@ class UniquenessEvaluator<T> {
 				if (isIndexQuery()) {
 					return String.class.equals(fieldType) && !StringUtils.isEmpty(fieldValue);
 				}
+				if (QueryUtils.isPersistable(neo4jTemplate, fieldValue)) {
+					return QueryUtils.isPersistent(neo4jTemplate, fieldValue);
+				}
 				return true;
 			}
 			return false;
