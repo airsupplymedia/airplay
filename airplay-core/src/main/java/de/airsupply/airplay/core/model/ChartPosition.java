@@ -3,6 +3,7 @@ package de.airsupply.airplay.core.model;
 import javax.validation.constraints.NotNull;
 
 import org.neo4j.graphdb.Direction;
+import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
@@ -20,6 +21,7 @@ public class ChartPosition extends PersistentNode {
 
 	private int position;
 
+	@Fetch
 	@NotNull
 	@RelatedTo(direction = Direction.OUTGOING, type = "CHART_POSITION")
 	private Song song;
