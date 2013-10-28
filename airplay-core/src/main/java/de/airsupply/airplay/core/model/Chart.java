@@ -38,6 +38,7 @@ public class Chart extends PersistentNode {
 		this.name = name;
 	}
 
+	@JsonIgnore
 	public List<ChartState> getChartStateList() {
 		if (chartStates != null) {
 			return CollectionUtils.asList(chartStates);
