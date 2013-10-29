@@ -4,9 +4,11 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import de.airsupply.airplay.core.model.Chart;
@@ -33,7 +35,8 @@ public class ChartController {
 
 	@RequestMapping("/{identifier}/{date}")
 	@ResponseBody
-	public Collection<ChartPosition> findChartPositions(@PathVariable Long identifier, @PathVariable Date date) {
+	public Collection<ChartPosition> findChartPositions(@PathVariable Long identifier,
+			@DateTimeFormat(pattern = "YYYY-'W'ww") @PathVariable Date date) {
 		Chart chart = chartService.find(identifier, Chart.class);
 		if (chart != null) {
 			return chartService.findChartPositions(chart, date);
@@ -41,7 +44,7 @@ public class ChartController {
 		return null;
 	}
 
-	@RequestMapping("/")
+	@RequestMapping(method = RequestMethod.GET)
 	@ResponseBody
 	public Collection<Chart> getCharts() {
 		return chartService.getCharts();
