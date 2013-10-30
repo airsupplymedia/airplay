@@ -102,6 +102,33 @@ public class ChartServiceTest {
 		assertEquals(chartState, chartPositions.get(0).getChartState());
 	}
 
+	@Test
+	public void testChartPositionRetrievalLatestByChart() {
+		Chart chart = service.save(new Chart("Airplay Charts"));
+		ChartState oldChartState = service.save(new ChartState(chart, DateUtils.getStartOfWeek(new GregorianCalendar(
+				2000, 10, 24).getTime())));
+		ChartState newChartState = service.save(new ChartState(chart, DateUtils.getStartOfWeek(new GregorianCalendar(
+				2000, 12, 24).getTime())));
+
+		Artist artist;
+		Song song;
+
+		artist = service.save(new Artist("JACKSON, MICHAEL"));
+		song = service.save(new Song(artist, "THRILLER"));
+		service.save(new ChartPosition(oldChartState, song, 1));
+		service.save(new ChartPosition(newChartState, song, 2));
+
+		artist = service.save(new Artist("PET SHOP BOYS, THE"));
+		song = service.save(new Song(artist, "IT COULDN'T HAPPEN HERE"));
+		service.save(new ChartPosition(oldChartState, song, 2));
+		service.save(new ChartPosition(newChartState, song, 1));
+
+		List<ChartPosition> chartPositions = service.findLatestChartPositions(chart);
+		assertEquals(2, chartPositions.size());
+		assertEquals(song, chartPositions.get(0).getSong());
+		assertEquals(newChartState, chartPositions.get(0).getChartState());
+	}
+
 	public void testChartStateCount() {
 		Chart chart = service.save(new Chart("Airplay Charts"));
 		service.save(new ChartState(chart, DateUtils.getStartOfWeek(new GregorianCalendar(2000, 12, 24).getTime())));

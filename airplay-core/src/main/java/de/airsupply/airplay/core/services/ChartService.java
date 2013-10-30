@@ -1,5 +1,6 @@
 package de.airsupply.airplay.core.services;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -45,6 +46,15 @@ public class ChartService extends Neo4jServiceSupport {
 		Assert.notNull(chart);
 		Assert.notNull(song);
 		return CollectionUtils.asList(chartPositionRepository.find(chart, song));
+	}
+
+	public List<ChartPosition> findLatestChartPositions(Chart chart) {
+		Assert.notNull(chart);
+		ChartState chartState = chartStateRepository.findLatest(chart);
+		if (chartState == null) {
+			return Collections.emptyList();
+		}
+		return chartState.getChartPositionList();
 	}
 
 	public long getChartCount() {

@@ -59,8 +59,13 @@ public abstract class CollectionUtils {
 		return asList(iterable, null);
 	}
 
-	@SuppressWarnings("unchecked")
 	public static <T, F> List<F> asList(Iterable<T> iterable, Class<F> type) {
+		Assert.notNull(iterable);
+		return asList(iterable, type, false);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T, F> List<F> asList(Iterable<T> iterable, Class<F> type, boolean modifiable) {
 		Assert.notNull(iterable);
 		Iterator<T> iterator = iterable.iterator();
 		List<F> result = new ArrayList<>();
@@ -78,7 +83,15 @@ public abstract class CollectionUtils {
 		if (iterable instanceof IndexHits) {
 			((IndexHits<T>) iterable).close();
 		}
-		return Collections.unmodifiableList(result);
+		if (!modifiable) {
+			result = Collections.unmodifiableList(result);
+		}
+		return result;
+	}
+
+	public static <T> List<T> asModifiableList(Iterable<T> iterable) {
+		Assert.notNull(iterable);
+		return asList(iterable, null, true);
 	}
 
 	public static <T> Set<T> asSet(ClosableIterable<T> iterable) {

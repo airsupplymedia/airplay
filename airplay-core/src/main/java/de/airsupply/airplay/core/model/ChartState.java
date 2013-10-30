@@ -3,12 +3,14 @@ package de.airsupply.airplay.core.model;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
 import org.neo4j.graphdb.Direction;
+import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
@@ -28,6 +30,7 @@ public class ChartState extends PersistentNode {
 	@RelatedTo(direction = Direction.INCOMING, type = "CHART_STATES")
 	private Chart chart;
 
+	@Fetch
 	@RelatedTo(direction = Direction.OUTGOING, type = "CHART_POSITIONS")
 	private Iterable<ChartPosition> chartPositions = null;
 
@@ -50,7 +53,16 @@ public class ChartState extends PersistentNode {
 
 	public List<ChartPosition> getChartPositionList() {
 		if (chartPositions != null) {
-			return CollectionUtils.asList(chartPositions);
+			List<ChartPosition> list = CollectionUtils.asModifiableList(chartPositions);
+			Collections.sort(list, new Comparator<ChartPosition>() {
+
+				@Override
+				public int compare(ChartPosition o1, ChartPosition o2) {
+					return Integer.valueOf(o1.getPosition()).compareTo(Integer.valueOf(o2.getPosition()));
+				}
+
+			});
+			return Collections.unmodifiableList(list);
 		} else {
 			return Collections.emptyList();
 		}
