@@ -64,7 +64,7 @@ commons.factory('ServerValidator', function() {
 
 commons.factory('RemoteResource', [ '$resource', function($resource) {
 	var RemoteResource = function(url) {
-		url = '/airplay-web/services' + url + '/:identifier';
+		url = '/airplay-web/services' + url;
 		return $resource(url, {
 			identifier : '@identifier'
 		}, {
