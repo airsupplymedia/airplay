@@ -15,6 +15,8 @@ import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import de.airsupply.commons.core.neo4j.annotation.Persistent;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 import de.airsupply.commons.core.util.CollectionUtils;
@@ -32,6 +34,7 @@ public class ChartState extends PersistentNode {
 
 	@Fetch
 	@RelatedTo(direction = Direction.OUTGOING, type = "CHART_POSITIONS")
+	@JsonIgnore
 	private Iterable<ChartPosition> chartPositions = null;
 
 	@Indexed
@@ -51,6 +54,7 @@ public class ChartState extends PersistentNode {
 		return chart;
 	}
 
+	@JsonIgnore
 	public List<ChartPosition> getChartPositionList() {
 		if (chartPositions != null) {
 			List<ChartPosition> list = CollectionUtils.asModifiableList(chartPositions);

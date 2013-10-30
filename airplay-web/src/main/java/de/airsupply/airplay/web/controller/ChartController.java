@@ -44,6 +44,16 @@ public class ChartController {
 		return null;
 	}
 
+	@RequestMapping("/{identifier}/latest")
+	@ResponseBody
+	public Collection<ChartPosition> findLatestChartPositions(@PathVariable Long identifier) {
+		Chart chart = chartService.find(identifier, Chart.class);
+		if (chart != null) {
+			return chartService.findLatestChartPositions(chart);
+		}
+		return null;
+	}
+
 	@RequestMapping(method = RequestMethod.GET)
 	@ResponseBody
 	public Collection<Chart> getCharts() {
