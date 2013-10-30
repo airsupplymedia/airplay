@@ -1,4 +1,4 @@
-var application = angular.module('airplay', [ 'ui.bootstrap', 'airplay.commons' ]).config(function($routeProvider) {
+var application = angular.module('airplay', [ 'ui.bootstrap', 'ui.sortable', 'airplay.commons' ]).config(function($routeProvider) {
 	$routeProvider.when('/charts', {
 		templateUrl : '/airplay-web/views/charts/listTemplate.html',
 		controller : 'ChartListController'
@@ -11,7 +11,7 @@ var application = angular.module('airplay', [ 'ui.bootstrap', 'airplay.commons' 
 application.factory('ChartService', [ 'RemoteService', function(RemoteService) {
 	var ChartService = {
 		charts : RemoteService.using('/charts'),
-		chartStates : RemoteService.using('/charts/:identifier/:date', true)
+		chartStates : RemoteService.using('/charts/:identifier/:date')
 	};
 	return ChartService;
 } ]);

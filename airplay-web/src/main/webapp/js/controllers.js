@@ -9,6 +9,10 @@ application.controller('ChartListController', [ '$scope', '$modal', '$timeout', 
 	$scope.charts = ChartService.charts.resource().find({}, function(response) {
 		if (response[0]) {
 			$scope.chartState.chart = response[0].identifier;
+			$scope.chartPositions = ChartService.chartStates.resource().find({
+				identifier : $scope.chartState.chart,
+				date : 'latest'
+			});
 		}
 	});
 	$scope.chartState = {
@@ -21,6 +25,14 @@ application.controller('ChartListController', [ '$scope', '$modal', '$timeout', 
 				identifier : chart,
 				date : date
 			});
+		}
+	};
+	$scope.sortableOptions = {
+		stop : function(event, element) {
+			var sorter = sort(element);
+			while (sorter.hasNext()) {
+				sorter.next().applyPosition();
+			}
 		}
 	};
 } ]);
