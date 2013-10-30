@@ -18,35 +18,36 @@ function createAlert(message, type, scope, timeout, duration) {
 	}, duration);
 }
 
-function sort(ui) {
-	var start = ui.item.sortable.index;
-	var end = ui.item.index();
+function sort(ui, callback) {
 	var from;
 	var to;
-	if (start < end) {
-		from = start;
-		to = end + 1;
+	if (ui.item.sortable.index < ui.item.index()) {
+		from = ui.item.sortable.index;
+		to = ui.item.index() + 1;
 	} else {
-		from = end;
-		to = start + 1;
+		from = ui.item.index();
+		to = ui.item.sortable.index + 1;
 	}
+	var items = undefined;
+	if (ui.item.sortable.resort) {
+		items = ui.item.sortable.resort.$viewValue.slice(from, to);
+	}
+	var indexInList = from;
+	var indexInSublist = 0;
 	return {
-		index : 0,
-		start : from,
-		siblings : ui.item.sortable.resort.$viewValue.slice(from, to),
 		hasNext : function() {
-			return this.index < this.siblings.length;
+			if (!items) {
+				return false;
+			}
+			return indexInSublist < items.length;
 		},
-		next : function() {
-			this.start = this.start + 1;
-			var position = this.start;
-			var sibling = this.siblings[this.index];
-			this.index = this.index + 1;
-			return {
-				applyPosition : function() {
-					sibling.position = position;
-				}
-			};
+		next : function(callback) {
+			if (!items) {
+				return undefined;
+			}
+			callback.call(null, items[indexInSublist], indexInList);
+			indexInList = indexInList + 1;
+			indexInSublist = indexInSublist + 1;
 		}
 	};
 };
