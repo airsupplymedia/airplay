@@ -1,0 +1,58 @@
+<div class="modal-header">
+	<h3 ng-show="create">New Song</h3>
+	<h3 ng-show="edit">
+		Edit Song <small>{{song.artist.name}} - {{song.name}}</small>
+	</h3>
+</div>
+<form class="form-horizontal" name="form" novalidate role="form">
+	<div class="modal-body">
+		<div class="control-group">
+			<label class="control-label" for="name">Name</label>
+			<div class="controls">
+				<input class="form-control" type="text" name="name" placeholder="Name" ng-model="song.name" required as-server-validated />
+				<div>
+					<span class="label label-important" ng-show="form.name.$error.unique">This value has to be unique</span>
+					<span class="label label-important" ng-show="form.name.$error.required">This field is required</span>
+				</div>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="artist">Artist</label>
+			<div class="controls">
+				<input class="form-control" type="text" name="artist" placeholder="Artist" ng-model="song.artist" typeahead="artist as artist.name for artist in artists($viewValue)" required as-server-validated />
+				<div>
+					<span class="label label-important" ng-show="form.artist.$error.unique">This value has to be unique</span>
+					<span class="label label-important" ng-show="form.artist.$error.persistent">This value does not exist yet</span>
+					<span class="label label-important" ng-show="form.artist.$error.required">This field is required</span>
+				</div>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="publisher">Publisher</label>
+			<div class="controls">
+				<input class="form-control" type="text" name="publisher" placeholder="Publisher" ng-model="song.publisher" typeahead="publisher as publisher.name for publisher in publishers($viewValue)" as-server-validated />
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="recordCompany">Record Company</label>
+			<div class="controls">
+				<input class="form-control" type="text" name="recordCompany" placeholder="Record Company" ng-model="song.recordCompany" typeahead="recordCompany as recordCompany.name for recordCompany in recordCompanies($viewValue)" as-server-validated />
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="discIdentifier">Disc</label>
+			<div class="controls">
+				<input class="form-control" type="text" name="discIdentifier" placeholder="Name" ng-model="song.discIdentifier" as-server-validated />
+			</div>
+		</div>
+	</div>
+	<div class="modal-footer">
+		<div class="control-group">
+			<div class="controls">
+				<button class="btn btn-primary" type="submit" ng-click="save()" ng-disabled="form.$invalid || unchanged()">Save</button>
+				<button class="btn" type="button" ng-click="reset()" ng-disabled="unchanged()">Reset</button>
+				<button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+			</div>
+		</div>
+	</div>
+</form>

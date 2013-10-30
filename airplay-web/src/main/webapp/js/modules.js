@@ -1,22 +1,27 @@
 var application = angular.module('airplay', [ 'ui.bootstrap', 'airplay.commons' ]).config(function($routeProvider) {
-	$routeProvider.when('/songs', {
-		templateUrl : '/airplay-web/views/songs/list.html',
+	$routeProvider.when('/charts', {
+		templateUrl : '/airplay-web/views/charts/listTemplate.html',
+		controller : 'ChartListController'
+	}).when('/songs', {
+		templateUrl : '/airplay-web/views/songs/listTemplate.html',
 		controller : 'SongListController'
-	}).when('/songs/song/:identifier', {
-		templateUrl : '/airplay-web/views/songs/detail.html',
-		controller : 'SongDetailController'
-	}).when('/songs/song/', {
-		templateUrl : '/airplay-web/views/songs/detail.html',
-		controller : 'SongDetailController'
 	});
 });
 
-application.factory('ContentService', [ 'RemoteResource', 'RemoteService', 'limitToFilter', function(RemoteResource, RemoteService, limitToFilter) {
+application.factory('ChartService', [ 'RemoteService', function(RemoteService) {
+	var ChartService = {
+		charts : RemoteService.using('/charts'),
+		chartStates : RemoteService.using('/charts/:identifier/:date', true)
+	};
+	return ChartService;
+} ]);
+
+application.factory('ContentService', [ 'RemoteService', function(RemoteService) {
 	var ContentService = {
-		artists : RemoteService.using('/contents/artists'),
-		publishers : RemoteService.using('/contents/publishers'),
-		recordCompanies : RemoteService.using('/contents/recordCompanies'),
-		songs : RemoteService.using('/contents/songs')
+		artists : RemoteService.using('/contents/artists/:identifier'),
+		publishers : RemoteService.using('/contents/publishers/:identifier'),
+		recordCompanies : RemoteService.using('/contents/recordCompanies/:identifier'),
+		songs : RemoteService.using('/contents/songs/:identifier')
 	};
 	return ContentService;
 } ]);
