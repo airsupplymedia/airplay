@@ -3,18 +3,23 @@ package de.airsupply.airplay.core.config;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.joda.time.DateTime;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.neo4j.config.EnableNeo4jRepositories;
 import org.springframework.data.neo4j.config.Neo4jConfiguration;
+import org.springframework.data.neo4j.lifecycle.BeforeSaveEvent;
 import org.springframework.data.neo4j.support.typesafety.TypeSafetyOption;
 import org.springframework.data.neo4j.support.typesafety.TypeSafetyPolicy;
+
+import de.airsupply.airplay.core.model.PersistentNode;
 
 @Configuration
 @Profile("production")
@@ -39,4 +44,24 @@ public class DatabaseConfiguration extends Neo4jConfiguration {
 	public TypeSafetyPolicy typeSafetyPolicy() throws Exception {
 		return new TypeSafetyPolicy(TypeSafetyOption.THROWS_EXCEPTION);
 	}
+
+	@Bean
+	public ApplicationListener<BeforeSaveEvent<PersistentNode>> beforeSaveEventApplicationListener() {
+		return new ApplicationListener<BeforeSaveEvent<PersistentNode>>() {
+
+			@Override
+			public void onApplicationEvent(BeforeSaveEvent<PersistentNode> event) {
+				if (event.getEntity() instanceof PersistentNode) {
+					PersistentNode entity = event.getEntity();
+					if (entity.isNew()) {
+						entity.setCreatedDate(DateTime.now());
+					} else {
+						entity.setLastModifiedDate(DateTime.now());
+					}
+				}
+			}
+
+		};
+	}
+
 }
