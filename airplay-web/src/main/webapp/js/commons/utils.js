@@ -29,25 +29,12 @@ function sort(ui, callback) {
 		to = ui.item.sortable.index + 1;
 	}
 	var items = undefined;
+	var index = from;
 	if (ui.item.sortable.resort) {
 		items = ui.item.sortable.resort.$viewValue.slice(from, to);
-	}
-	var indexInList = from;
-	var indexInSublist = 0;
-	return {
-		hasNext : function() {
-			if (!items) {
-				return false;
-			}
-			return indexInSublist < items.length;
-		},
-		next : function(callback) {
-			if (!items) {
-				return undefined;
-			}
-			callback.call(null, items[indexInSublist], indexInList);
-			indexInList = indexInList + 1;
-			indexInSublist = indexInSublist + 1;
+		for (var i = 0; i < items.length; ++i) {
+			callback.call(null, items[i], index);
+			index = index + 1;
 		}
-	};
+	}
 };

@@ -29,12 +29,9 @@ application.controller('ChartListController', [ '$scope', '$modal', '$timeout', 
 	};
 	$scope.sortableOptions = {
 		stop : function(event, ui) {
-			var sorter = sort(ui);
-			while (sorter.hasNext()) {
-				var next = sorter.next(function(item, index) {
-					item.position = index + 1;
-				});
-			}
+			sort(ui, function(item, index) {
+				item.position = index + 1;
+			});
 		}
 	};
 } ]);

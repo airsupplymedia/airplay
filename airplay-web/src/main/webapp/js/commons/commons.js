@@ -56,7 +56,9 @@ commons.factory('ServerValidator', function() {
 					});
 				}
 			});
-			scope.$broadcast('asServerValidation', errors);
+			if (errors.length > 0) {
+				scope.$broadcast('asServerValidation', errors);
+			}
 			errors = undefined;
 		},
 	};
@@ -109,12 +111,12 @@ commons.factory('RemoteService', [ 'RemoteResource', 'limitToFilter', function(R
 					var result = remoteResource.find({
 						name : name
 					});
-					if (!promise) {
+					if (promise) {
+						return result;
+					} else {
 						return result.$then(function(response) {
 							return limitToFilter(response.data, limit);
 						});
-					} else {
-						return result;
 					}
 				}
 			};
