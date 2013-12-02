@@ -86,8 +86,7 @@ public class AirplayRecordMigrator {
 
 		File file = new File(fileDirectory, DATABASE_FILE_ARCHIVE);
 		NumberRange recordsToSkip = new NumberRange(Integer.valueOf(5372), Integer.valueOf(7285));
-		List<Record> records = DBFReader.readRecords(file, true, recordsToSkip);
-		for (Record record : records) {
+		for (Record record : DBFReader.readRecords(file, true, recordsToSkip)) {
 			String artistName = record.getStringValue("INTE").trim();
 			String songIdentifier = record.getStringValue("ARNR").trim();
 			String songName = record.getStringValue("TITL").trim();
