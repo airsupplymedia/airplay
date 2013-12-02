@@ -12,11 +12,13 @@ public class PersistentNode implements Auditable<User, Long> {
 
 	public static final String ID_NAME = "identifier";
 
+	@JsonIgnore
 	private long createdDate;
 
 	@GraphId
 	private Long identifier;
 
+	@JsonIgnore
 	private long lastModifiedDate;
 
 	public PersistentNode() {
@@ -51,6 +53,7 @@ public class PersistentNode implements Auditable<User, Long> {
 	}
 
 	@Override
+	@JsonIgnore
 	public DateTime getCreatedDate() {
 		return new DateTime(createdDate);
 	}
@@ -72,6 +75,7 @@ public class PersistentNode implements Auditable<User, Long> {
 	}
 
 	@Override
+	@JsonIgnore
 	public DateTime getLastModifiedDate() {
 		return new DateTime(lastModifiedDate);
 	}
