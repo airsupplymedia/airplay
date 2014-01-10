@@ -1,11 +1,4 @@
 application.controller('ChartListController', [ '$scope', '$modal', '$timeout', 'ChartService', function($scope, $modal, $timeout, ChartService) {
-	$scope.chartPositionClass = function(position) {
-		if (position == 1) {
-			return 'badge-important';
-		} else if (position > 1 && position <= 10) {
-			return 'badge-inverse';
-		}
-	};
 	$scope.charts = ChartService.charts.resource().find({}, function(response) {
 		if (response[0]) {
 			$scope.chartState.chart = response[0].identifier;
@@ -29,7 +22,7 @@ application.controller('ChartListController', [ '$scope', '$modal', '$timeout', 
 	};
 	$scope.sortableOptions = {
 		stop : function(event, ui) {
-			sortUI(ui, function(item, index) {
+			sort($scope.chartPositions, ui.item.sortable.index, ui.item.sortable.dropindex, function(item, index) {
 				item.position = index + 1;
 			});
 		}

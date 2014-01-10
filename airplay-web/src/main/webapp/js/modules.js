@@ -1,4 +1,4 @@
-var application = angular.module('airplay', [ 'ui.bootstrap', 'ui.sortable', 'airplay.commons' ]).config(function($routeProvider) {
+var application = angular.module('airplay', [ 'ngRoute', 'ui.bootstrap', 'ui.sortable', 'airplay.commons' ]).config(function($routeProvider) {
 	$routeProvider.when('/charts', {
 		templateUrl : '/airplay-web/views/charts/listTemplate.html',
 		controller : 'ChartListController'

@@ -11,7 +11,7 @@ function createSuccess(message, scope, timeout, duration) {
 }
 
 function createWarning(message, scope, timeout, duration) {
-	createAlert(message, "error", scope, timeout, duration);
+	createAlert(message, "warning", scope, timeout, duration);
 }
 
 function createAlert(message, type, scope, timeout, duration) {
@@ -29,12 +29,6 @@ function createAlert(message, type, scope, timeout, duration) {
 		scope.alerts.pop();
 	}, duration);
 }
-
-function sortUI(ui, callback) {
-	if (ui.item.sortable.resort) {
-		sort(ui.item.sortable.resort.$viewValue, ui.item.sortable.index, ui.item.index(), callback);
-	}
-};
 
 function sort(items, oldIndex, newIndex, callback) {
 	var from;

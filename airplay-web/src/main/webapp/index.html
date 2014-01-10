@@ -9,6 +9,7 @@
 <script src="./js/lib/jquery-ui.js"></script>
 <script src="./js/lib/bootstrap.js"></script>
 <script src="./js/lib/angular.js"></script>
+<script src="./js/lib/angular-route.js"></script>
 <script src="./js/lib/angular-resource.js"></script>
 <script src="./js/lib/angular-bootstrap-tpls.js"></script>
 <script src="./js/lib/angular-sortable.js"></script>
@@ -18,29 +19,29 @@
 <script src="./js/controllers.js"></script>
 </head>
 <body>
-	<div class="navbar navbar-inverse navbar-fixed-top">
-		<div class="navbar-inner">
-			<div class="container">
-				<a class="brand" href="#">AirPlay Manager</a>
-				<div class="nav-collapse collapse">
-					<ul class="nav navbar-nav">
-						<li><a href="#songs">Songs</a></li>
-						<li><a href="#charts">Charts</a></li>
-						<li><a href="#broadcasts">Broadcasts</a></li>
-						<li><a href="#import">Import</a></li>
-						<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Manage Application <b class="caret"></b></a>
-							<ul class="dropdown-menu">
-								<li><a href="#reports">Reports</a></li>
-								<li><a href="#statistics">Statistics</a></li>
-								<li class="divider"></li>
-								<li class="nav-header">User Actions</li>
-								<li><a href="./logout">Logout</a></li>
-							</ul></li>
-					</ul>
-				</div>
+	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+		<div class="container">
+			<div class="navbar-header">
+				<a class="navbar-brand" href="#">AirPlay Manager</a>
+			</div>
+			<div class="collapse navbar-collapse" id="header-navbar-collapse-target">
+				<ul class="nav navbar-nav">
+					<li><a href="#songs">Songs</a></li>
+					<li><a href="#charts">Charts</a></li>
+					<li><a href="#broadcasts">Broadcasts</a></li>
+					<li><a href="#import">Import</a></li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Manage Application <b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li><a href="#reports">Reports</a></li>
+							<li><a href="#statistics">Statistics</a></li>
+							<li class="divider"></li>
+							<li><a href="./logout">Logout</a></li>
+						</ul>
+					</li>
+				</ul>
 			</div>
 		</div>
-	</div>
+	</nav>
 	<div class="container" ng-view></div>
 </body>
 </html>

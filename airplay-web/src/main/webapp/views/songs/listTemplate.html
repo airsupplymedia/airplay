@@ -1,42 +1,44 @@
 <div class="page-header">
 	<h2>
-		Songs <a class="btn btn-primary pull-right" ng-click="createItem()"><i class="icon-plus-sign icon-white"></i> Add New</a>
+		Songs <a class="btn btn-primary pull-right" ng-click="createItem()"><i class="glyphicon glyphicon-plus-sign"></i> Add New</a>
 	</h2>
 </div>
 <alert ng-repeat="alert in alerts" type="alert.type">{{alert.message}}</alert>
-<form class="form-search" role="form">
-	<input type="text" class="input-medium search-query" placeholder="Search..." ng-model="search" ng-change="findSongs(search)">
+<form role="search">
+	<div class="row">
+		<div class="col-xs-4">
+			<input type="text" class="form-control" placeholder="Search..." ng-model="search" ng-change="findSongs(search)">
+		</div>
+	</div>
 </form>
-<div class="panel panel-default scrollable-bordered" ng-show="songs.length > 0">
-	<table class="table table-condensed table-hover table-striped">
-		<thead>
-			<tr>
-				<th>Artist</th>
-				<th>Title</th>
-				<th>Publisher</th>
-				<th>Company</th>
-				<th>Disc</th>
-				<th></th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr ng-repeat="song in songs">
-				<td>{{song.artist.name}}</td>
-				<td>{{song.name}}</td>
-				<td>{{song.publisher.name}}</td>
-				<td>{{song.recordCompany.name}}</td>
-				<td>{{song.discIdentifier}}</td>
-				<td>
-					<div class="pull-right">
-						<button class="btn btn-info btn-sm" ng-click="editItem(song)">
-							<i class="icon-edit icon-white" />
-						</button>
-						<button class="btn btn-danger btn-sm" ng-click="deleteItem(song)">
-							<i class="icon-remove icon-white" />
-						</button>
-					</div>
-				</td>
-			</tr>
-	</table>
+<table class="table table-condensed table-hover table-striped" ng-show="songs.length > 0">
+	<thead>
+		<tr>
+			<th>Artist</th>
+			<th>Title</th>
+			<th>Publisher</th>
+			<th>Company</th>
+			<th>Disc</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr ng-repeat="song in songs">
+			<td>{{song.artist.name}}</td>
+			<td>{{song.name}}</td>
+			<td>{{song.publisher.name}}</td>
+			<td>{{song.recordCompany.name}}</td>
+			<td>{{song.discIdentifier}}</td>
+			<td>
+				<div class="pull-right">
+					<button class="btn btn-info btn-sm" ng-click="editItem(song)">
+						<i class="glyphicon glyphicon-edit" />
+					</button>
+					<button class="btn btn-danger btn-sm" ng-click="deleteItem(song)">
+						<i class="glyphicon glyphicon-remove" />
+					</button>
+				</div>
+			</td>
+		</tr>
 	</tbody>
-</div>
+</table>
