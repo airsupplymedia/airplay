@@ -39,7 +39,8 @@ public class ChartService extends Neo4jServiceSupport {
 	public List<ChartPosition> findChartPositions(Chart chart, Date date) {
 		Assert.notNull(chart);
 		Assert.notNull(date);
-		return CollectionUtils.asList(chartPositionRepository.find(chart, DateUtils.getStartOfWeek(date).getTime()));
+		ChartState chartState = chartStateRepository.find(chart, DateUtils.getStartOfWeek(date).getTime());
+		return CollectionUtils.asList(chartPositionRepository.find(chartState));
 	}
 
 	public List<ChartPosition> findChartPositions(Chart chart, Song song) {

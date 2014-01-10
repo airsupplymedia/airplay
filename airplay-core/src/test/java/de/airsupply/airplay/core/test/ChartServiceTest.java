@@ -60,6 +60,7 @@ public class ChartServiceTest {
 
 		Chart chart = service.save(new Chart("Airplay Charts"));
 		ChartState chartState = service.save(new ChartState(chart, week));
+		service.save(new ChartState(chart, DateUtils.getStartOfWeek(new GregorianCalendar(2001, 12, 24).getTime())));
 
 		Artist artist;
 		Song song;

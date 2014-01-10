@@ -7,6 +7,8 @@ import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 
 @Unique(query = "START chartState=node({chartState}), song=node({song}) MATCH chartState-[:CHART_POSITIONS]-chartPosition-[:CHART_POSITION]->song WHERE chartPosition.position={position} RETURN chartPosition", arguments = {
@@ -17,6 +19,7 @@ public class ChartPosition extends PersistentNode {
 
 	@NotNull
 	@RelatedTo(direction = Direction.INCOMING, type = "CHART_POSITIONS")
+	@JsonIgnore
 	private ChartState chartState;
 
 	private int position;
@@ -37,6 +40,7 @@ public class ChartPosition extends PersistentNode {
 		this.position = position;
 	}
 
+	@JsonIgnore
 	public ChartState getChartState() {
 		return chartState;
 	}
