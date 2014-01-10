@@ -2,6 +2,18 @@ function toFirstLower(string) {
 	return string.charAt(0).toLowerCase() + string.slice(1);
 }
 
+function createError(message, scope, timeout, duration) {
+	createAlert(message, "error", scope, timeout, duration);
+}
+
+function createSuccess(message, scope, timeout, duration) {
+	createAlert(message, "success", scope, timeout, duration);
+}
+
+function createWarning(message, scope, timeout, duration) {
+	createAlert(message, "error", scope, timeout, duration);
+}
+
 function createAlert(message, type, scope, timeout, duration) {
 	if (duration == null) {
 		duration = 3000;
@@ -18,23 +30,28 @@ function createAlert(message, type, scope, timeout, duration) {
 	}, duration);
 }
 
-function sort(ui, callback) {
+function sortUI(ui, callback) {
+	if (ui.item.sortable.resort) {
+		sort(ui.item.sortable.resort.$viewValue, ui.item.sortable.index, ui.item.index(), callback);
+	}
+};
+
+function sort(items, oldIndex, newIndex, callback) {
 	var from;
 	var to;
-	if (ui.item.sortable.index < ui.item.index()) {
-		from = ui.item.sortable.index;
-		to = ui.item.index() + 1;
+	if (oldIndex < newIndex) {
+		from = oldIndex;
+		to = newIndex + 1;
 	} else {
-		from = ui.item.index();
-		to = ui.item.sortable.index + 1;
+		from = newIndex;
+		to = oldIndex + 1;
 	}
-	var items = undefined;
 	var index = from;
-	if (ui.item.sortable.resort) {
-		items = ui.item.sortable.resort.$viewValue.slice(from, to);
+	if (items) {
+		items = items.slice(from, to);
 		for (var i = 0; i < items.length; ++i) {
 			callback.call(null, items[i], index);
 			index = index + 1;
 		}
 	}
-};
+}

@@ -29,7 +29,7 @@ application.controller('ChartListController', [ '$scope', '$modal', '$timeout', 
 	};
 	$scope.sortableOptions = {
 		stop : function(event, ui) {
-			sort(ui, function(item, index) {
+			sortUI(ui, function(item, index) {
 				item.position = index + 1;
 			});
 		}
@@ -53,9 +53,9 @@ application.controller('SongListController', [ '$scope', '$modal', '$timeout', '
 		});
 		modalInstance.result.then(function(result) {
 			$scope.songs.push(result);
-			createAlert("Song: " + result.name + " has been created!", "success", $scope, $timeout);
+			createSuccess("Song: " + result.name + " has been created!", $scope, $timeout);
 		}, function() {
-			createAlert("Song has not been created!", "warning", $scope, $timeout);
+			createWarning("Song has not been created!", $scope, $timeout);
 		});
 	};
 	$scope.deleteItem = function(song) {
@@ -75,9 +75,9 @@ application.controller('SongListController', [ '$scope', '$modal', '$timeout', '
 		});
 		modalInstance.result.then(function(result) {
 			angular.extend(item, result);
-			createAlert("Song: " + result.name + " has been saved!", "success", $scope, $timeout);
+			createSuccess("Song: " + result.name + " has been saved!", $scope, $timeout);
 		}, function() {
-			createAlert("Song: " + item.name + " has not been saved!", "warning", $scope, $timeout);
+			createWarning("Song: " + item.name + " has not been saved!", $scope, $timeout);
 		});
 	};
 } ]);
