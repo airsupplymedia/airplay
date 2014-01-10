@@ -1,10 +1,10 @@
-<div class="modal-header">
-	<h3 ng-show="create">New Song</h3>
-	<h3 ng-show="edit">
-		Edit Song <small>{{song.artist.name}} - {{song.name}}</small>
-	</h3>
-</div>
 <form class="form-horizontal" name="form" novalidate role="form">
+	<div class="modal-header">
+		<h3 ng-show="create">New Song</h3>
+		<h3 ng-show="edit">
+			Edit Song <small>{{song.artist.name}} - {{song.name}}</small>
+		</h3>
+	</div>
 	<div class="modal-body">
 		<div class="control-group">
 			<label class="control-label" for="name">Name</label>
