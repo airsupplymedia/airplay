@@ -84,6 +84,10 @@ commons.factory('RemoteResource', [ '$resource', function($resource) {
 			},
 			find : {
 				method : 'GET',
+				isArray : true
+			},
+			search : {
+				method : 'GET',
 				interceptor : {
 					response : function(response) {
 						return response;
@@ -113,7 +117,7 @@ commons.factory('RemoteService', [ 'RemoteResource', 'limitToFilter', function(R
 					if (!name) {
 						return;
 					}
-					var result = remoteResource.find({
+					var result = remoteResource.search({
 						name : name
 					});
 					if (promise) {
