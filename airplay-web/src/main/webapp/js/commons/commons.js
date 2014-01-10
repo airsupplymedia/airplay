@@ -84,6 +84,11 @@ commons.factory('RemoteResource', [ '$resource', function($resource) {
 			},
 			find : {
 				method : 'GET',
+				interceptor : {
+					response : function(response) {
+						return response;
+					}
+				},
 				isArray : true
 			}
 		});
@@ -114,7 +119,7 @@ commons.factory('RemoteService', [ 'RemoteResource', 'limitToFilter', function(R
 					if (promise) {
 						return result;
 					} else {
-						return result.$then(function(response) {
+						return result.$promise.then(function(response) {
 							return limitToFilter(response.data, limit);
 						});
 					}
