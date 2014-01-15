@@ -9,6 +9,24 @@ var commons = angular.module('airplay.commons', [ 'ngResource' ], function($http
 	});
 });
 
+commons.directive('asAlerts', [ '$rootScope', '$timeout', function($rootScope, $timeout) {
+	return {
+		controller : function($scope, $rootScope) {
+			$rootScope.$on('asAlerts', function(event, args) {
+				if (!$rootScope.alerts) {
+					$rootScope.alerts = new Array();
+				}
+				$rootScope.alerts.unshift(args);
+				$timeout(function() {
+					$rootScope.alerts.pop();
+				}, args.duration);
+			});
+		},
+		replace : true,
+		template : '<alert ng-repeat="alert in alerts" type="alert.type">{{alert.message}}</alert>'
+	};
+} ]);
+
 commons.directive('asServerValidated', [ 'ServerValidator', function(ServerValidator) {
 	return {
 		require : 'ngModel',
@@ -28,6 +46,30 @@ commons.directive('asServerValidated', [ 'ServerValidator', function(ServerValid
 				});
 				errors = undefined;
 				return viewValue;
+			});
+		}
+	};
+} ]);
+
+commons.factory('AlertService', [ '$rootScope', '$timeout', function($rootScope, $timeout) {
+	return {
+		error : function(message, duration) {
+			this.alert(message, "error", duration);
+		},
+		success : function(message, duration) {
+			this.alert(message, "success", duration);
+		},
+		warning : function(message, duration) {
+			this.alert(message, "warning", duration);
+		},
+		alert : function(message, type, duration) {
+			if (duration == null) {
+				duration = 2500;
+			}
+			$rootScope.$broadcast('asAlerts', {
+				type : type,
+				message : message,
+				duration : duration
 			});
 		}
 	};

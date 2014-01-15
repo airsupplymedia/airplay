@@ -1,10 +1,17 @@
-var application = angular.module('airplay', [ 'ngRoute', 'ui.bootstrap', 'ui.sortable', 'airplay.commons' ]).config(function($routeProvider) {
-	$routeProvider.when('/charts', {
-		templateUrl : '/airplay-web/views/charts/listTemplate.html',
+var application = angular.module('airplay', [ 'ui.router', 'ui.bootstrap', 'ui.sortable', 'airplay.commons' ]).config(function($stateProvider, $urlRouterProvider) {
+	$urlRouterProvider.otherwise("/");
+	$stateProvider.state('charts', {
+		url : "/charts",
+		templateUrl : "views/charts/listTemplate.html",
 		controller : 'ChartListController'
-	}).when('/songs', {
-		templateUrl : '/airplay-web/views/songs/listTemplate.html',
+	}).state('songs', {
+		url : "/songs",
+		templateUrl : 'views/songs/listTemplate.html',
 		controller : 'SongListController'
+	}).state('songs.edit', {
+		url : "/edit/:identifier",
+		templateUrl : "views/songs/editTemplate.html",
+		controller : 'SongEditController'
 	});
 });
 

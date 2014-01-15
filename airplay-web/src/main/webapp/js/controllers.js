@@ -29,58 +29,26 @@ application.controller('ChartListController', [ '$scope', '$modal', '$timeout', 
 	};
 } ]);
 
-application.controller('SongListController', [ '$scope', '$modal', '$timeout', 'ContentService', function($scope, $modal, $timeout, ContentService) {
+application.controller('SongListController', [ '$scope', 'ContentService', function($scope, ContentService) {
 	$scope.results = 0;
 	$scope.findSongs = function(name) {
 		$scope.songs = ContentService.songs.search(name, null, true);
-	};
-	$scope.createItem = function() {
-		var modalInstance = $modal.open({
-			templateUrl : 'views/songs/detailTemplate.html',
-			controller : 'SongDetailController',
-			resolve : {
-				item : function() {
-					return null;
-				}
-			}
-		});
-		modalInstance.result.then(function(result) {
-			$scope.songs.push(result);
-			createSuccess("Song: " + result.name + " has been created!", $scope, $timeout);
-		}, function() {
-			createWarning("Song has not been created!", $scope, $timeout);
-		});
 	};
 	$scope.deleteItem = function(song) {
 		song.$delete(function() {
 			$scope.songs.splice($scope.songs.indexOf(song), 1);
 		});
 	};
-	$scope.editItem = function(item) {
-		var modalInstance = $modal.open({
-			templateUrl : 'views/songs/detailTemplate.html',
-			controller : 'SongDetailController',
-			resolve : {
-				item : function() {
-					return item;
-				}
-			}
-		});
-		modalInstance.result.then(function(result) {
-			angular.extend(item, result);
-			createSuccess("Song: " + result.name + " has been saved!", $scope, $timeout);
-		}, function() {
-			createWarning("Song: " + item.name + " has not been saved!", $scope, $timeout);
-		});
-	};
 } ]);
 
-application.controller('SongDetailController', [ '$scope', '$modalInstance', 'ContentService', 'item', function($scope, $modalInstance, ContentService, item) {
-	var create = item == null;
+application.controller('SongEditController', [ '$scope', '$state', 'AlertService', 'ContentService', function($scope, $state, AlertService, ContentService) {
+	var create = $state.params.identifier == null || $state.params.identifier == 'new';
 	$scope.create = create;
 	$scope.edit = !create;
 	if (!create) {
-		$scope.song = angular.copy(item);
+		$scope.song = ContentService.songs.resource().get({
+			identifier : $state.params.identifier
+		});
 		$scope.master = angular.copy($scope.song);
 	} else {
 		$scope.song = {};
@@ -99,17 +67,18 @@ application.controller('SongDetailController', [ '$scope', '$modalInstance', 'Co
 			ContentService.songs.resource().put({
 				identifier : $scope.song.identifier,
 			}, $scope.song, function() {
-				$modalInstance.close($scope.song);
+				AlertService.success($scope.song.name + " has been saved!");
 			});
 		} else {
 			ContentService.songs.resource().post({}, $scope.song, function() {
-				$modalInstance.close($scope.song);
+				AlertService.success($scope.song.name + " has been created!");
 			});
 		}
 	};
 	$scope.cancel = function() {
 		$scope.reset();
-		$modalInstance.dismiss();
+		AlertService.warning($scope.song.name + " has not been saved!");
+		$state.go('^');
 	};
 	$scope.reset = function() {
 		if (!create) {
