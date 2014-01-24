@@ -1,42 +1,46 @@
 <div class="page-header">
-	<h2>
-		Charts <a class="btn btn-primary pull-right" ng-click="createItem()"><i class="glyphicon glyphicon-plus-sign"></i> Add Chart State</a>
-	</h2>
+	<h2>Charts</h2>
 </div>
-<alert ng-repeat="alert in alerts" type="alert.type">{{alert.message}}</alert>
-<form role="search">
-	<div class="row">
-		<div class="col-xs-4">
+<div class="row">
+	<div class="col-xs-4">
+		<form role="select">
 			<div class="input-group">
 				<div class="input-group-btn">
 					<button class="btn btn-default" type="button" ng-click="findChartPositions(item.identifier, chartState.date)" ng-model="chartState.chart" ng-repeat="item in charts" btn-radio="item.identifier">{{item.name}}</button>
 				</div>
-				<input class="form-control span3" type="week" placeholder="Week" ng-change="findChartPositions(chartState.chart, chartState.date)" ng-model="chartState.date" required />
+				<input type="week" class="form-control span3" placeholder="Week" ng-change="findChartPositions(chartState.chart, chartState.date)" ng-model="chartState.date" required />
 			</div>
-		</div>
+		</form>
 	</div>
-</form>
-<table class="table table-condensed table-hover table-striped" ng-show="chartPositions.length > 0">
-	<thead>
-		<tr>
-			<th>Position</th>
-			<th>Artist</th>
-			<th>Title</th>
-			<th></th>
-		</tr>
-	</thead>
-	<tbody ng-model="chartPositions" ui-sortable="sortableOptions">
-		<tr ng-repeat="chartPosition in chartPositions">
-			<td><span class="badge">{{chartPosition.position}}</span></td>
-			<td>{{chartPosition.song.artist.name}}</td>
-			<td>{{chartPosition.song.name}}</td>
-			<td>
-				<div class="pull-right">
-					<button class="btn btn-danger btn-sm" ng-click="deleteItem(chartPosition)">
-						<i class="glyphicon glyphicon-remove"></i>
-					</button>
-				</div>
-			</td>
-		</tr>
-	</tbody>
-</table>
+</div>
+<div class="row">
+	<div class="col-md-8">
+		<table class="table table-condensed table-hover table-striped" ng-show="chartPositions.length > 0">
+			<thead>
+				<tr>
+					<th>Position</th>
+					<th>Artist</th>
+					<th>Title</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody ng-model="chartPositions" ui-sortable="sortableOptions">
+				<tr ng-repeat="chartPosition in chartPositions">
+					<td><span class="badge">{{chartPosition.position}}</span></td>
+					<td>{{chartPosition.song.artist.name}}</td>
+					<td>{{chartPosition.song.name}}</td>
+					<td>
+						<div class="pull-right">
+							<button class="btn btn-danger btn-sm" ng-click="deleteItem(chartPosition)">
+								<i class="glyphicon glyphicon-remove"></i>
+							</button>
+						</div>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<div class="col-md-4">
+		<div ui-view autoscroll="false"></div>
+	</div>
+</div>

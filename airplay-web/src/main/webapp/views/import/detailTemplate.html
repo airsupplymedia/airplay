@@ -1,0 +1,9 @@
+<tabset ng-show="count > 0"> <tab ng-repeat="category in categories" heading="{{category.title}}">
+<table class="table table-condensed table-hover table-striped">
+	<tbody>
+		<tr ng-repeat="content in contents(category)">
+			<td ng-repeat="detail in category.details">{{content[detail]}}</td>
+		</tr>
+	</tbody>
+</table>
+</tab> </tabset>

@@ -6,13 +6,13 @@
 		</button>
 	</h2>
 </div>
-<form role="search">
-	<div class="row">
-		<div class="col-xs-4">
+<div class="row">
+	<div class="col-xs-4">
+		<form role="search">
 			<input type="text" class="form-control" placeholder="Search..." ng-model="search" ng-change="findSongs(search)">
-		</div>
+		</form>
 	</div>
-</form>
+</div>
 <div class="row">
 	<div class="col-md-8">
 		<table class="table table-condensed table-hover table-striped" ng-show="songs.length > 0">
@@ -20,26 +20,17 @@
 				<tr>
 					<th>Artist</th>
 					<th>Title</th>
-					<th>Publisher</th>
-					<th>Company</th>
-					<th>Disc</th>
 					<th></th>
 				</tr>
 			</thead>
 			<tbody>
-				<tr ng-repeat="song in songs">
+				<tr ng-repeat="song in songs" ui-sref="songs.edit({ identifier: song.identifier })">
 					<td>{{song.artist.name}}</td>
 					<td>{{song.name}}</td>
-					<td>{{song.publisher.name}}</td>
-					<td>{{song.recordCompany.name}}</td>
-					<td>{{song.discIdentifier}}</td>
 					<td>
 						<div class="pull-right">
-							<button class="btn btn-primary btn-sm" ui-sref="songs.edit({ identifier: song.identifier })">
-								<i class="glyphicon glyphicon-edit" />
-							</button>
 							<button class="btn btn-danger btn-sm" ng-click="deleteItem(song)">
-								<i class="glyphicon glyphicon-remove" />
+								<i class="glyphicon glyphicon-remove"></i>
 							</button>
 						</div>
 					</td>
@@ -48,6 +39,6 @@
 		</table>
 	</div>
 	<div class="col-md-4">
-		<div ui-view></div>
+		<div ui-view autoscroll="false"></div>
 	</div>
 </div>

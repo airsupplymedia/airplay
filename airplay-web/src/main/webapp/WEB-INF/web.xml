@@ -25,6 +25,7 @@
 			<param-value>de.airsupply.airplay.web.config</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
+		<multipart-config />
 	</servlet>
 
 	<servlet-mapping>

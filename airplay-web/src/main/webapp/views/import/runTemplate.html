@@ -1,0 +1,19 @@
+<form novalidate role="upload">
+	<div class="input-group" ng-hide="progress">
+		<div class="input-group-btn">
+			<button class="btn btn-default" type="button" ng-model="chart" ng-repeat="item in charts" btn-radio="item.identifier">{{item.name}}</button>
+		</div>
+		<input class="form-control span3" type="week" placeholder="Week" value="{{week}}" ng-model="week" required />
+		<div class="input-group-btn">
+			<span class="btn btn-default btn-file">
+				Browse <input type="file" ng-file-select="uploadFiles($files)" />
+			</span>
+		</div>
+	</div>
+	<div ng-show="progress">
+		<progressbar ng-class="activity" value="progress" type="{{progressType}}"> <b>{{progressText}}</b></progressbar>
+		<div class="form-group">
+			<button class="btn btn-warning" type="button" ng-click="finish()" ng-show="uploaded">Finish</button>
+		</div>
+	</div>
+</form>

@@ -1,11 +1,18 @@
 package de.airsupply.airplay.core.test;
 
+import static de.airsupply.commons.core.util.CollectionUtils.filter;
+import static de.airsupply.commons.core.util.CollectionUtils.filterFor;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,11 +27,16 @@ import org.springframework.util.StopWatch;
 import de.airsupply.airplay.core.config.ApplicationConfiguration;
 import de.airsupply.airplay.core.model.Artist;
 import de.airsupply.airplay.core.model.Chart;
+import de.airsupply.airplay.core.model.ChartPosition;
+import de.airsupply.airplay.core.model.ChartState;
+import de.airsupply.airplay.core.model.PersistentNode;
 import de.airsupply.airplay.core.model.Publisher;
 import de.airsupply.airplay.core.model.RecordCompany;
 import de.airsupply.airplay.core.model.RecordImport;
+import de.airsupply.airplay.core.model.ShowBroadcast;
 import de.airsupply.airplay.core.model.Song;
-import de.airsupply.airplay.core.model.util.LoggingRecordImportProgressProvider;
+import de.airsupply.airplay.core.model.SongBroadcast;
+import de.airsupply.airplay.core.model.Station;
 import de.airsupply.airplay.core.services.ChartService;
 import de.airsupply.airplay.core.services.ContentService;
 import de.airsupply.airplay.core.services.ImportService;
@@ -52,9 +64,6 @@ public class ImportServiceTest {
 	private Logger logger;
 
 	@Autowired
-	private LoggingRecordImportProgressProvider progressProvider;
-
-	@Autowired
 	private StationService stationService;
 
 	@Test
@@ -66,7 +75,7 @@ public class ImportServiceTest {
 		try (InputStream inputStream = url.openStream()) {
 			StopWatch stopWatch = new StopWatch();
 			stopWatch.start();
-			importService.importRecords(chart, week, inputStream, progressProvider);
+			importService.importRecords(chart, week, inputStream);
 			stopWatch.stop();
 			logger.info("Import took: " + stopWatch.prettyPrint());
 		} catch (IOException exception) {
@@ -104,8 +113,8 @@ public class ImportServiceTest {
 		URL url = getClass().getResource("/INTEGRITY_CHECK_AIRPLAY_SET.sdf");
 		logger.info("Using file: " + url);
 		try (InputStream inputStream = url.openStream()) {
-			importService.importRecords(chart, week, inputStream, progressProvider);
-			importService.importRecords(chart, week, inputStream, progressProvider);
+			importService.importRecords(chart, week, inputStream);
+			importService.importRecords(chart, week, inputStream);
 		} catch (IOException exception) {
 			logger.error(exception.getMessage(), exception);
 		}
@@ -120,7 +129,7 @@ public class ImportServiceTest {
 		logger.info("Using file: " + url);
 		try (InputStream inputStream = url.openStream()) {
 			stopWatch.start();
-			importService.importRecords(chart, week, inputStream, progressProvider);
+			importService.importRecords(chart, week, inputStream);
 			stopWatch.stop();
 			logger.info("Import took: " + stopWatch.prettyPrint());
 		} catch (IOException exception) {
@@ -128,18 +137,18 @@ public class ImportServiceTest {
 		}
 
 		RecordImport recordImport = importService.getRecordImports().get(0);
+		Collection<PersistentNode> importedRecordsToRevert = importService.getImportedRecordsToRevert(recordImport);
 		assertEquals(1, chartService.getChartCount());
-		assertEquals(1, importService.getImportedRecordsToRevert(recordImport, "IMPORTED_CHART_STATES").size());
-		assertEquals(300, importService.getImportedRecordsToRevert(recordImport, "IMPORTED_CHART_POSITIONS").size());
-		assertEquals(0, importService.getImportedRecordsToRevert(recordImport, "IMPORTED_SHOWS").size());
-		assertEquals(93, importService.getImportedRecordsToRevert(recordImport, "IMPORTED_STATIONS").size());
-		assertEquals(6216, importService.getImportedRecordsToRevert(recordImport, "IMPORTED_SONG_BROADCASTS").size());
-		assertEquals(0, importService.getImportedRecordsToRevert(recordImport, "IMPORTED_SHOW_BROADCASTS").size());
-		assertEquals(300, importService.getImportedRecordsToRevert(recordImport, "IMPORTED_SONGS").size());
-		assertEquals(254, importService.getImportedRecordsToRevert(recordImport, "IMPORTED_ARTISTS").size());
-		assertEquals(24, importService.getImportedRecordsToRevert(recordImport, "IMPORTED_RECORD_COMPANIES").size());
-		assertEquals(82, importService.getImportedRecordsToRevert(recordImport, "IMPORTED_PUBLISHERS").size());
-		assertEquals(7270, importService.getImportedRecordsToRevert(recordImport).size());
+		assertEquals(1, filter(importedRecordsToRevert, filterFor(ChartState.class)).size());
+		assertEquals(300, filter(importedRecordsToRevert, filterFor(ChartPosition.class)).size());
+		assertEquals(93, filter(importedRecordsToRevert, filterFor(Station.class)).size());
+		assertEquals(6216, filter(importedRecordsToRevert, filterFor(SongBroadcast.class)).size());
+		assertEquals(0, filter(importedRecordsToRevert, filterFor(ShowBroadcast.class)).size());
+		assertEquals(300, filter(importedRecordsToRevert, filterFor(Song.class)).size());
+		assertEquals(254, filter(importedRecordsToRevert, filterFor(Artist.class)).size());
+		assertEquals(24, filter(importedRecordsToRevert, filterFor(RecordCompany.class)).size());
+		assertEquals(82, filter(importedRecordsToRevert, filterFor(Publisher.class)).size());
+		assertEquals(7270, importedRecordsToRevert.size());
 
 		stopWatch.start();
 		importService.revertImport(recordImport);
@@ -161,37 +170,56 @@ public class ImportServiceTest {
 	}
 
 	@Test
-	public void testRevertedImportWithDependencies() {
+	public void testRevertedImportWithDependees() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
 		URL url = getClass().getResource("/INTEGRITY_CHECK_AIRPLAY_SET.sdf");
 		logger.info("Using file: " + url);
 		try (InputStream inputStream = url.openStream()) {
-			importService.importRecords(chart, week, inputStream, progressProvider);
+			importService.importRecords(chart, week, inputStream);
 		} catch (IOException exception) {
 			logger.error(exception.getMessage(), exception);
 		}
 
-		Artist importedArtist = contentService.getArtists().get(0);
-		RecordCompany importedRecordCompany = contentService.getRecordCompanies().get(0);
-		Publisher importedPublisher = contentService.getPublishers().get(0);
+		Artist importedArtist = contentService.findArtists("DEL REY, LANA", false).get(0);
+		RecordCompany importedRecordCompany = contentService.findRecordCompanies("IDG").get(0);
+		Publisher importedPublisher = contentService.findPublishers("UDR URBAN").get(0);
+		contentService.save(new Song(importedArtist, "SOME SONG", null, importedRecordCompany, importedPublisher));
 
-		Song song = new Song(importedArtist, "Some Song", null, importedRecordCompany, importedPublisher);
-		contentService.save(song);
+		Station importedStation = stationService.findStations("SUNSH").get(0);
+		Song importedSong = contentService.findSongs(importedArtist).get(1);
+		stationService.save(new SongBroadcast(importedStation, importedSong, new Date()));
 
-		importService.revertImport(importService.getRecordImports().get(0));
+		RecordImport recordImport = importService.getRecordImports().get(0);
+
+		List<PersistentNode> expected = new ArrayList<>();
+		expected.add(importedArtist);
+		expected.add(importedSong.getPublisher());
+		expected.add(importedPublisher);
+		expected.add(importedSong.getRecordCompany());
+		expected.add(importedRecordCompany);
+		expected.add(importedSong);
+		expected.add(importedStation);
+
+		List<PersistentNode> actual = recordImport.getImportedRecordsWithDependees(importService.getNeo4jTemplate());
+
+		Collections.sort(expected, PersistentNode.identifierComparator());
+		Collections.sort(actual, PersistentNode.identifierComparator());
+
+		assertArrayEquals(expected.toArray(), actual.toArray());
+
+		importService.revertImport(recordImport);
 		assertEquals(1, chartService.getChartCount());
 		assertEquals(0, chartService.getChartStateCount());
 		assertEquals(0, chartService.getChartPositionCount());
 		assertEquals(0, stationService.getShowCount());
-		assertEquals(0, stationService.getStationCount());
-		assertEquals(0, stationService.getSongBroadcastCount());
+		assertEquals(1, stationService.getStationCount());
+		assertEquals(1, stationService.getSongBroadcastCount());
 		assertEquals(0, stationService.getShowBroadcastCount());
-		assertEquals(1, contentService.getSongCount());
+		assertEquals(2, contentService.getSongCount());
 		assertEquals(1, contentService.getArtistCount());
-		assertEquals(1, contentService.getRecordCompanyCount());
-		assertEquals(1, contentService.getPublisherCount());
+		assertEquals(2, contentService.getRecordCompanyCount());
+		assertEquals(2, contentService.getPublisherCount());
 		assertEquals(0, importService.getRecordImportCount());
 	}
-
 }
