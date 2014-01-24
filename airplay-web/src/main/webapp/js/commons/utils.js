@@ -1,3 +1,14 @@
+Date.prototype.getWeekNumber = function() {
+	var date = new Date(+this);
+	date.setHours(0, 0, 0);
+	date.setDate(date.getDate() + 4 - (date.getDay() || 7));
+	return Math.ceil((((date - new Date(date.getFullYear(), 0, 1)) / 8.64e7) + 1) / 7);
+};
+
+Date.prototype.getWeekString = function() {
+	return this.getFullYear() + '-W' + pad(this.getWeekNumber(), '0', 2);
+};
+
 function toFirstLower(string) {
 	return string.charAt(0).toLowerCase() + string.slice(1);
 }
@@ -20,4 +31,12 @@ function sort(items, oldIndex, newIndex, callback) {
 			index = index + 1;
 		}
 	}
+}
+
+function pad(number, padding, size) {
+	var string = number + "";
+	while (string.length < size) {
+		string = padding + string;
+	}
+	return string;
 }
