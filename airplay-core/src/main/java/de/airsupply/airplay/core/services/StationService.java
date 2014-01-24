@@ -43,6 +43,16 @@ public class StationService extends Neo4jServiceSupport {
 		return CollectionUtils.asList(songBroadcastRepository.find(song));
 	}
 
+	public List<Station> findStations(Station object) {
+		Assert.notNull(object);
+		return CollectionUtils.asList(stationRepository.findAllByPropertyValue("name", object.getName()));
+	}
+
+	public List<Station> findStations(String name) {
+		Assert.hasText(name);
+		return findStations(new Station(name));
+	}
+
 	public long getShowBroadcastCount() {
 		return showBroadcastRepository.count();
 	}
