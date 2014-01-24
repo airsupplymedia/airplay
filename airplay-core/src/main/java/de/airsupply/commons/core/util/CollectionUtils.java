@@ -33,6 +33,10 @@ public abstract class CollectionUtils {
 
 	}
 
+	public static Object[] asArray(Object... objects) {
+		return objects;
+	}
+
 	public static <T> Iterable<T> asIterable(Iterator<T> iterator) {
 		Assert.notNull(iterator);
 		Collection<T> collection = new ArrayList<>();
@@ -57,6 +61,11 @@ public abstract class CollectionUtils {
 	public static <T> List<T> asList(Iterable<T> iterable) {
 		Assert.notNull(iterable);
 		return asList(iterable, null);
+	}
+
+	public static <T, F> List<F> asList(Iterable<T> iterable, boolean modifiable) {
+		Assert.notNull(iterable);
+		return asList(iterable, null, modifiable);
 	}
 
 	public static <T, F> List<F> asList(Iterable<T> iterable, Class<F> type) {
@@ -127,20 +136,21 @@ public abstract class CollectionUtils {
 		return Collections.unmodifiableSet(result);
 	}
 
-	public static <S extends T, T> List<S> filter(Collection<S> source, Collection<T> target, Filter<T> filter) {
+	public static <S, T extends S> List<S> filter(Collection<S> source, Collection<T> target, Filter<T> filter) {
 		Assert.notNull(source);
 		Assert.notNull(target);
 		Assert.notNull(filter);
 		return filter(source, target, filter);
 	}
 
-	public static <S extends T, T> List<S> filter(Collection<S> list, Filter<T> filter) {
+	public static <S, T extends S> List<S> filter(Collection<S> list, Filter<T> filter) {
 		Assert.notNull(list);
 		Assert.notNull(filter);
 		return filter(list, new ArrayList<S>(list.size()), filter);
 	}
 
-	private static <S extends T, T, TC extends Collection<S>> TC filter(Iterable<S> source, TC target, Filter<T> filter) {
+	@SuppressWarnings("unchecked")
+	private static <S, T extends S, TC extends Collection<S>> TC filter(Iterable<S> source, TC target, Filter<T> filter) {
 		Assert.isTrue(target.isEmpty());
 		for (S object : source) {
 			if (filter == null || filter.accept((T) object)) {
@@ -150,13 +160,13 @@ public abstract class CollectionUtils {
 		return target;
 	}
 
-	public static <S extends T, T> List<S> filter(List<S> list, Filter<T> filter) {
+	public static <S, T extends S> List<S> filter(List<S> list, Filter<T> filter) {
 		Assert.notNull(list);
 		Assert.notNull(filter);
 		return filter(list, new ArrayList<S>(list.size()), filter);
 	}
 
-	public static <S extends T, T> Set<S> filter(Set<S> set, Filter<T> filter) {
+	public static <S, T extends S> Set<S> filter(Set<S> set, Filter<T> filter) {
 		Assert.notNull(set);
 		Assert.notNull(filter);
 		return filter(set, new HashSet<S>(set.size()), filter);
@@ -205,7 +215,7 @@ public abstract class CollectionUtils {
 		return transform(asList(iterable), function);
 	}
 
-	public static <S, T> Collection<T> transform(Collection<? extends S> list, Function<S, T> function) {
+	public static <S, T> List<T> transform(Collection<? extends S> list, Function<S, T> function) {
 		Assert.notNull(list);
 		Assert.notNull(function);
 		return transform(list, new ArrayList<T>(list.size()), function);
