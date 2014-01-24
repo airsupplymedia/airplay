@@ -1,5 +1,5 @@
 /**
- * @license AngularJS v1.2.7
+ * @license AngularJS v1.2.9
  * (c) 2010-2014 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -95,7 +95,7 @@ function shallowClearAndCopy(src, dst) {
  *   when a param value needs to be obtained for a request (unless the param was overridden).
  *
  *   Each key value in the parameter object is first bound to url template if present and then any
- *   excess keys are appended to the url seapph query after the `?`.
+ *   excess keys are appended to the url search query after the `?`.
  *
  *   Given a template `/path/:verb` and parameter `{verb:'greet', salutation:'Hello'}` results in
  *   URL `/path/greet?salutation=Hello`.
@@ -113,30 +113,30 @@ function shallowClearAndCopy(src, dst) {
  *
  *   Where:
  *
- *   - **`action`** â€“ {string} â€“ The name of action. This name becomes the name of the method on
+ *   - **`action`** – {string} – The name of action. This name becomes the name of the method on
  *     your resource object.
- *   - **`method`** â€“ {string} â€“ HTTP request method. Valid methods are: `GET`, `POST`, `PUT`,
+ *   - **`method`** – {string} – HTTP request method. Valid methods are: `GET`, `POST`, `PUT`,
  *     `DELETE`, and `JSONP`.
- *   - **`params`** â€“ {Object=} â€“ Optional set of pre-bound parameters for this action. If any of
+ *   - **`params`** – {Object=} – Optional set of pre-bound parameters for this action. If any of
  *     the parameter value is a function, it will be executed every time when a param value needs to
  *     be obtained for a request (unless the param was overridden).
- *   - **`url`** â€“ {string} â€“ action specific `url` override. The url templating is supported just
+ *   - **`url`** – {string} – action specific `url` override. The url templating is supported just
  *     like for the resource-level urls.
- *   - **`isArray`** â€“ {boolean=} â€“ If true then the returned object for this action is an array,
+ *   - **`isArray`** – {boolean=} – If true then the returned object for this action is an array,
  *     see `returns` section.
- *   - **`transformRequest`** â€“
- *     `{function(data, headersGetter)|Array.<function(data, headersGetter)>}` â€“
+ *   - **`transformRequest`** –
+ *     `{function(data, headersGetter)|Array.<function(data, headersGetter)>}` –
  *     transform function or an array of such functions. The transform function takes the http
  *     request body and headers and returns its transformed (typically serialized) version.
- *   - **`transformResponse`** â€“
- *     `{function(data, headersGetter)|Array.<function(data, headersGetter)>}` â€“
+ *   - **`transformResponse`** –
+ *     `{function(data, headersGetter)|Array.<function(data, headersGetter)>}` –
  *     transform function or an array of such functions. The transform function takes the http
  *     response body and headers and returns its transformed (typically deserialized) version.
- *   - **`cache`** â€“ `{boolean|Cache}` â€“ If true, a default $http cache will be used to cache the
+ *   - **`cache`** – `{boolean|Cache}` – If true, a default $http cache will be used to cache the
  *     GET request, otherwise if a cache instance built with
  *     {@link ng.$cacheFactory $cacheFactory}, this cache will be used for
  *     caching.
- *   - **`timeout`** â€“ `{number|Promise}` â€“ timeout in milliseconds, or {@link ng.$q promise} that
+ *   - **`timeout`** – `{number|Promise}` – timeout in milliseconds, or {@link ng.$q promise} that
  *     should abort the request when resolved.
  *   - **`withCredentials`** - `{boolean}` - whether to set the `withCredentials` flag on the
  *     XHR object. See {@link https://developer.mozilla.org/en/http_access_control#section_5
