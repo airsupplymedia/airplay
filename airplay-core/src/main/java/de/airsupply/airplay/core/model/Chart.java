@@ -30,11 +30,11 @@ public class Chart extends PersistentNode {
 	private String name;
 
 	Chart() {
-		super();
+		super(true);
 	}
 
 	public Chart(String name) {
-		super();
+		super(true);
 		this.name = name;
 	}
 

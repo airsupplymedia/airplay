@@ -1,5 +1,7 @@
 package de.airsupply.airplay.core.model;
 
+import java.util.Comparator;
+
 import org.joda.time.DateTime;
 import org.springframework.data.domain.Auditable;
 import org.springframework.data.neo4j.annotation.GraphId;
@@ -10,7 +12,32 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @SuppressWarnings("serial")
 public class PersistentNode implements Auditable<User, Long> {
 
+	private static class PersistentNodeIdentifierComparator implements Comparator<PersistentNode> {
+
+		@Override
+		public int compare(PersistentNode o1, PersistentNode o2) {
+			if (o1.isNew() && o2.isNew()) {
+				return 0;
+			} else if (o1.isNew()) {
+				return -1;
+			} else if (o2.isNew()) {
+				return 1;
+			}
+			return o1.getIdentifier().compareTo(o2.getIdentifier());
+		}
+
+	}
+
+	private static Comparator<PersistentNode> comparator = new PersistentNodeIdentifierComparator();
+
 	public static final String ID_NAME = "identifier";
+
+	public static Comparator<PersistentNode> identifierComparator() {
+		if (comparator == null) {
+			comparator = new PersistentNodeIdentifierComparator();
+		}
+		return comparator;
+	}
 
 	@JsonIgnore
 	private long createdDate;
@@ -21,8 +48,15 @@ public class PersistentNode implements Auditable<User, Long> {
 	@JsonIgnore
 	private long lastModifiedDate;
 
+	private boolean system;
+
 	public PersistentNode() {
 		super();
+	}
+
+	public PersistentNode(boolean system) {
+		super();
+		this.system = system;
 	}
 
 	@Override
@@ -97,6 +131,11 @@ public class PersistentNode implements Auditable<User, Long> {
 		return identifier == null;
 	}
 
+	@JsonIgnore
+	public boolean isSystem() {
+		return system;
+	}
+
 	@Override
 	@JsonIgnore
 	public void setCreatedBy(User createdBy) {
@@ -121,6 +160,11 @@ public class PersistentNode implements Auditable<User, Long> {
 		Assert.notNull(lastModifiedDate);
 		Assert.isTrue(lastModifiedDate.isAfter(createdDate) || lastModifiedDate.isEqual(createdDate));
 		this.lastModifiedDate = lastModifiedDate.getMillis();
+	}
+
+	@JsonIgnore
+	public void setSystem(boolean system) {
+		this.system = system;
 	}
 
 }
