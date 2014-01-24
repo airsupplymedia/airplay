@@ -54,13 +54,13 @@ commons.directive('asServerValidated', [ 'ServerValidator', function(ServerValid
 commons.factory('AlertService', [ '$rootScope', '$timeout', function($rootScope, $timeout) {
 	return {
 		error : function(message, duration) {
-			this.alert(message, "error", duration);
+			this.alert(message, 'danger', duration);
 		},
 		success : function(message, duration) {
-			this.alert(message, "success", duration);
+			this.alert(message, 'success', duration);
 		},
 		warning : function(message, duration) {
-			this.alert(message, "warning", duration);
+			this.alert(message, 'warning', duration);
 		},
 		alert : function(message, type, duration) {
 			if (duration == null) {
