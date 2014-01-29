@@ -40,7 +40,7 @@ import de.airsupply.commons.core.neo4j.annotation.Unique;
 import de.airsupply.commons.core.util.CollectionUtils;
 import de.airsupply.commons.core.util.Functions;
 
-@Unique(arguments = { "week" })
+@Unique(parameters = { "week" })
 @NodeEntity
 @SuppressWarnings("serial")
 public class RecordImport extends PersistentNode {

@@ -21,7 +21,7 @@ import de.airsupply.commons.core.neo4j.annotation.Persistent;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 import de.airsupply.commons.core.util.CollectionUtils;
 
-@Unique(query = "START chart=node({chart}) MATCH chart<-[:CHART_STATES]->chartState WHERE chartState.week={week} RETURN chartState", arguments = {
+@Unique(query = "START chart=node({chart}) MATCH chart<-[:CHART_STATES]->chartState WHERE chartState.week={week} RETURN chartState", parameters = {
 		"chart", "week" })
 @NodeEntity
 @SuppressWarnings("serial")

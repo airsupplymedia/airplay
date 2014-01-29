@@ -212,26 +212,50 @@ public abstract class CollectionUtils {
 	public static <S, T> List<T> transform(ClosableIterable<? extends S> iterable, Function<S, T> function) {
 		Assert.notNull(iterable);
 		Assert.notNull(function);
-		return transform(asList(iterable), function);
+		return transform(iterable, new ArrayList<T>(), function, true);
+	}
+
+	public static <S, T> List<T> transform(ClosableIterable<? extends S> iterable, Function<S, T> function,
+			boolean includeNullReferences) {
+		Assert.notNull(iterable);
+		Assert.notNull(function);
+		return transform(iterable, new ArrayList<T>(), function, includeNullReferences);
 	}
 
 	public static <S, T> List<T> transform(Collection<? extends S> list, Function<S, T> function) {
 		Assert.notNull(list);
 		Assert.notNull(function);
-		return transform(list, new ArrayList<T>(list.size()), function);
+		return transform(list, new ArrayList<T>(list.size()), function, true);
+	}
+
+	public static <S, T> List<T> transform(Collection<? extends S> list, Function<S, T> function,
+			boolean includeNullReferences) {
+		Assert.notNull(list);
+		Assert.notNull(function);
+		return transform(list, new ArrayList<T>(list.size()), function, includeNullReferences);
 	}
 
 	public static <S, T> List<T> transform(Iterable<? extends S> iterable, Function<S, T> function) {
 		Assert.notNull(iterable);
 		Assert.notNull(function);
-		return transform(iterable, new ArrayList<T>(), function);
+		return transform(iterable, new ArrayList<T>(), function, true);
+	}
+
+	public static <S, T> List<T> transform(Iterable<? extends S> iterable, Function<S, T> function,
+			boolean includeNullReferences) {
+		Assert.notNull(iterable);
+		Assert.notNull(function);
+		return transform(iterable, new ArrayList<T>(), function, includeNullReferences);
 	}
 
 	private static <S, T, TC extends Collection<T>> TC transform(Iterable<? extends S> source, TC target,
-			Function<S, T> function) {
+			Function<S, T> function, boolean includeNullReferences) {
 		Assert.isTrue(target.isEmpty());
 		for (S object : source) {
-			target.add(function.apply(object));
+			T transformed = function.apply(object);
+			if (transformed != null || (transformed == null && includeNullReferences)) {
+				target.add(transformed);
+			}
 		}
 		return target;
 	}
@@ -239,13 +263,26 @@ public abstract class CollectionUtils {
 	public static <S, T> List<T> transform(List<? extends S> list, Function<S, T> function) {
 		Assert.notNull(list);
 		Assert.notNull(function);
-		return transform(list, new ArrayList<T>(list.size()), function);
+		return transform(list, new ArrayList<T>(list.size()), function, true);
+	}
+
+	public static <S, T> List<T> transform(List<? extends S> list, Function<S, T> function,
+			boolean includeNullReferences) {
+		Assert.notNull(list);
+		Assert.notNull(function);
+		return transform(list, new ArrayList<T>(list.size()), function, includeNullReferences);
 	}
 
 	public static <S, T> Set<T> transform(Set<? extends S> set, Function<S, T> function) {
 		Assert.notNull(set);
 		Assert.notNull(function);
-		return transform(set, new HashSet<T>(set.size()), function);
+		return transform(set, new HashSet<T>(set.size()), function, true);
+	}
+
+	public static <S, T> Set<T> transform(Set<? extends S> set, Function<S, T> function, boolean includeNullReferences) {
+		Assert.notNull(set);
+		Assert.notNull(function);
+		return transform(set, new HashSet<T>(set.size()), function, includeNullReferences);
 	}
 
 }

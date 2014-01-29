@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 import de.airsupply.commons.core.util.CollectionUtils;
 
-@Unique(arguments = { "name" })
+@Unique(parameters = { "name" })
 @NodeEntity
 @SuppressWarnings("serial")
 public class Chart extends PersistentNode {

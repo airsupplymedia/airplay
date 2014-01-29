@@ -13,7 +13,7 @@ import org.springframework.data.neo4j.support.index.IndexType;
 import de.airsupply.commons.core.neo4j.annotation.Persistent;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 
-@Unique(query = "START artist=node({artist}) MATCH artist<-[:SONGS]->song WHERE LOWER(song.name)=LOWER({name}) RETURN song", arguments = {
+@Unique(query = "START artist=node({artist}) MATCH artist<-[:SONGS]->song WHERE LOWER(song.name)=LOWER({name}) RETURN song", parameters = {
 		"artist", "name" })
 @NodeEntity
 @SuppressWarnings("serial")

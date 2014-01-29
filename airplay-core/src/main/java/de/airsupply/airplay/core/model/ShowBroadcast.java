@@ -11,7 +11,7 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
 import de.airsupply.commons.core.neo4j.annotation.Persistent;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 
-@Unique(query = "START show=node({broadcastedShow}), station=node({station}) MATCH show-[showBroadcast:SHOW_BROADCAST]->station WHERE showBroadcast.from={from} AND showBroadcast.to={to} RETURN showBroadcast", arguments = {
+@Unique(query = "START show=node({broadcastedShow}), station=node({station}) MATCH show-[showBroadcast:SHOW_BROADCAST]->station WHERE showBroadcast.from={from} AND showBroadcast.to={to} RETURN showBroadcast", parameters = {
 		"broadcastedShow", "station", "from", "to" })
 @NodeEntity
 @SuppressWarnings("serial")

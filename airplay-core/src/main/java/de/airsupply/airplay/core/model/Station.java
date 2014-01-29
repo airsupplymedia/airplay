@@ -9,7 +9,7 @@ import org.springframework.data.neo4j.annotation.NodeEntity;
 
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 
-@Unique(arguments = { "name" })
+@Unique(parameters = { "name" })
 @NodeEntity
 @SuppressWarnings("serial")
 public class Station extends PersistentNode {
@@ -46,7 +46,7 @@ public class Station extends PersistentNode {
 
 	@Override
 	public String toString() {
-		return "Station [name=" + name + ", longName=" + longName + "]";
+		return "Station [name=" + name + ", longName=" + longName + ", getIdentifier()=" + getIdentifier() + "]";
 	}
 
 	private void writeObject(ObjectOutputStream outputStream) throws IOException {

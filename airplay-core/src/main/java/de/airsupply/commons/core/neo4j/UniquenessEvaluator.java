@@ -21,11 +21,29 @@ import org.springframework.util.StringUtils;
 
 import de.airsupply.airplay.core.model.PersistentNode;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
+import de.airsupply.commons.core.neo4j.annotation.Unique.EmptyUniquenessTraverser;
+import de.airsupply.commons.core.neo4j.annotation.Unique.UniquenessTraverser;
 import de.airsupply.commons.core.util.CollectionUtils;
 import de.airsupply.commons.core.util.CollectionUtils.Function;
 import de.airsupply.commons.core.util.Functions;
 
 class UniquenessEvaluator<T> {
+
+	private static enum EvaluationType {
+
+		PARAMETER(false), QUERY(true), TRAVERSER(true);
+
+		private final boolean requiresThisParameter;
+
+		private EvaluationType(boolean requiresThisParameter) {
+			this.requiresThisParameter = requiresThisParameter;
+		}
+
+		public boolean isRequiresThisParameter() {
+			return requiresThisParameter;
+		}
+
+	}
 
 	protected static class Parameter {
 
@@ -139,11 +157,13 @@ class UniquenessEvaluator<T> {
 		return unique;
 	}
 
-	private final String[] arguments;
-
 	private Neo4jTemplate neo4jTemplate;
 
+	private final String[] parameterNames;
+
 	private String query;
+
+	private final Class<? extends UniquenessTraverser> traverserClass;
 
 	private final T value;
 
@@ -151,17 +171,19 @@ class UniquenessEvaluator<T> {
 		this(value, neo4jTemplate, readAnnotation(value));
 	}
 
-	protected UniquenessEvaluator(T value, Neo4jTemplate neo4jTemplate, String query, String[] arguments) {
+	protected UniquenessEvaluator(T value, Neo4jTemplate neo4jTemplate, String query, String[] parameterNames,
+			Class<? extends UniquenessTraverser> traverserClass) {
 		this.value = value;
 		this.neo4jTemplate = neo4jTemplate;
 		this.query = query;
-		this.arguments = arguments;
-		Assert.notEmpty(arguments);
-		Assert.noNullElements(arguments);
+		this.parameterNames = parameterNames;
+		this.traverserClass = traverserClass;
+		Assert.notEmpty(parameterNames);
+		Assert.noNullElements(parameterNames);
 	}
 
 	protected UniquenessEvaluator(T value, Neo4jTemplate neo4jTemplate, Unique unique) {
-		this(value, neo4jTemplate, unique.query(), unique.arguments());
+		this(value, neo4jTemplate, unique.query(), unique.parameters(), unique.traverser());
 	}
 
 	protected Map<String, Object> asParameterMap(Collection<Parameter> parameters) {
@@ -178,20 +200,31 @@ class UniquenessEvaluator<T> {
 		return parameterMap;
 	}
 
+	protected EvaluationType computeEvaluationType() {
+		if (StringUtils.hasText(query)) {
+			return EvaluationType.QUERY;
+		} else if (!EmptyUniquenessTraverser.class.equals(traverserClass)) {
+			return EvaluationType.TRAVERSER;
+		} else if (parameterNames.length > 0) {
+			return EvaluationType.PARAMETER;
+		} else {
+			throw new IllegalArgumentException("Evaluation type could not be determined!");
+		}
+	}
+
 	public boolean exists() {
 		return QueryUtils.isPersistent(neo4jTemplate, value) || getExisting() != null;
 	}
 
 	protected List<?> findExisting() {
-		boolean useQuery = StringUtils.hasText(query);
-		List<?> result;
-		List<Parameter> parameters = new ArrayList<>(arguments.length);
-		if (useQuery) {
+		EvaluationType evaluationType = computeEvaluationType();
+		List<Parameter> parameters = new ArrayList<>(parameterNames.length);
+		if (evaluationType.isRequiresThisParameter()) {
 			parameters.add(new Parameter(value, "this", value));
 		}
 		boolean isArgumentsValid = true;
-		for (int i = 0; i < arguments.length && isArgumentsValid; i++) {
-			Parameter parameter = new Parameter(value, arguments[i]);
+		for (int i = 0; i < parameterNames.length && isArgumentsValid; i++) {
+			Parameter parameter = new Parameter(value, parameterNames[i]);
 			if (parameter.isIndexQuery()) {
 				query = query.replace(parameter.getName(), parameter.getParameterName());
 			}
@@ -200,12 +233,14 @@ class UniquenessEvaluator<T> {
 			}
 			parameters.add(parameter);
 		}
-		if (useQuery) {
-			result = runQuery(asParameterMap(parameters));
-		} else {
-			result = runPropertyAccess(parameters.get(0));
+		switch (evaluationType) {
+		case QUERY:
+			return runQuery(asParameterMap(parameters));
+		case TRAVERSER:
+			return runTraverser(asParameterMap(parameters));
+		default:
+			return runPropertyAccess(parameters.get(0));
 		}
-		return result;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -254,4 +289,14 @@ class UniquenessEvaluator<T> {
 		Function<Object, PersistentNode> function = Functions.toPersistentState(neo4jTemplate, value.getClass());
 		return CollectionUtils.transform(neo4jTemplate.query(query, parameterMap), function);
 	}
+
+	private List<?> runTraverser(Map<String, Object> parameterMap) {
+		try {
+			Function<Object, PersistentNode> function = Functions.toPersistentState(neo4jTemplate, value.getClass());
+			return CollectionUtils.transform(traverserClass.newInstance().traverse(parameterMap), function);
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new IllegalArgumentException("Traverser could not be instantiated!");
+		}
+	}
+
 }

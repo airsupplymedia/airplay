@@ -6,7 +6,7 @@ import org.springframework.data.neo4j.annotation.NodeEntity;
 
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 
-@Unique(arguments = { "name" })
+@Unique(parameters = { "name" })
 @NodeEntity
 @SuppressWarnings("serial")
 public class RecordCompany extends PersistentNode {

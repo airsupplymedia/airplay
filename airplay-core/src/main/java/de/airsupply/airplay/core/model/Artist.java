@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 import de.airsupply.commons.core.util.CollectionUtils;
 
-@Unique(query = "START artist=node:searchArtistByName({:name}) WHERE LOWER(artist.name)=LOWER({name}) RETURN artist", arguments = {
+@Unique(query = "START artist=node:searchArtistByName({:name}) WHERE LOWER(artist.name)=LOWER({name}) RETURN artist", parameters = {
 		"name", ":name" })
 @NodeEntity
 @SuppressWarnings("serial")
