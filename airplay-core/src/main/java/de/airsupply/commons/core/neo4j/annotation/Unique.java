@@ -5,7 +5,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.Collections;
 import java.util.Map;
 
 import javax.validation.Constraint;
@@ -21,18 +20,15 @@ import de.airsupply.commons.core.neo4j.UniqueConstraintValidator;
 @Constraint(validatedBy = UniqueConstraintValidator.class)
 public @interface Unique {
 
-	public static class EmptyUniquenessTraverser implements UniquenessTraverser {
+	public static interface UniquenessTraverser {
 
-		@Override
-		public Iterable<Node> traverse(Map<String, Object> parameters) {
-			return Collections.emptyList();
-		}
+		Iterable<Node> traverse(Map<String, Object> parameters);
 
 	}
 
-	public interface UniquenessTraverser {
+	public static interface UniquenessTraverserFactory {
 
-		Iterable<Node> traverse(Map<String, Object> parameters);
+		UniquenessTraverser create(Map<String, Object> parameters);
 
 	}
 
@@ -46,6 +42,6 @@ public @interface Unique {
 
 	String query() default "";
 
-	Class<? extends UniquenessTraverser> traverser() default EmptyUniquenessTraverser.class;
+	Class<? extends UniquenessTraverserFactory> traverser() default UniquenessTraverserFactory.class;
 
 }

@@ -9,7 +9,7 @@ import de.airsupply.airplay.core.model.ShowBroadcast;
 
 public interface ShowBroadcastRepository extends GraphRepository<ShowBroadcast>, CypherDslRepository<ShowBroadcast> {
 
-	@Query("START broadcastedShow=node({0}) MATCH broadcastedShow-[showBroadcast:SHOW_BROADCAST]->() RETURN showBroadcast")
+	@Query("START broadcastedShow=node({0}) MATCH broadcastedShow-[showBroadcast:SHOW_BROADCAST_OF]->() RETURN showBroadcast")
 	Iterable<ShowBroadcast> find(Show show);
 
 }
