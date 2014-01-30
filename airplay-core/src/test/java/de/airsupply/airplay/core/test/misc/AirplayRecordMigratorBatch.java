@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-import de.airsupply.airplay.core.importers.dbf.AirplayRecordMigrator;
+import de.airsupply.airplay.core.importers.dbf.DBFImporter;
 import de.airsupply.commons.core.util.CollectionUtils.Procedure;
 
 @Component
@@ -22,7 +22,7 @@ public class AirplayRecordMigratorBatch {
 	}
 
 	@Autowired
-	private AirplayRecordMigrator migrator;
+	private DBFImporter migrator;
 
 	private void prefill() {
 		migrator.migrate("C:\\Development\\Storage\\Git\\airplay\\airplay-dbf",

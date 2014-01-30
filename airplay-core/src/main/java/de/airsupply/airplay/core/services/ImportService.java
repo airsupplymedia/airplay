@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import de.airsupply.airplay.core.graph.repository.RecordImportRepository;
-import de.airsupply.airplay.core.importers.sdf.AirplayRecordImporter;
+import de.airsupply.airplay.core.importers.sdf.SDFImporter;
 import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.core.model.ChartState;
 import de.airsupply.airplay.core.model.PersistentNode;
@@ -29,7 +29,7 @@ public class ImportService extends Neo4jServiceSupport {
 	private ChartService chartService;
 
 	@Autowired
-	private AirplayRecordImporter importer;
+	private SDFImporter importer;
 
 	@Autowired
 	private LoggingRecordImportProgressProvider loggingRecordImportProgressProvider;

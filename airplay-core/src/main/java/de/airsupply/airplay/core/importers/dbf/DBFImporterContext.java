@@ -17,13 +17,13 @@ import de.airsupply.airplay.core.model.Song;
 import de.airsupply.airplay.core.model.SongBroadcast;
 import de.airsupply.airplay.core.model.Station;
 
-class AirplayRecordMigratorContext {
+class DBFImporterContext {
 
 	private Map<Long, Object> hashes = new HashMap<>(5200000);
 
 	private List<Object> objects;
 
-	public AirplayRecordMigratorContext(List<Object> objects) {
+	public DBFImporterContext(List<Object> objects) {
 		this.objects = objects;
 	}
 

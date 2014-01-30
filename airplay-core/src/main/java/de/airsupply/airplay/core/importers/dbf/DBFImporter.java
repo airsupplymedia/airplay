@@ -35,7 +35,7 @@ import de.airsupply.commons.core.neo4j.Neo4jBatchInserter;
 import de.airsupply.commons.core.util.DateUtils;
 
 @Service
-public class AirplayRecordMigrator {
+public class DBFImporter {
 
 	private static final String DATABASE_FILE_ARCHIVE = "AM_ARCH.DBF";
 
@@ -51,7 +51,7 @@ public class AirplayRecordMigrator {
 
 	private static final String STATE_TYPE_SONG_BROADCAST_WEEKLY = "B";
 
-	private AirplayRecordMigratorContext context;
+	private DBFImporterContext context;
 
 	@Loggable
 	private Logger logger;
@@ -61,12 +61,12 @@ public class AirplayRecordMigrator {
 
 	private Map<Integer, Song> songMap = new HashMap<>(30000);
 
-	public AirplayRecordMigrator() {
+	public DBFImporter() {
 		super();
 	}
 
 	public void migrate(String fileDirectory, String storeDirectory) {
-		context = new AirplayRecordMigratorContext(new ArrayList<>(5200000));
+		context = new DBFImporterContext(new ArrayList<>(5200000));
 
 		migrateStations(fileDirectory);
 		migrateSongs(fileDirectory);

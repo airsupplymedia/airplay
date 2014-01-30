@@ -29,12 +29,12 @@ import de.airsupply.airplay.core.services.ContentService;
 import de.airsupply.commons.core.context.Loggable;
 
 @Service
-public class AirplayRecordImporter {
+public class SDFImporter {
 
 	@Loggable
 	private Logger logger;
 
-	public AirplayRecordImporter() {
+	public SDFImporter() {
 		super();
 	}
 
