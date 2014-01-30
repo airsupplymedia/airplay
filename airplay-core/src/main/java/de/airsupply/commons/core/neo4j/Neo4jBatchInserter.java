@@ -285,7 +285,7 @@ public class Neo4jBatchInserter {
 			for (RelationshipWrapper relationship : createRelationships(objects)) {
 				long startNode = relationship.getStartNode();
 				long endNode = relationship.getEndNode();
-				Map<String, Object> properties = Collections.<String, Object> emptyMap();
+				Map<String, Object> properties = Collections.emptyMap();
 				inserter.createRelationship(startNode, endNode, relationship.getRelationshipType(), properties);
 			}
 		} catch (Exception exception) {
