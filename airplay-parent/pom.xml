@@ -38,13 +38,18 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<commons-lang-version>2.6</commons-lang-version>
+		<commons-io-version>2.4</commons-io-version>
+		<hibernate-validator-version>4.3.1.Final</hibernate-validator-version>
 		<jackson-version>2.2.3</jackson-version>
+		<jasperreports-version>5.5.0</jasperreports-version>
 		<java-version>1.7</java-version>
+		<javax-persistence-version>1.0</javax-persistence-version>
+		<javax-servlet-version>3.0.1</javax-servlet-version>
 		<junit-version>4.11</junit-version>
 		<jodatime-version>2.1</jodatime-version>
 		<neo4j-version>1.9.5</neo4j-version>
 		<neo4j-cypher-dsl-version>1.9</neo4j-cypher-dsl-version>
-		<servlet-version>3.0.1</servlet-version>
 		<slf4j-version>1.7.5</slf4j-version>
 		<spring-version>3.2.6.RELEASE</spring-version>
 		<spring-neo4j-version>2.3.3.RELEASE</spring-neo4j-version>
@@ -55,11 +60,6 @@
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<testSourceDirectory>src/test/java</testSourceDirectory>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>2.7</version>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -90,13 +90,17 @@
 		</plugins>
 	</build>
 
-	<reporting />
-
 	<repositories>
 		<repository>
-			<id>neo4j-public</id>
-			<name>Neo4j Public Repository</name>
-			<url>http://m2.neo4j.org/content/groups/public/</url>
+			<id>neo4j-release-repository</id>
+			<name>Neo4j Maven 2 release repository</name>
+			<url>http://m2.neo4j.org/content/repositories/releases</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
 		</repository>
 		<repository>
 			<id>spring-release</id>
