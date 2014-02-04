@@ -61,10 +61,6 @@ public class DBFImporter {
 
 	private Map<Integer, Song> songMap = new HashMap<>(30000);
 
-	public DBFImporter() {
-		super();
-	}
-
 	public void migrate(String fileDirectory, String storeDirectory) {
 		context = new DBFImporterContext(new ArrayList<>(5200000));
 
