@@ -11,13 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import de.airsupply.airplay.core.graph.repository.RecordImportRepository;
+import de.airsupply.airplay.core.importers.Importer;
 import de.airsupply.airplay.core.importers.sdf.SDFImporter;
+import de.airsupply.airplay.core.importers.xls.XLSImporter;
 import de.airsupply.airplay.core.model.Chart;
-import de.airsupply.airplay.core.model.ChartState;
 import de.airsupply.airplay.core.model.PersistentNode;
 import de.airsupply.airplay.core.model.RecordImport;
-import de.airsupply.airplay.core.model.util.LoggingRecordImportProgressProvider;
-import de.airsupply.airplay.core.model.util.RecordImportProgressProvider;
 import de.airsupply.commons.core.neo4j.Neo4jServiceSupport;
 import de.airsupply.commons.core.util.CollectionUtils;
 import de.airsupply.commons.core.util.DateUtils;
@@ -25,17 +24,43 @@ import de.airsupply.commons.core.util.DateUtils;
 @Service
 public class ImportService extends Neo4jServiceSupport {
 
+	public static enum ImporterType {
+
+		SDF("sdf"), XLS("xls");
+
+		private String identifier;
+
+		private ImporterType(String identifier) {
+			this.identifier = identifier;
+		}
+
+		public static ImporterType getByFileName(String fileName) {
+			Assert.notNull(fileName);
+			for (ImporterType importerType : values()) {
+				if (fileName.toLowerCase().endsWith(importerType.getIdentifier())) {
+					return importerType;
+				}
+			}
+			return null;
+		}
+
+		public String getIdentifier() {
+			return identifier;
+		}
+
+	}
+
 	@Autowired
 	private ChartService chartService;
 
 	@Autowired
-	private SDFImporter importer;
-
-	@Autowired
-	private LoggingRecordImportProgressProvider loggingRecordImportProgressProvider;
-
-	@Autowired
 	private RecordImportRepository recordImportRepository;
+
+	@Autowired
+	private SDFImporter sdfImporter;
+
+	@Autowired
+	private XLSImporter xlsImporter;
 
 	private RecordImport commitImport(RecordImport recordImport) {
 		Assert.notNull(recordImport);
@@ -56,20 +81,12 @@ public class ImportService extends Neo4jServiceSupport {
 	}
 
 	@Transactional
-	public RecordImport importRecords(Chart chart, Date week, InputStream inputStream) {
-		return importRecords(chart, week, inputStream, loggingRecordImportProgressProvider);
+	public RecordImport importRecords(ImporterType importerType, Chart chart, Date week, InputStream inputStream) {
+		return commitImport(prepareImport(importerType, chart, week, inputStream));
 	}
 
-	@Transactional
-	public RecordImport importRecords(Chart chart, Date week, InputStream inputStream,
-			RecordImportProgressProvider progressProvider) {
-		RecordImport recordImport = commitImport(prepareImport(chart, week, inputStream, progressProvider));
-		progressProvider.imported(recordImport);
-		return recordImport;
-	}
-
-	private RecordImport prepareImport(Chart chart, Date week, InputStream inputStream,
-			RecordImportProgressProvider progressProvider) {
+	private RecordImport prepareImport(ImporterType importerType, Chart chart, Date week, InputStream inputStream) {
+		Assert.notNull(importerType);
 		Assert.notNull(chart);
 		Assert.notNull(week);
 		Assert.notNull(inputStream);
@@ -80,9 +97,20 @@ public class ImportService extends Neo4jServiceSupport {
 		Assert.isTrue(!exists(recordImport), "Import for week " + DateUtils.getWeekOfYearFormat(week)
 				+ " has been performed before!");
 
-		ChartState chartState = chartService.save(new ChartState(chart, week));
-		importer.processRecords(inputStream, chartState, recordImport, progressProvider);
+		getImporter(importerType).processRecords(recordImport, chart, week, inputStream);
+
 		return recordImport;
+	}
+
+	private Importer getImporter(ImporterType importerType) {
+		switch (importerType) {
+		case SDF:
+			return sdfImporter;
+		case XLS:
+			return xlsImporter;
+		default:
+			return null;
+		}
 	}
 
 	@Transactional

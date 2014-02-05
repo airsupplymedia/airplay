@@ -3,7 +3,6 @@ package de.airsupply.airplay.core.model;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
-import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
@@ -23,7 +22,7 @@ public class Show extends PersistentNode {
 
 	@NotNull
 	@Persistent
-	@RelatedTo(direction = Direction.OUTGOING, type = "STATION")
+	@RelatedTo(type = "STATION")
 	private Station station;
 
 	Show() {

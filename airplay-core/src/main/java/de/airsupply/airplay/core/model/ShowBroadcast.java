@@ -4,7 +4,6 @@ import java.util.Date;
 
 import javax.validation.constraints.NotNull;
 
-import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
@@ -20,7 +19,7 @@ public class ShowBroadcast extends Broadcast {
 
 	@NotNull
 	@Persistent
-	@RelatedTo(direction = Direction.OUTGOING, type = "SHOW_BROADCAST_OF")
+	@RelatedTo(type = "SHOW_BROADCAST_OF")
 	private Show broadcastedShow;
 
 	ShowBroadcast() {

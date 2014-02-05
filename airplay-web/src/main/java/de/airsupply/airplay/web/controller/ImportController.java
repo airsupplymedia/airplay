@@ -21,6 +21,7 @@ import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.core.model.PersistentNode;
 import de.airsupply.airplay.core.model.RecordImport;
 import de.airsupply.airplay.core.services.ImportService;
+import de.airsupply.airplay.core.services.ImportService.ImporterType;
 
 @Controller
 @RequestMapping("/imports")
@@ -65,7 +66,8 @@ public class ImportController {
 			@RequestParam Long chartIdentifier, @RequestParam("file") Part file) {
 		try {
 			Chart chart = getService().find(chartIdentifier, Chart.class);
-			getService().importRecords(chart, week, file.getInputStream());
+			ImporterType importerType = ImporterType.getByFileName(file.getName());
+			getService().importRecords(importerType, chart, week, file.getInputStream());
 			return "success";
 		} catch (Exception exception) {
 			throw new RuntimeException(exception);

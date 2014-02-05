@@ -40,6 +40,7 @@ import de.airsupply.airplay.core.model.Station;
 import de.airsupply.airplay.core.services.ChartService;
 import de.airsupply.airplay.core.services.ContentService;
 import de.airsupply.airplay.core.services.ImportService;
+import de.airsupply.airplay.core.services.ImportService.ImporterType;
 import de.airsupply.airplay.core.services.StationService;
 import de.airsupply.airplay.core.test.config.TestConfiguration;
 import de.airsupply.commons.core.context.Loggable;
@@ -67,15 +68,15 @@ public class ImportServiceTest {
 	private StationService stationService;
 
 	@Test
-	public void testInitialImport() {
+	public void testSDFInitialImport() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		URL url = getClass().getResource("/COMMON_AIRPLAY_SET.sdf");
+		URL url = getClass().getResource("/SDF_AIRPLAY_LARGE.sdf");
 		logger.info("Using file: " + url);
 		try (InputStream inputStream = url.openStream()) {
 			StopWatch stopWatch = new StopWatch();
 			stopWatch.start();
-			importService.importRecords(chart, week, inputStream);
+			importService.importRecords(ImporterType.SDF, chart, week, inputStream);
 			stopWatch.stop();
 			logger.info("Import took: " + stopWatch.prettyPrint());
 		} catch (IOException exception) {
@@ -107,29 +108,29 @@ public class ImportServiceTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testRepeatedImport() {
+	public void testSDFRepeatedImport() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		URL url = getClass().getResource("/INTEGRITY_CHECK_AIRPLAY_SET.sdf");
+		URL url = getClass().getResource("/SDF_AIRPLAY_SMALL.sdf");
 		logger.info("Using file: " + url);
 		try (InputStream inputStream = url.openStream()) {
-			importService.importRecords(chart, week, inputStream);
-			importService.importRecords(chart, week, inputStream);
+			importService.importRecords(ImporterType.SDF, chart, week, inputStream);
+			importService.importRecords(ImporterType.SDF, chart, week, inputStream);
 		} catch (IOException exception) {
 			logger.error(exception.getMessage(), exception);
 		}
 	}
 
 	@Test
-	public void testRevertedImport() {
+	public void testSDFRevertedImport() {
 		StopWatch stopWatch = new StopWatch();
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		URL url = getClass().getResource("/COMMON_AIRPLAY_SET.sdf");
+		URL url = getClass().getResource("/SDF_AIRPLAY_LARGE.sdf");
 		logger.info("Using file: " + url);
 		try (InputStream inputStream = url.openStream()) {
 			stopWatch.start();
-			importService.importRecords(chart, week, inputStream);
+			importService.importRecords(ImporterType.SDF, chart, week, inputStream);
 			stopWatch.stop();
 			logger.info("Import took: " + stopWatch.prettyPrint());
 		} catch (IOException exception) {
@@ -170,13 +171,13 @@ public class ImportServiceTest {
 	}
 
 	@Test
-	public void testRevertedImportWithDependees() {
+	public void testSDFRevertedImportWithDependees() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		URL url = getClass().getResource("/INTEGRITY_CHECK_AIRPLAY_SET.sdf");
+		URL url = getClass().getResource("/SDF_AIRPLAY_SMALL.sdf");
 		logger.info("Using file: " + url);
 		try (InputStream inputStream = url.openStream()) {
-			importService.importRecords(chart, week, inputStream);
+			importService.importRecords(ImporterType.SDF, chart, week, inputStream);
 		} catch (IOException exception) {
 			logger.error(exception.getMessage(), exception);
 		}
@@ -190,9 +191,13 @@ public class ImportServiceTest {
 		Song importedSong = contentService.findSongs(importedArtist).get(1);
 		stationService.save(new SongBroadcast(importedStation, importedSong, new Date()));
 
+		ChartState importedChartState = chartService.findChartState(chart, week);
+		chartService.save(new ChartPosition(importedChartState, importedSong, 301));
+
 		RecordImport recordImport = importService.getRecordImports().get(0);
 
 		List<PersistentNode> expected = new ArrayList<>();
+		expected.add(importedChartState);
 		expected.add(importedArtist);
 		expected.add(importedSong.getPublisher());
 		expected.add(importedPublisher);
@@ -210,8 +215,8 @@ public class ImportServiceTest {
 
 		importService.revertImport(recordImport);
 		assertEquals(1, chartService.getChartCount());
-		assertEquals(0, chartService.getChartStateCount());
-		assertEquals(0, chartService.getChartPositionCount());
+		assertEquals(1, chartService.getChartStateCount());
+		assertEquals(1, chartService.getChartPositionCount());
 		assertEquals(0, stationService.getShowCount());
 		assertEquals(1, stationService.getStationCount());
 		assertEquals(1, stationService.getSongBroadcastCount());
@@ -220,6 +225,157 @@ public class ImportServiceTest {
 		assertEquals(1, contentService.getArtistCount());
 		assertEquals(2, contentService.getRecordCompanyCount());
 		assertEquals(2, contentService.getPublisherCount());
+		assertEquals(0, importService.getRecordImportCount());
+	}
+
+	@Test
+	public void testXLSInitialImport() {
+		Chart chart = chartService.save(new Chart("Airplay Charts"));
+		Date week = DateUtils.getStartOfWeek(new Date());
+		URL url = getClass().getResource("/XLS_AIRPLAY_LARGE.xls");
+		logger.info("Using file: " + url);
+		try (InputStream inputStream = url.openStream()) {
+			StopWatch stopWatch = new StopWatch();
+			stopWatch.start();
+			importService.importRecords(ImporterType.XLS, chart, week, inputStream);
+			stopWatch.stop();
+			logger.info("Import took: " + stopWatch.prettyPrint());
+		} catch (IOException exception) {
+			logger.error(exception.getMessage(), exception);
+		}
+		assertEquals(1, chartService.getChartCount());
+		assertEquals(1, chartService.getChartStateCount());
+		assertEquals(300, chartService.getChartPositionCount());
+		assertEquals(0, stationService.getShowCount());
+		assertEquals(0, stationService.getStationCount());
+		assertEquals(0, stationService.getSongBroadcastCount());
+		assertEquals(0, stationService.getShowBroadcastCount());
+		assertEquals(300, contentService.getSongCount());
+		assertEquals(263, contentService.getArtistCount());
+		assertEquals(0, contentService.getRecordCompanyCount());
+		assertEquals(0, contentService.getPublisherCount());
+		assertEquals(1, importService.getRecordImportCount());
+
+		RecordImport recordImport = importService.getRecordImports().get(0);
+		assertEquals(1, recordImport.getImportedChartStateList().size());
+		assertEquals(300, recordImport.getImportedChartPositionList().size());
+		assertEquals(0, recordImport.getImportedStationList().size());
+		assertEquals(0, recordImport.getImportedSongBroadcastList().size());
+		assertEquals(0, recordImport.getImportedShowBroadcastList().size());
+		assertEquals(300, recordImport.getImportedSongList().size());
+		assertEquals(263, recordImport.getImportedArtistList().size());
+		assertEquals(0, recordImport.getImportedRecordCompanyList().size());
+		assertEquals(0, recordImport.getImportedPublisherList().size());
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testXLSRepeatedImport() {
+		Chart chart = chartService.save(new Chart("Airplay Charts"));
+		Date week = DateUtils.getStartOfWeek(new Date());
+		URL url = getClass().getResource("/XLS_AIRPLAY_LARGE.xls");
+		logger.info("Using file: " + url);
+		try (InputStream inputStream = url.openStream()) {
+			importService.importRecords(ImporterType.XLS, chart, week, inputStream);
+			importService.importRecords(ImporterType.XLS, chart, week, inputStream);
+		} catch (IOException exception) {
+			logger.error(exception.getMessage(), exception);
+		}
+	}
+
+	@Test
+	public void testXLSRevertedImport() {
+		StopWatch stopWatch = new StopWatch();
+		Chart chart = chartService.save(new Chart("Airplay Charts"));
+		Date week = DateUtils.getStartOfWeek(new Date());
+		URL url = getClass().getResource("/XLS_AIRPLAY_LARGE.xls");
+		logger.info("Using file: " + url);
+		try (InputStream inputStream = url.openStream()) {
+			stopWatch.start();
+			importService.importRecords(ImporterType.XLS, chart, week, inputStream);
+			stopWatch.stop();
+			logger.info("Import took: " + stopWatch.prettyPrint());
+		} catch (IOException exception) {
+			logger.error(exception.getMessage(), exception);
+		}
+
+		RecordImport recordImport = importService.getRecordImports().get(0);
+		Collection<PersistentNode> importedRecordsToRevert = importService.getImportedRecordsToRevert(recordImport);
+		assertEquals(1, chartService.getChartCount());
+		assertEquals(1, filter(importedRecordsToRevert, filterFor(ChartState.class)).size());
+		assertEquals(300, filter(importedRecordsToRevert, filterFor(ChartPosition.class)).size());
+		assertEquals(0, filter(importedRecordsToRevert, filterFor(Station.class)).size());
+		assertEquals(0, filter(importedRecordsToRevert, filterFor(SongBroadcast.class)).size());
+		assertEquals(0, filter(importedRecordsToRevert, filterFor(ShowBroadcast.class)).size());
+		assertEquals(300, filter(importedRecordsToRevert, filterFor(Song.class)).size());
+		assertEquals(263, filter(importedRecordsToRevert, filterFor(Artist.class)).size());
+		assertEquals(0, filter(importedRecordsToRevert, filterFor(RecordCompany.class)).size());
+		assertEquals(0, filter(importedRecordsToRevert, filterFor(Publisher.class)).size());
+		assertEquals(864, importedRecordsToRevert.size());
+
+		stopWatch.start();
+		importService.revertImport(recordImport);
+		stopWatch.stop();
+		logger.info("Reverting took: " + stopWatch.prettyPrint());
+
+		assertEquals(1, chartService.getChartCount());
+		assertEquals(0, chartService.getChartStateCount());
+		assertEquals(0, chartService.getChartPositionCount());
+		assertEquals(0, stationService.getShowCount());
+		assertEquals(0, stationService.getStationCount());
+		assertEquals(0, stationService.getSongBroadcastCount());
+		assertEquals(0, stationService.getShowBroadcastCount());
+		assertEquals(0, contentService.getSongCount());
+		assertEquals(0, contentService.getArtistCount());
+		assertEquals(0, contentService.getRecordCompanyCount());
+		assertEquals(0, contentService.getPublisherCount());
+		assertEquals(0, importService.getRecordImportCount());
+	}
+
+	@Test
+	public void testXLSRevertedImportWithDependees() {
+		Chart chart = chartService.save(new Chart("Airplay Charts"));
+		Date week = DateUtils.getStartOfWeek(new Date());
+		URL url = getClass().getResource("/XLS_AIRPLAY_LARGE.xls");
+		logger.info("Using file: " + url);
+		try (InputStream inputStream = url.openStream()) {
+			importService.importRecords(ImporterType.XLS, chart, week, inputStream);
+		} catch (IOException exception) {
+			logger.error(exception.getMessage(), exception);
+		}
+
+		Artist importedArtist = contentService.findArtists("IMAGINE DRAGONS", false).get(0);
+		contentService.save(new Song(importedArtist, "SOME SONG"));
+
+		ChartState importedChartState = chartService.findChartState(chart, week);
+		Song importedSong = contentService.findSongs(importedArtist).get(1);
+		chartService.save(new ChartPosition(importedChartState, importedSong, 301));
+
+		RecordImport recordImport = importService.getRecordImports().get(0);
+
+		List<PersistentNode> expected = new ArrayList<>();
+		expected.add(importedArtist);
+		expected.add(importedSong);
+		expected.add(importedChartState);
+
+		List<PersistentNode> actual = recordImport.getImportedRecordsWithDependees(importService.getNeo4jTemplate());
+
+		Collections.sort(expected, PersistentNode.identifierComparator());
+		Collections.sort(actual, PersistentNode.identifierComparator());
+
+		assertArrayEquals(expected.toArray(), actual.toArray());
+
+		importService.revertImport(recordImport);
+		assertEquals(1, chartService.getChartCount());
+		assertEquals(1, chartService.getChartStateCount());
+		assertEquals(1, chartService.getChartPositionCount());
+		assertEquals(0, stationService.getShowCount());
+		assertEquals(0, stationService.getStationCount());
+		assertEquals(0, stationService.getSongBroadcastCount());
+		assertEquals(0, stationService.getShowBroadcastCount());
+		assertEquals(2, contentService.getSongCount());
+		assertEquals(1, contentService.getArtistCount());
+		assertEquals(0, contentService.getRecordCompanyCount());
+		assertEquals(0, contentService.getPublisherCount());
 		assertEquals(0, importService.getRecordImportCount());
 	}
 }

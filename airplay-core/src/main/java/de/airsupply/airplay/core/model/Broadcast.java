@@ -5,7 +5,6 @@ import java.util.Date;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.util.Assert;
@@ -108,7 +107,7 @@ public abstract class Broadcast extends PersistentNode {
 
 	@NotNull
 	@Persistent
-	@RelatedTo(direction = Direction.OUTGOING, type = "BROADCAST_ON")
+	@RelatedTo(type = "BROADCAST_ON")
 	private Station station;
 
 	@Indexed

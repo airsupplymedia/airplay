@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -15,7 +16,9 @@ import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import de.airsupply.airplay.core.importers.Importer;
 import de.airsupply.airplay.core.model.Artist;
+import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.core.model.ChartPosition;
 import de.airsupply.airplay.core.model.ChartState;
 import de.airsupply.airplay.core.model.Publisher;
@@ -24,34 +27,24 @@ import de.airsupply.airplay.core.model.RecordImport;
 import de.airsupply.airplay.core.model.Song;
 import de.airsupply.airplay.core.model.SongBroadcast;
 import de.airsupply.airplay.core.model.Station;
-import de.airsupply.airplay.core.model.util.RecordImportProgressProvider;
 import de.airsupply.airplay.core.services.ContentService;
 import de.airsupply.commons.core.context.Loggable;
 
 @Service
-public class SDFImporter {
+public class SDFImporter extends Importer {
 
 	@Loggable
 	private Logger logger;
 
-	public SDFImporter() {
-		super();
-	}
-
 	private String identifySeparator(String line) {
 		return StringUtils.split(line, ",").length > 1 ? "," : ";";
-	}
-
-	protected boolean mayImport() {
-		return true;
 	}
 
 	@Autowired
 	private ContentService contentService;
 
 	private void processAirplayRecord(RecordImport recordImport, ChartState chartState, List<String> stationNames,
-			StrTokenizer tokenizer, RecordImportProgressProvider progressProvider) {
-
+			StrTokenizer tokenizer) {
 		String[] tokens = tokenizer.getTokenArray();
 		String artistName = tokens[56].trim();
 		String songName = tokens[55].trim();
@@ -60,32 +53,22 @@ public class SDFImporter {
 		String publisherName = tokens[58].trim();
 		String airplayChartPosition = tokens[0].trim();
 
-		RecordCompany recordCompany = contentService.findOrCreate(new RecordCompany(recordCompanyName));
-		Publisher publisher = contentService.findOrCreate(new Publisher(publisherName));
-		Artist artist = contentService.findOrCreate(new Artist(artistName));
-		Song song = contentService.findOrCreate(new Song(artist, songName, discIdentifier, recordCompany, publisher));
-
-		recordImport.importRecordCompany(recordCompany);
-		recordImport.importPublisher(publisher);
-		recordImport.importArtist(artist);
-		recordImport.importSong(song);
-
+		RecordCompany recordCompany = importRecord(contentService, recordImport, new RecordCompany(recordCompanyName));
+		Publisher publisher = importRecord(contentService, recordImport, new Publisher(publisherName));
+		Artist artist = importRecord(contentService, recordImport, new Artist(artistName));
+		Song song = importRecord(contentService, recordImport, new Song(artist, songName, discIdentifier,
+				recordCompany, publisher));
 		for (int i = 0; i < stationNames.size(); i++) {
-			Station station = contentService.findOrCreate(new Station(stationNames.get(i)));
-			recordImport.importStation(station);
+			Station station = importRecord(contentService, recordImport, new Station(stationNames.get(i)));
 
 			int broadcastCount = Integer.valueOf(tokens[i + 62].trim()).intValue();
 			if (broadcastCount > 0) {
-				SongBroadcast songBroadcast = contentService.save(new SongBroadcast(station, song, recordImport
-						.getWeekDate(), broadcastCount));
-				recordImport.importBroadcast(songBroadcast);
-				progressProvider.imported(songBroadcast);
+				importRecord(contentService, recordImport, new SongBroadcast(station, song, recordImport.getWeekDate(),
+						broadcastCount));
 			}
 		}
-		ChartPosition chartPosition = contentService.save(new ChartPosition(chartState, song, Integer.valueOf(
-				airplayChartPosition).intValue()));
-		recordImport.importChartPosition(chartPosition);
-		progressProvider.imported(chartPosition);
+		importRecord(contentService, recordImport,
+				new ChartPosition(chartState, song, Integer.valueOf(airplayChartPosition).intValue()));
 	}
 
 	private void processAirplayRecordHeader(List<String> stationNames, StrTokenizer tokenizer) {
@@ -97,23 +80,20 @@ public class SDFImporter {
 		}
 	}
 
-	public void processRecords(InputStream inputStream, ChartState chartState, RecordImport recordImport,
-			RecordImportProgressProvider progressProvider) {
-		Assert.notNull(inputStream);
-		Assert.notNull(chartState);
+	public void processRecords(RecordImport recordImport, Chart chart, Date week, InputStream inputStream) {
 		Assert.notNull(recordImport);
-		Assert.notNull(progressProvider);
+		Assert.notNull(chart);
+		Assert.notNull(week);
+		Assert.notNull(inputStream);
 
-		progressProvider.reset();
 		logger.info("Running import for week: " + recordImport.getWeekDate());
+		ChartState chartState = importRecord(contentService, recordImport, new ChartState(chart, week));
 
 		BufferedReader reader = null;
 		try {
 			final List<String> stationNames = new ArrayList<>();
 			List<String> lines = IOUtils.readLines(inputStream);
 			IOUtils.closeQuietly(inputStream);
-
-			progressProvider.setNumberOfRecords(lines.size() - 1);
 
 			boolean firstLine = true;
 			String separator = null;
@@ -123,16 +103,13 @@ public class SDFImporter {
 					separator = identifySeparator(line);
 				}
 				tokenizer.reset(line);
-
 				if (firstLine) {
 					processAirplayRecordHeader(stationNames, tokenizer);
 					firstLine = false;
 				} else {
-					processAirplayRecord(recordImport, chartState, stationNames, tokenizer, progressProvider);
-					progressProvider.incrementIndex();
+					processAirplayRecord(recordImport, chartState, stationNames, tokenizer);
 				}
 			}
-			recordImport.importChartState(chartState);
 		} catch (IOException exception) {
 			throw new DataRetrievalFailureException("Data cant't be imported!", exception);
 		} finally {

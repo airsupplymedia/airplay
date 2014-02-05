@@ -29,12 +29,12 @@ public class ChartState extends PersistentNode {
 
 	@Persistent
 	@NotNull
-	@RelatedTo(direction = Direction.INCOMING, type = "CHART_STATES")
+	@RelatedTo(direction = Direction.BOTH, type = "CHART_STATES")
 	@JsonIgnore
 	private Chart chart;
 
 	@Fetch
-	@RelatedTo(direction = Direction.OUTGOING, type = "CHART_POSITIONS")
+	@RelatedTo(direction = Direction.BOTH, type = "CHART_POSITIONS")
 	@JsonIgnore
 	private Iterable<ChartPosition> chartPositions = null;
 

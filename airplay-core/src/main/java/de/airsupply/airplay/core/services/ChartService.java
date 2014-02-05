@@ -22,6 +22,22 @@ import de.airsupply.commons.core.util.DateUtils;
 @Service
 public class ChartService extends Neo4jServiceSupport {
 
+	public static enum ChartType {
+
+		AIRPLAY("Airplay Charts"), SALES("Sales Charts");
+
+		private String name;
+
+		private ChartType(String name) {
+			this.name = name;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+	}
+
 	@Autowired
 	private ChartPositionRepository chartPositionRepository;
 
@@ -34,7 +50,7 @@ public class ChartService extends Neo4jServiceSupport {
 	public List<ChartPosition> findChartPositions(Chart chart, Date date) {
 		Assert.notNull(chart);
 		Assert.notNull(date);
-		ChartState chartState = chartStateRepository.find(chart, DateUtils.getStartOfWeek(date).getTime());
+		ChartState chartState = findChartState(chart, date);
 		if (chartState == null) {
 			return Collections.emptyList();
 		}
@@ -45,6 +61,22 @@ public class ChartService extends Neo4jServiceSupport {
 		Assert.notNull(chart);
 		Assert.notNull(song);
 		return CollectionUtils.asList(chartPositionRepository.find(chart, song));
+	}
+
+	public List<Chart> findCharts(Chart object) {
+		Assert.notNull(object);
+		return CollectionUtils.asList(chartRepository.findAllByPropertyValue("name", object.getName()));
+	}
+
+	public List<Chart> findCharts(String name) {
+		Assert.hasText(name);
+		return findCharts(new Chart(name));
+	}
+
+	public ChartState findChartState(Chart chart, Date date) {
+		Assert.notNull(chart);
+		Assert.notNull(date);
+		return chartStateRepository.find(chart, DateUtils.getStartOfWeek(date).getTime());
 	}
 
 	public List<ChartPosition> findLatestChartPositions(Chart chart) {

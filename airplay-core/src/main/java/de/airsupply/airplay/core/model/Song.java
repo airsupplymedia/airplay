@@ -33,12 +33,12 @@ public class Song extends PersistentNode {
 
 	@Fetch
 	@Persistent
-	@RelatedTo(direction = Direction.OUTGOING, type = "PUBLISHER")
+	@RelatedTo(type = "PUBLISHER")
 	private Publisher publisher;
 
 	@Fetch
 	@Persistent
-	@RelatedTo(direction = Direction.OUTGOING, type = "RECORD_COMPANY")
+	@RelatedTo(type = "RECORD_COMPANY")
 	private RecordCompany recordCompany;
 
 	Song() {

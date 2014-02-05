@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.core.services.ChartService;
+import de.airsupply.airplay.core.services.ChartService.ChartType;
 
 @Component
 @Profile("!test")
@@ -28,8 +29,9 @@ public class BootstrapLifecyclePhase {
 		List<Chart> charts = chartService.getCharts();
 		if (charts.isEmpty()) {
 			logger.info("Adding the default Charts...");
-			chartService.save(new Chart("Airplay Charts"));
-			chartService.save(new Chart("Sales Charts"));
+			for (ChartType chartType : ChartType.values()) {
+				chartService.save(new Chart(chartType.getName()));
+			}
 		} else {
 			for (Chart chart : charts) {
 				if (!chart.isSystem()) {

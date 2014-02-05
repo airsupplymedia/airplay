@@ -18,7 +18,7 @@ import de.airsupply.commons.core.neo4j.annotation.Unique;
 public class ChartPosition extends PersistentNode {
 
 	@NotNull
-	@RelatedTo(direction = Direction.INCOMING, type = "CHART_POSITIONS")
+	@RelatedTo(direction = Direction.BOTH, type = "CHART_POSITIONS")
 	@JsonIgnore
 	private ChartState chartState;
 
@@ -26,7 +26,7 @@ public class ChartPosition extends PersistentNode {
 
 	@Fetch
 	@NotNull
-	@RelatedTo(direction = Direction.OUTGOING, type = "CHART_POSITION")
+	@RelatedTo(type = "CHART_POSITION")
 	private Song song;
 
 	ChartPosition() {
@@ -55,7 +55,8 @@ public class ChartPosition extends PersistentNode {
 
 	@Override
 	public String toString() {
-		return "ChartPosition [chartState=" + chartState + ", position=" + position + ", song=" + song + "]";
+		return "ChartPosition [chartState=" + chartState + ", position=" + position + ", song=" + song
+				+ ", getIdentifier()=" + getIdentifier() + "]";
 	}
 
 }

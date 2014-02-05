@@ -12,7 +12,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Expander;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.PathExpander;
@@ -49,9 +48,12 @@ public class RecordImport extends PersistentNode {
 
 		@Override
 		public TraversalDescription build(Object start, Neo4jPersistentProperty property, String... params) {
-			PathExpander<?> expander = new ImportedRecordPathExpander();
-			Evaluator evaluator = new ImportedRecordEvaluator();
-			return Traversal.description().expand(expander).evaluator(evaluator);
+			// @formatter:off
+			return Traversal
+					.description()
+					.expand((PathExpander<?>) new ImportedRecordPathExpander())
+					.evaluator(new ImportedRecordEvaluator());
+			// @formatter:on
 		}
 	}
 
@@ -59,8 +61,12 @@ public class RecordImport extends PersistentNode {
 
 		@Override
 		public TraversalDescription build(Object start, Neo4jPersistentProperty property, String... params) {
-			Expander expander = Traversal.expanderForAllTypes(Direction.OUTGOING);
-			return Traversal.description().expand(expander).evaluator(Evaluators.toDepth(1));
+			// @formatter:off
+			return Traversal
+					.description()
+					.expand(Traversal.expanderForAllTypes(Direction.OUTGOING))
+					.evaluator(Evaluators.toDepth(1));
+			// @formatter:on
 		}
 	}
 
@@ -99,17 +105,17 @@ public class RecordImport extends PersistentNode {
 
 	@Fetch
 	@Persistent
-	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_ARTISTS")
+	@RelatedTo(type = "IMPORTED_ARTISTS")
 	private Set<Artist> importedArtists = new HashSet<>();
 
 	@Fetch
 	@Persistent
-	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_CHART_POSITIONS")
+	@RelatedTo(type = "IMPORTED_CHART_POSITIONS")
 	private Set<ChartPosition> importedChartPositions = new HashSet<>();
 
 	@Fetch
 	@Persistent
-	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_CHART_STATES")
+	@RelatedTo(type = "IMPORTED_CHART_STATES")
 	private Set<ChartState> importedChartStates = new HashSet<>();
 
 	@JsonIgnore
@@ -118,32 +124,32 @@ public class RecordImport extends PersistentNode {
 
 	@Fetch
 	@Persistent
-	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_PUBLISHERS")
+	@RelatedTo(type = "IMPORTED_PUBLISHERS")
 	private Set<Publisher> importedPublishers = new HashSet<>();
 
 	@Fetch
 	@Persistent
-	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_RECORD_COMPANIES")
+	@RelatedTo(type = "IMPORTED_RECORD_COMPANIES")
 	private Set<RecordCompany> importedRecordCompanies = new HashSet<>();
 
 	@Fetch
 	@Persistent
-	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_SHOW_BROADCASTS")
+	@RelatedTo(type = "IMPORTED_SHOW_BROADCASTS")
 	private Set<ShowBroadcast> importedShowBroadcasts = new HashSet<>();
 
 	@Fetch
 	@Persistent
-	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_SONG_BROADCASTS")
+	@RelatedTo(type = "IMPORTED_SONG_BROADCASTS")
 	private Set<SongBroadcast> importedSongBroadcasts = new HashSet<>();
 
 	@Fetch
 	@Persistent
-	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_SONGS")
+	@RelatedTo(type = "IMPORTED_SONGS")
 	private Set<Song> importedSongs = new HashSet<>();
 
 	@Fetch
 	@Persistent
-	@RelatedTo(direction = Direction.OUTGOING, type = "IMPORTED_STATIONS")
+	@RelatedTo(type = "IMPORTED_STATIONS")
 	private Set<Station> importedStations = new HashSet<>();
 
 	@Indexed
@@ -226,9 +232,13 @@ public class RecordImport extends PersistentNode {
 	@JsonIgnore
 	public List<PersistentNode> getImportedRecordsWithDependees(Neo4jTemplate neo4jTemplate) {
 		Collection<Node> importedRecordsWithDependencies = new HashSet<>();
-		TraversalDescription traversalDescription = Traversal.description().breadthFirst()
+		// @formatter:off
+		TraversalDescription traversalDescription = Traversal
+				.description()
+				.breadthFirst()
 				.expand(Traversal.pathExpanderForAllTypes(Direction.OUTGOING))
 				.evaluator(Evaluators.includeWhereEndNodeIs(getImportedNodesAsArray()));
+		// @formatter:on
 		for (Path path : traversalDescription.traverse(getDependeesAsArray())) {
 			importedRecordsWithDependencies.add(path.endNode());
 		}
@@ -269,40 +279,34 @@ public class RecordImport extends PersistentNode {
 		return new Date(week);
 	}
 
-	public void importArtist(Artist artist) {
-		importedArtists.add(artist);
-	}
+	public <T extends PersistentNode> void importRecord(T object) {
+		Assert.notNull(object);
 
-	public void importBroadcast(ShowBroadcast broadcast) {
-		importedShowBroadcasts.add(broadcast);
-	}
-
-	public void importBroadcast(SongBroadcast broadcast) {
-		importedSongBroadcasts.add(broadcast);
-	}
-
-	public void importChartPosition(ChartPosition chartPosition) {
-		importedChartPositions.add(chartPosition);
-	}
-
-	public void importChartState(ChartState chartState) {
-		importedChartStates.add(chartState);
-	}
-
-	public void importPublisher(Publisher publisher) {
-		importedPublishers.add(publisher);
-	}
-
-	public void importRecordCompany(RecordCompany recordCompany) {
-		importedRecordCompanies.add(recordCompany);
-	}
-
-	public void importSong(Song song) {
-		importedSongs.add(song);
-	}
-
-	public void importStation(Station station) {
-		importedStations.add(station);
+		if (object instanceof Artist) {
+			importedArtists.add((Artist) object);
+		} else if (object instanceof ChartPosition) {
+			importedChartPositions.add((ChartPosition) object);
+		} else if (object instanceof ChartState) {
+			importedChartStates.add((ChartState) object);
+		} else if (object instanceof Publisher) {
+			importedPublishers.add((Publisher) object);
+		} else if (object instanceof RecordCompany) {
+			importedRecordCompanies.add((RecordCompany) object);
+		} else if (object instanceof ShowBroadcast) {
+			importedShowBroadcasts.add((ShowBroadcast) object);
+		} else if (object instanceof SongBroadcast) {
+			importedSongBroadcasts.add((SongBroadcast) object);
+		} else if (object instanceof Song) {
+			importedSongs.add((Song) object);
+		} else if (object instanceof ShowBroadcast) {
+			importedShowBroadcasts.add((ShowBroadcast) object);
+		} else if (object instanceof SongBroadcast) {
+			importedSongBroadcasts.add((SongBroadcast) object);
+		} else if (object instanceof Station) {
+			importedStations.add((Station) object);
+		} else {
+			throw new IllegalArgumentException();
+		}
 	}
 
 	private void writeObject(ObjectOutputStream outputStream) throws IOException {

@@ -21,7 +21,7 @@ import de.airsupply.commons.core.util.CollectionUtils;
 @SuppressWarnings("serial")
 public class Chart extends PersistentNode {
 
-	@RelatedTo(direction = Direction.OUTGOING, type = "CHART_STATES")
+	@RelatedTo(direction = Direction.BOTH, type = "CHART_STATES")
 	@JsonIgnore
 	private Iterable<ChartState> chartStates = null;
 
