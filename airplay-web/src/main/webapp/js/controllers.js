@@ -34,9 +34,9 @@ application.controller('SongListController', [ '$scope', 'ContentService', funct
 	$scope.findSongs = function(name) {
 		$scope.songs = ContentService.songs.search(name, null, true);
 	};
-	$scope.deleteItem = function(song) {
-		song.$delete(function() {
-			$scope.songs.splice($scope.songs.indexOf(song), 1);
+	$scope.deleteItem = function(item) {
+		item.$delete(function() {
+			$scope.songs.splice($scope.songs.indexOf(item), 1);
 		});
 	};
 } ]);
@@ -92,12 +92,17 @@ application.controller('SongEditController', [ '$scope', '$state', 'AlertService
 
 application.controller('ImportListController', [ '$scope', 'ImportService', function($scope, ImportService) {
 	$scope.imports = ImportService.imports.resource().find({});
+	$scope.deleteItem = function(item) {
+		item.$delete(function() {
+			$scope.imports.splice($scope.imports.indexOf(item), 1);
+		});
+	};
 	$scope.week = function(dateString) {
 		return new Date(dateString).getWeekString();
 	};
 } ]);
 
-application.controller('ImportDetailController', [ '$scope', '$state', 'ImportService', function($scope, $state, ImportService) {
+application.controller('ImportDetailController', [ '$scope', 'ImportService', function($scope, ImportService) {
 	$scope.import = ImportService.imports.resource().get({
 		identifier : $state.params.identifier
 	}, function(response) {

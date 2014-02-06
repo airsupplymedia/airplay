@@ -2,7 +2,6 @@ package de.airsupply.airplay.web.controller;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -38,7 +37,7 @@ public class ImportController {
 
 	@RequestMapping(method = RequestMethod.GET)
 	@ResponseBody
-	public List<RecordImport> get() {
+	public Collection<RecordImport> get() {
 		return getService().getRecordImports();
 	}
 
