@@ -45,7 +45,6 @@
 		<jasperreports-version>5.5.0</jasperreports-version>
 		<java-version>1.7</java-version>
 		<javax-persistence-version>1.0</javax-persistence-version>
-		<javax-servlet-version>3.0.1</javax-servlet-version>
 		<junit-version>4.11</junit-version>
 		<jodatime-version>2.1</jodatime-version>
 		<jxl-version>2.6.12</jxl-version>

@@ -37,7 +37,7 @@ public class ImportService extends Neo4jServiceSupport {
 		public static ImporterType getByFileName(String fileName) {
 			Assert.notNull(fileName);
 			for (ImporterType importerType : values()) {
-				if (fileName.toLowerCase().endsWith(importerType.getIdentifier())) {
+				if (fileName.toLowerCase().endsWith(importerType.getIdentifier().toLowerCase())) {
 					return importerType;
 				}
 			}

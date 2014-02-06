@@ -112,7 +112,8 @@ application.controller('ImportDetailController', [ '$scope', '$state', 'ImportSe
 			details : [ 'position' ]
 		}, {
 			property : 'importedChartStateList',
-			title : 'Chart States'
+			title : 'Chart States',
+			details : [ 'weekDate' ]
 		}, {
 			property : 'importedPublisherList',
 			title : 'Publishers',
@@ -138,6 +139,9 @@ application.controller('ImportDetailController', [ '$scope', '$state', 'ImportSe
 		} ];
 		$scope.contents = function(category) {
 			return response[category.property];
+		};
+		$scope.size = function(category) {
+			return response[category.property].length;
 		};
 	});
 } ]);

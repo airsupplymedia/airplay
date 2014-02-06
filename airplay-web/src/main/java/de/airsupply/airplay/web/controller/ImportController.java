@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import javax.servlet.http.Part;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -16,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.multipart.MultipartFile;
 
 import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.core.model.PersistentNode;
@@ -63,10 +62,10 @@ public class ImportController {
 	@ResponseBody
 	@ResponseStatus(HttpStatus.CREATED)
 	public String run(@DateTimeFormat(pattern = "YYYY-'W'ww") @RequestParam Date week,
-			@RequestParam Long chartIdentifier, @RequestParam("file") Part file) {
+			@RequestParam Long chartIdentifier, @RequestParam("file") MultipartFile file) {
 		try {
 			Chart chart = getService().find(chartIdentifier, Chart.class);
-			ImporterType importerType = ImporterType.getByFileName(file.getName());
+			ImporterType importerType = ImporterType.getByFileName(file.getOriginalFilename());
 			getService().importRecords(importerType, chart, week, file.getInputStream());
 			return "success";
 		} catch (Exception exception) {
