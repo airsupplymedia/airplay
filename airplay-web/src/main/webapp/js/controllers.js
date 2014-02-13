@@ -102,7 +102,7 @@ application.controller('ImportListController', [ '$scope', 'ImportService', func
 	};
 } ]);
 
-application.controller('ImportDetailController', [ '$scope', 'ImportService', function($scope, ImportService) {
+application.controller('ImportDetailController', [ '$scope', '$state', 'ImportService', function($scope, $state, ImportService) {
 	$scope.import = ImportService.imports.resource().get({
 		identifier : $state.params.identifier
 	}, function(response) {
