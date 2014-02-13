@@ -8,6 +8,31 @@ import de.airsupply.commons.core.util.CollectionUtils.Function;
 
 public class Functions {
 
+	public static <T extends PersistentNode> Function<Object, T> toEntity(final Neo4jTemplate neo4jTemplate) {
+		return new Function<Object, T>() {
+
+			@SuppressWarnings("unchecked")
+			@Override
+			public T apply(Object source) {
+				return (T) neo4jTemplate.convert(source, neo4jTemplate.getStoredJavaType(source));
+			}
+
+		};
+	}
+
+	public static <T extends PersistentNode> Function<Object, T> toEntity(final Neo4jTemplate neo4jTemplate,
+			final Class<?> persistentNodeClass) {
+		return new Function<Object, T>() {
+
+			@SuppressWarnings("unchecked")
+			@Override
+			public T apply(Object source) {
+				return (T) neo4jTemplate.convert(source, persistentNodeClass);
+			}
+
+		};
+	}
+
 	public static <S extends Node> Function<S, Long> toId() {
 		return new Function<S, Long>() {
 
@@ -30,26 +55,12 @@ public class Functions {
 		};
 	}
 
-	public static <T extends PersistentNode> Function<Object, T> toPersistentState(final Neo4jTemplate neo4jTemplate) {
-		return new Function<Object, T>() {
+	public static Function<Object, Node> toNode(final Neo4jTemplate neo4jTemplate) {
+		return new Function<Object, Node>() {
 
-			@SuppressWarnings("unchecked")
 			@Override
-			public T apply(Object source) {
-				return (T) neo4jTemplate.convert(source, neo4jTemplate.getStoredJavaType(source));
-			}
-
-		};
-	}
-
-	public static <T extends PersistentNode> Function<Object, T> toPersistentState(final Neo4jTemplate neo4jTemplate,
-			final Class<?> persistentNodeClass) {
-		return new Function<Object, T>() {
-
-			@SuppressWarnings("unchecked")
-			@Override
-			public T apply(Object source) {
-				return (T) neo4jTemplate.convert(source, persistentNodeClass);
+			public Node apply(Object source) {
+				return neo4jTemplate.getPersistentState(source);
 			}
 
 		};

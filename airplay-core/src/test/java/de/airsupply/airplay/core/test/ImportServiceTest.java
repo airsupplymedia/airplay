@@ -14,6 +14,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import javax.validation.ValidationException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -67,21 +69,26 @@ public class ImportServiceTest {
 	@Autowired
 	private StationService stationService;
 
-	@Test
-	public void testSDFInitialImport() {
-		Chart chart = chartService.save(new Chart("Airplay Charts"));
-		Date week = DateUtils.getStartOfWeek(new Date());
-		URL url = getClass().getResource("/SDF_AIRPLAY_LARGE.sdf");
+	private void importRecords(ImporterType importerType, Chart chart, Date week, String location) {
+		URL url = getClass().getResource(location);
 		logger.info("Using file: " + url);
 		try (InputStream inputStream = url.openStream()) {
 			StopWatch stopWatch = new StopWatch();
 			stopWatch.start();
-			importService.importRecords(ImporterType.SDF, chart, week, inputStream);
+			importService.importRecords(importerType, chart, week, inputStream);
 			stopWatch.stop();
 			logger.info("Import took: " + stopWatch.prettyPrint());
 		} catch (IOException exception) {
 			logger.error(exception.getMessage(), exception);
 		}
+	}
+
+	@Test
+	public void testSDFInitialImport() {
+		Chart chart = chartService.save(new Chart("Airplay Charts"));
+		Date week = DateUtils.getStartOfWeek(new Date());
+		importRecords(ImporterType.SDF, chart, week, "/SDF_AIRPLAY_LARGE.sdf");
+
 		assertEquals(1, chartService.getChartCount());
 		assertEquals(1, chartService.getChartStateCount());
 		assertEquals(300, chartService.getChartPositionCount());
@@ -107,18 +114,12 @@ public class ImportServiceTest {
 		assertEquals(82, recordImport.getImportedPublisherList().size());
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = ValidationException.class)
 	public void testSDFRepeatedImport() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		URL url = getClass().getResource("/SDF_AIRPLAY_SMALL.sdf");
-		logger.info("Using file: " + url);
-		try (InputStream inputStream = url.openStream()) {
-			importService.importRecords(ImporterType.SDF, chart, week, inputStream);
-			importService.importRecords(ImporterType.SDF, chart, week, inputStream);
-		} catch (IOException exception) {
-			logger.error(exception.getMessage(), exception);
-		}
+		importRecords(ImporterType.SDF, chart, week, "/SDF_AIRPLAY_SMALL.sdf");
+		importRecords(ImporterType.SDF, chart, week, "/SDF_AIRPLAY_SMALL.sdf");
 	}
 
 	@Test
@@ -126,16 +127,7 @@ public class ImportServiceTest {
 		StopWatch stopWatch = new StopWatch();
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		URL url = getClass().getResource("/SDF_AIRPLAY_LARGE.sdf");
-		logger.info("Using file: " + url);
-		try (InputStream inputStream = url.openStream()) {
-			stopWatch.start();
-			importService.importRecords(ImporterType.SDF, chart, week, inputStream);
-			stopWatch.stop();
-			logger.info("Import took: " + stopWatch.prettyPrint());
-		} catch (IOException exception) {
-			logger.error(exception.getMessage(), exception);
-		}
+		importRecords(ImporterType.SDF, chart, week, "/SDF_AIRPLAY_LARGE.sdf");
 
 		RecordImport recordImport = importService.getRecordImports().get(0);
 		Collection<PersistentNode> importedRecordsToRevert = importService.getImportedRecordsToRevert(recordImport);
@@ -174,13 +166,7 @@ public class ImportServiceTest {
 	public void testSDFRevertedImportWithDependees() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		URL url = getClass().getResource("/SDF_AIRPLAY_SMALL.sdf");
-		logger.info("Using file: " + url);
-		try (InputStream inputStream = url.openStream()) {
-			importService.importRecords(ImporterType.SDF, chart, week, inputStream);
-		} catch (IOException exception) {
-			logger.error(exception.getMessage(), exception);
-		}
+		importRecords(ImporterType.SDF, chart, week, "/SDF_AIRPLAY_SMALL.sdf");
 
 		Artist importedArtist = contentService.findArtists("DEL REY, LANA", false).get(0);
 		RecordCompany importedRecordCompany = contentService.findRecordCompanies("IDG").get(0);
@@ -232,17 +218,8 @@ public class ImportServiceTest {
 	public void testXLSAirplayInitialImport() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		URL url = getClass().getResource("/XLS_AIRPLAY_LARGE.xls");
-		logger.info("Using file: " + url);
-		try (InputStream inputStream = url.openStream()) {
-			StopWatch stopWatch = new StopWatch();
-			stopWatch.start();
-			importService.importRecords(ImporterType.XLS, chart, week, inputStream);
-			stopWatch.stop();
-			logger.info("Import took: " + stopWatch.prettyPrint());
-		} catch (IOException exception) {
-			logger.error(exception.getMessage(), exception);
-		}
+		importRecords(ImporterType.XLS, chart, week, "/XLS_AIRPLAY_LARGE.xls");
+
 		assertEquals(1, chartService.getChartCount());
 		assertEquals(1, chartService.getChartStateCount());
 		assertEquals(300, chartService.getChartPositionCount());
@@ -268,18 +245,12 @@ public class ImportServiceTest {
 		assertEquals(0, recordImport.getImportedPublisherList().size());
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = ValidationException.class)
 	public void testXLSAirplayRepeatedImport() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		URL url = getClass().getResource("/XLS_AIRPLAY_LARGE.xls");
-		logger.info("Using file: " + url);
-		try (InputStream inputStream = url.openStream()) {
-			importService.importRecords(ImporterType.XLS, chart, week, inputStream);
-			importService.importRecords(ImporterType.XLS, chart, week, inputStream);
-		} catch (IOException exception) {
-			logger.error(exception.getMessage(), exception);
-		}
+		importRecords(ImporterType.XLS, chart, week, "/XLS_AIRPLAY_LARGE.xls");
+		importRecords(ImporterType.XLS, chart, week, "/XLS_AIRPLAY_LARGE.xls");
 	}
 
 	@Test
@@ -287,16 +258,7 @@ public class ImportServiceTest {
 		StopWatch stopWatch = new StopWatch();
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		URL url = getClass().getResource("/XLS_AIRPLAY_LARGE.xls");
-		logger.info("Using file: " + url);
-		try (InputStream inputStream = url.openStream()) {
-			stopWatch.start();
-			importService.importRecords(ImporterType.XLS, chart, week, inputStream);
-			stopWatch.stop();
-			logger.info("Import took: " + stopWatch.prettyPrint());
-		} catch (IOException exception) {
-			logger.error(exception.getMessage(), exception);
-		}
+		importRecords(ImporterType.XLS, chart, week, "/XLS_AIRPLAY_LARGE.xls");
 
 		RecordImport recordImport = importService.getRecordImports().get(0);
 		Collection<PersistentNode> importedRecordsToRevert = importService.getImportedRecordsToRevert(recordImport);
@@ -335,13 +297,7 @@ public class ImportServiceTest {
 	public void testXLSAirplayRevertedImportWithDependees() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		URL url = getClass().getResource("/XLS_AIRPLAY_LARGE.xls");
-		logger.info("Using file: " + url);
-		try (InputStream inputStream = url.openStream()) {
-			importService.importRecords(ImporterType.XLS, chart, week, inputStream);
-		} catch (IOException exception) {
-			logger.error(exception.getMessage(), exception);
-		}
+		importRecords(ImporterType.XLS, chart, week, "/XLS_AIRPLAY_LARGE.xls");
 
 		Artist importedArtist = contentService.findArtists("IMAGINE DRAGONS", false).get(0);
 		contentService.save(new Song(importedArtist, "SOME SONG"));
@@ -383,17 +339,8 @@ public class ImportServiceTest {
 	public void testXLSSalesInitialImport() {
 		Chart chart = chartService.save(new Chart("Sales Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		URL url = getClass().getResource("/XLS_SALES_LARGE.xls");
-		logger.info("Using file: " + url);
-		try (InputStream inputStream = url.openStream()) {
-			StopWatch stopWatch = new StopWatch();
-			stopWatch.start();
-			importService.importRecords(ImporterType.XLS, chart, week, inputStream);
-			stopWatch.stop();
-			logger.info("Import took: " + stopWatch.prettyPrint());
-		} catch (IOException exception) {
-			logger.error(exception.getMessage(), exception);
-		}
+		importRecords(ImporterType.XLS, chart, week, "/XLS_SALES_LARGE.xls");
+
 		assertEquals(1, chartService.getChartCount());
 		assertEquals(1, chartService.getChartStateCount());
 		assertEquals(100, chartService.getChartPositionCount());
@@ -419,18 +366,12 @@ public class ImportServiceTest {
 		assertEquals(0, recordImport.getImportedPublisherList().size());
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = ValidationException.class)
 	public void testXLSSalesRepeatedImport() {
 		Chart chart = chartService.save(new Chart("Sales Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		URL url = getClass().getResource("/XLS_SALES_LARGE.xls");
-		logger.info("Using file: " + url);
-		try (InputStream inputStream = url.openStream()) {
-			importService.importRecords(ImporterType.XLS, chart, week, inputStream);
-			importService.importRecords(ImporterType.XLS, chart, week, inputStream);
-		} catch (IOException exception) {
-			logger.error(exception.getMessage(), exception);
-		}
+		importRecords(ImporterType.XLS, chart, week, "/XLS_SALES_LARGE.xls");
+		importRecords(ImporterType.XLS, chart, week, "/XLS_SALES_LARGE.xls");
 	}
 
 	@Test
@@ -438,16 +379,7 @@ public class ImportServiceTest {
 		StopWatch stopWatch = new StopWatch();
 		Chart chart = chartService.save(new Chart("Sales Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		URL url = getClass().getResource("/XLS_SALES_LARGE.xls");
-		logger.info("Using file: " + url);
-		try (InputStream inputStream = url.openStream()) {
-			stopWatch.start();
-			importService.importRecords(ImporterType.XLS, chart, week, inputStream);
-			stopWatch.stop();
-			logger.info("Import took: " + stopWatch.prettyPrint());
-		} catch (IOException exception) {
-			logger.error(exception.getMessage(), exception);
-		}
+		importRecords(ImporterType.XLS, chart, week, "/XLS_SALES_LARGE.xls");
 
 		RecordImport recordImport = importService.getRecordImports().get(0);
 		Collection<PersistentNode> importedRecordsToRevert = importService.getImportedRecordsToRevert(recordImport);
@@ -486,13 +418,7 @@ public class ImportServiceTest {
 	public void testXLSSalesRevertedImportWithDependees() {
 		Chart chart = chartService.save(new Chart("Sales Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
-		URL url = getClass().getResource("/XLS_SALES_LARGE.xls");
-		logger.info("Using file: " + url);
-		try (InputStream inputStream = url.openStream()) {
-			importService.importRecords(ImporterType.XLS, chart, week, inputStream);
-		} catch (IOException exception) {
-			logger.error(exception.getMessage(), exception);
-		}
+		importRecords(ImporterType.XLS, chart, week, "/XLS_SALES_LARGE.xls");
 
 		Artist importedArtist = contentService.findArtists("WILLIAMS, PHARRELL", false).get(0);
 		contentService.save(new Song(importedArtist, "SOME SONG"));

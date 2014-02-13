@@ -28,12 +28,6 @@ public class ImportService extends Neo4jServiceSupport {
 
 		SDF("sdf"), XLS("xls");
 
-		private String identifier;
-
-		private ImporterType(String identifier) {
-			this.identifier = identifier;
-		}
-
 		public static ImporterType getByFileName(String fileName) {
 			Assert.notNull(fileName);
 			for (ImporterType importerType : values()) {
@@ -42,6 +36,12 @@ public class ImportService extends Neo4jServiceSupport {
 				}
 			}
 			return null;
+		}
+
+		private String identifier;
+
+		private ImporterType(String identifier) {
+			this.identifier = identifier;
 		}
 
 		public String getIdentifier() {
@@ -62,44 +62,9 @@ public class ImportService extends Neo4jServiceSupport {
 	@Autowired
 	private XLSImporter xlsImporter;
 
-	private RecordImport commitImport(RecordImport recordImport) {
-		Assert.notNull(recordImport);
-		return save(recordImport);
-	}
-
 	public Collection<PersistentNode> getImportedRecordsToRevert(RecordImport recordImport) {
 		Assert.notNull(recordImport);
 		return recordImport.getImportedRecordsWithoutDependees(getNeo4jTemplate());
-	}
-
-	public long getRecordImportCount() {
-		return recordImportRepository.count();
-	}
-
-	public List<RecordImport> getRecordImports() {
-		return CollectionUtils.asList(recordImportRepository.findAll());
-	}
-
-	@Transactional
-	public RecordImport importRecords(ImporterType importerType, Chart chart, Date week, InputStream inputStream) {
-		return commitImport(prepareImport(importerType, chart, week, inputStream));
-	}
-
-	private RecordImport prepareImport(ImporterType importerType, Chart chart, Date week, InputStream inputStream) {
-		Assert.notNull(importerType);
-		Assert.notNull(chart);
-		Assert.notNull(week);
-		Assert.notNull(inputStream);
-
-		week = DateUtils.getStartOfWeek(week);
-		RecordImport recordImport = new RecordImport(week);
-
-		Assert.isTrue(!exists(recordImport), "Import for week " + DateUtils.getWeekOfYearFormat(week)
-				+ " has been performed before!");
-
-		getImporter(importerType).processRecords(recordImport, chart, week, inputStream);
-
-		return recordImport;
 	}
 
 	private Importer getImporter(ImporterType importerType) {
@@ -113,8 +78,33 @@ public class ImportService extends Neo4jServiceSupport {
 		}
 	}
 
+	public long getRecordImportCount() {
+		return recordImportRepository.count();
+	}
+
+	public List<RecordImport> getRecordImports() {
+		return CollectionUtils.asList(recordImportRepository.findAll());
+	}
+
+	@Transactional
+	public RecordImport importRecords(ImporterType importerType, Chart chart, Date week, InputStream inputStream) {
+		Assert.notNull(importerType);
+		Assert.notNull(chart);
+		Assert.notNull(week);
+		Assert.notNull(inputStream);
+
+		week = DateUtils.getStartOfWeek(week);
+		RecordImport recordImport = new RecordImport(chart, week);
+		getImporter(importerType).processRecords(recordImport, chart, week, inputStream);
+		return save(recordImport);
+	}
+
 	@Transactional
 	public void revertImport(RecordImport recordImport) {
+		// FIXME Please try this test case
+		// Import airplay xls on week 6
+		// Import sales xls on week 7
+		// Revert week 6 import and expect an error
 		Assert.notNull(recordImport);
 		for (PersistentNode importedRecord : getImportedRecordsToRevert(recordImport)) {
 			getNeo4jTemplate().delete(importedRecord);

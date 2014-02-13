@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.validation.constraints.NotNull;
+
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
@@ -39,7 +41,7 @@ import de.airsupply.commons.core.neo4j.annotation.Unique;
 import de.airsupply.commons.core.util.CollectionUtils;
 import de.airsupply.commons.core.util.Functions;
 
-@Unique(parameters = { "week" })
+@Unique(parameters = { "chart", "week" })
 @NodeEntity
 @SuppressWarnings("serial")
 public class RecordImport extends PersistentNode {
@@ -100,6 +102,11 @@ public class RecordImport extends PersistentNode {
 
 	}
 
+	@NotNull
+	@Persistent
+	@RelatedTo(type = "CHART")
+	private Chart chart;
+
 	@GraphTraversal(traversal = DependeesFieldTraversalBuilder.class)
 	private Iterable<Node> dependees;
 
@@ -159,10 +166,16 @@ public class RecordImport extends PersistentNode {
 		super();
 	}
 
-	public RecordImport(Date week) {
+	public RecordImport(Chart chart, Date week) {
 		super();
+		Assert.notNull(chart);
 		Assert.notNull(week);
+		this.chart = chart;
 		this.week = week.getTime();
+	}
+
+	public Chart getChart() {
+		return chart;
 	}
 
 	private Collection<Node> getDependees() {
@@ -173,7 +186,7 @@ public class RecordImport extends PersistentNode {
 
 	public Collection<PersistentNode> getDependees(Neo4jTemplate neo4jTemplate) {
 		Assert.notNull(neo4jTemplate);
-		return CollectionUtils.transform(getDependees(), Functions.toPersistentState(neo4jTemplate));
+		return CollectionUtils.transform(getDependees(), Functions.toEntity(neo4jTemplate));
 	}
 
 	private Node[] getDependeesAsArray() {
@@ -237,12 +250,13 @@ public class RecordImport extends PersistentNode {
 				.description()
 				.breadthFirst()
 				.expand(Traversal.pathExpanderForAllTypes(Direction.OUTGOING))
-				.evaluator(Evaluators.includeWhereEndNodeIs(getImportedNodesAsArray()));
+				.evaluator(Evaluators.includeWhereEndNodeIs(getImportedNodesAsArray()))
+				.evaluator(new ImportedRecordEvaluator());
 		// @formatter:on
 		for (Path path : traversalDescription.traverse(getDependeesAsArray())) {
 			importedRecordsWithDependencies.add(path.endNode());
 		}
-		return CollectionUtils.transform(importedRecordsWithDependencies, Functions.toPersistentState(neo4jTemplate));
+		return CollectionUtils.transform(importedRecordsWithDependencies, Functions.toEntity(neo4jTemplate));
 	}
 
 	public List<PersistentNode> getImportedRecordsWithoutDependees(Neo4jTemplate neo4jTemplate) {

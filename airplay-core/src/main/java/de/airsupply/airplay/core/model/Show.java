@@ -10,8 +10,7 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
 import de.airsupply.commons.core.neo4j.annotation.Persistent;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 
-@Unique(query = "START station=node({station}) MATCH station<-[:SHOWS]->show WHERE show.name={name} RETURN show", parameters = {
-		"station", "name" })
+@Unique(parameters = { "station", "name" })
 @NodeEntity
 @SuppressWarnings("serial")
 public class Show extends PersistentNode {

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +14,10 @@ import javax.validation.ValidationException;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.neo4j.graphalgo.GraphAlgoFactory;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
+import org.neo4j.kernel.Traversal;
 import org.springframework.data.neo4j.repository.GraphRepository;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.util.Assert;
@@ -74,6 +79,10 @@ class UniquenessEvaluator<T> {
 			} else {
 				return name;
 			}
+		}
+
+		protected Class<?> getFieldType() {
+			return fieldType;
 		}
 
 		protected Object getFieldValue(Neo4jTemplate neo4jTemplate) {
@@ -215,7 +224,7 @@ class UniquenessEvaluator<T> {
 		return QueryUtils.isPersistent(neo4jTemplate, value) || getExisting() != null;
 	}
 
-	protected List<?> findExisting() {
+	protected Collection<?> findExisting() {
 		EvaluationType evaluationType = computeEvaluationType();
 		List<Parameter> parameters = new ArrayList<>(parameterNames.length);
 		if (evaluationType.isRequiresThisParameter()) {
@@ -238,7 +247,7 @@ class UniquenessEvaluator<T> {
 		case TRAVERSER:
 			return runTraverser(asParameterMap(parameters));
 		default:
-			return runPropertyAccess(parameters.get(0));
+			return runPropertyAccess(parameters);
 		}
 	}
 
@@ -247,11 +256,12 @@ class UniquenessEvaluator<T> {
 		if (QueryUtils.isPersistent(neo4jTemplate, value)) {
 			return value;
 		} else {
-			List<?> result = findExisting();
+			Collection<?> result = findExisting();
 			Assert.isTrue(result.size() == 0 || result.size() == 1);
 			if (result.size() == 1) {
-				Assert.isInstanceOf(value.getClass(), result.get(0));
-				return (T) result.get(0);
+				T first = (T) result.iterator().next();
+				Assert.isInstanceOf(value.getClass(), first);
+				return first;
 			} else {
 				return null;
 			}
@@ -260,7 +270,7 @@ class UniquenessEvaluator<T> {
 
 	public boolean isUnique() {
 		if (QueryUtils.isPersistent(neo4jTemplate, value)) {
-			List<?> result = findExisting();
+			Collection<?> result = findExisting();
 			if (result.size() == 0 || (result.size() == 1 && result.contains(value))) {
 				return true;
 			} else {
@@ -271,22 +281,46 @@ class UniquenessEvaluator<T> {
 		}
 	}
 
-	protected List<?> runPropertyAccess(Parameter parameter) {
-		GraphRepository<? extends Object> repository = neo4jTemplate.repositoryFor(value.getClass());
-		String fieldName = parameter.getFieldName();
-		Object fieldValue = parameter.getFieldValue(neo4jTemplate);
-		Query fieldValueAsQuery = new TermQuery(new Term(fieldName, fieldValue.toString()));
+	protected Collection<?> runPropertyAccess(Collection<Parameter> parameters) {
+		// FIXME THERE ARE REALLY MANY HACKS IN HERE!
 
-		if (parameter.isIndexQuery()) {
-			return CollectionUtils.asList(repository.findAllByQuery(fieldName, fieldValueAsQuery));
-		} else {
-			return CollectionUtils.asList(repository.findAllByPropertyValue(fieldName, fieldValue));
+		Class<? extends Object> valueType = value.getClass();
+
+		GraphRepository<? extends Object> repository = neo4jTemplate.repositoryFor(valueType);
+		List<Object> result = new ArrayList<>();
+		for (Parameter parameter : parameters) {
+			String fieldName = parameter.getFieldName();
+			Object fieldValue = parameter.getFieldValue(neo4jTemplate);
+			Query fieldValueAsQuery = new TermQuery(new Term(fieldName, fieldValue.toString()));
+			if (parameter.isIndexQuery()) {
+				result.addAll(CollectionUtils.asList(repository.findAllByQuery(fieldName, fieldValueAsQuery)));
+			} else if (fieldValue instanceof Node) {
+				for (Node sibling : CollectionUtils.transform(neo4jTemplate.findAll(valueType),
+						Functions.toNode(neo4jTemplate), false)) {
+					Node current = neo4jTemplate.getPersistentState(value);
+					if (!sibling.equals(current) && sibling != null) {
+						Path path = GraphAlgoFactory.shortestPath(Traversal.expanderForAllTypes(), 1).findSinglePath(
+								sibling, (Node) fieldValue);
+						Node startNode = path.startNode();
+						Node endNode = path.endNode();
+						if (startNode.equals(sibling) && endNode != null && ((Node) fieldValue).equals(endNode)) {
+							result.add(neo4jTemplate.findOne(startNode.getId(), valueType));
+						}
+					}
+				}
+			} else {
+				result.addAll(CollectionUtils.asList(repository.findAllByPropertyValue(fieldName, fieldValue)));
+			}
 		}
+		if (result.size() != parameters.size()) {
+			return Collections.emptyList();
+		}
+		return new HashSet<>(result);
 	}
 
 	protected List<?> runQuery(Map<String, Object> parameters) {
 		return CollectionUtils.transform(neo4jTemplate.query(query, parameters),
-				Functions.<PersistentNode> toPersistentState(neo4jTemplate, value.getClass()));
+				Functions.<PersistentNode> toEntity(neo4jTemplate, value.getClass()));
 	}
 
 	protected List<?> runTraverser(Map<String, Object> parameters) {
@@ -299,7 +333,7 @@ class UniquenessEvaluator<T> {
 		UniquenessTraverser traverser = traverserFactory.create(parameters);
 		Assert.notNull(traverser);
 		return CollectionUtils.transform(traverser.traverse(parameters),
-				Functions.<PersistentNode> toPersistentState(neo4jTemplate, value.getClass()));
+				Functions.<PersistentNode> toEntity(neo4jTemplate, value.getClass()));
 	}
 
 }
