@@ -14,16 +14,9 @@ application.controller('ChartListController', [ '$scope', '$modal', '$timeout', 
 	};
 	$scope.findChartPositions = function(chart, date) {
 		if (chart && date) {
-			$scope.chartPositions = ChartService.chartStates.resource().find({
+			$scope.chartPositions = ChartService.chartPositionsByDate.resource().find({
 				identifier : chart,
 				date : date
-			});
-		}
-	};
-	$scope.sortableOptions = {
-		stop : function(event, ui) {
-			sort($scope.chartPositions, ui.item.sortable.index, ui.item.sortable.dropindex, function(item, index) {
-				item.position = index + 1;
 			});
 		}
 	};
@@ -33,11 +26,6 @@ application.controller('SongListController', [ '$scope', 'ContentService', funct
 	$scope.results = 0;
 	$scope.findSongs = function(name) {
 		$scope.songs = ContentService.songs.search(name, null, true);
-	};
-	$scope.deleteItem = function(item) {
-		item.$delete(function() {
-			$scope.songs.splice($scope.songs.indexOf(item), 1);
-		});
 	};
 } ]);
 
@@ -90,11 +78,12 @@ application.controller('SongEditController', [ '$scope', '$state', 'AlertService
 	};
 } ]);
 
-application.controller('ImportListController', [ '$scope', 'ImportService', function($scope, ImportService) {
+application.controller('ImportListController', [ '$scope', '$state', 'ImportService', function($scope, $state, ImportService) {
 	$scope.imports = ImportService.imports.resource().find({});
 	$scope.deleteItem = function(item) {
 		item.$delete(function() {
 			$scope.imports.splice($scope.imports.indexOf(item), 1);
+			$state.go('import');
 		});
 	};
 	$scope.week = function(dateString) {
@@ -158,6 +147,9 @@ application.controller('ImportRunController', [
 					$scope.chart = response[0].identifier;
 				}
 			});
+			$scope.selectChart = function(id) {
+				$scope.chart = id;
+			};
 			$scope.finish = function() {
 				$scope.progress = undefined;
 				$state.go('import');

@@ -35,7 +35,8 @@ var application = angular.module('airplay', [ 'ui.router', 'ui.bootstrap', 'ui.s
 application.factory('ChartService', [ 'RemoteService', function(RemoteService) {
 	var ChartService = {
 		charts : RemoteService.using('/charts'),
-		chartStates : RemoteService.using('/charts/:identifier/:date')
+		chartPositionsByDate : RemoteService.using('/charts/:identifier/date/:date'),
+		chartPositionsBySong : RemoteService.using('/charts/:identifier/date/:date')
 	};
 	return ChartService;
 } ]);
