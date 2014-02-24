@@ -19,7 +19,6 @@ public class ChartPosition extends PersistentNode {
 
 	@NotNull
 	@RelatedTo(direction = Direction.BOTH, type = "CHART_POSITIONS")
-	@JsonIgnore
 	private ChartState chartState;
 
 	private int position;
