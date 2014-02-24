@@ -13,34 +13,19 @@
 		</form>
 	</div>
 </div>
-<div class="row">
-	<div class="col-md-8">
-		<table class="table table-condensed table-hover table-striped" ng-show="chartPositions.length > 0">
-			<thead>
-				<tr>
-					<th>Position</th>
-					<th>Artist</th>
-					<th>Title</th>
-					<th></th>
-				</tr>
-			</thead>
-			<tbody ng-model="chartPositions" ui-sortable="sortableOptions">
-				<tr ng-repeat="chartPosition in chartPositions">
-					<td><span class="badge">{{chartPosition.position}}</span></td>
-					<td>{{chartPosition.song.artist.name}}</td>
-					<td>{{chartPosition.song.name}}</td>
-					<td>
-						<div class="pull-right">
-							<button class="btn btn-danger btn-sm" ng-click="deleteItem(chartPosition)">
-								<i class="glyphicon glyphicon-remove"></i>
-							</button>
-						</div>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
-	<div class="col-md-4">
-		<div ui-view autoscroll="false"></div>
-	</div>
-</div>
+<table class="table table-condensed table-hover table-striped" ng-show="chartPositions.length > 0">
+	<thead>
+		<tr>
+			<th>Position</th>
+			<th>Artist</th>
+			<th>Title</th>
+		</tr>
+	</thead>
+	<tbody ng-model="chartPositions">
+		<tr ng-repeat="chartPosition in chartPositions">
+			<td><span class="badge">{{chartPosition.position}}</span></td>
+			<td>{{chartPosition.song.artist.name}}</td>
+			<td>{{chartPosition.song.name}}</td>
+		</tr>
+	</tbody>
+</table>
