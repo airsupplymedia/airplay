@@ -1,7 +1,7 @@
 <form novalidate role="upload">
 	<div class="input-group" ng-hide="progress">
 		<div class="input-group-btn">
-			<button class="btn btn-default" type="button" ng-model="chart" ng-repeat="item in charts" btn-radio="item.identifier">{{item.name}}</button>
+			<button class="btn btn-default" type="button" ng-model="chart" ng-repeat="item in charts" ng-click="selectChart(item.identifier)" btn-radio="item.identifier">{{item.name}}</button>
 		</div>
 		<input class="form-control span3" type="week" placeholder="Week" value="{{week}}" ng-model="week" required />
 		<div class="input-group-btn">
