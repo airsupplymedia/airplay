@@ -1,7 +1,5 @@
 package de.airsupply.airplay.web.controller.validation;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -29,14 +27,14 @@ public class ErrorHandler {
 		return messageSource.getMessage(error, LocaleContextHolder.getLocale());
 	}
 
-	private void processFieldErrors(ValidationError validationError, List<FieldError> errors) {
+	private void processFieldErrors(ValidationError validationError, Iterable<FieldError> errors) {
 		for (FieldError error : errors) {
 			validationError.addError(error.getObjectName(), error.getCode(), getMessage(error), error.getArguments(),
 					error.getField());
 		}
 	}
 
-	private void processObjectErrors(ValidationError validationError, List<ObjectError> errors) {
+	private void processObjectErrors(ValidationError validationError, Iterable<ObjectError> errors) {
 		for (ObjectError error : errors) {
 			validationError.addError(error.getObjectName(), error.getCode(), getMessage(error), error.getArguments());
 		}
@@ -45,12 +43,12 @@ public class ErrorHandler {
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ResponseBody
-	public ValidationError processValidationError(MethodArgumentNotValidException exception) {
+	public ValidationError processMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
 		BindingResult result = exception.getBindingResult();
 		ValidationError validationError = new ValidationError();
 		processObjectErrors(validationError, result.getGlobalErrors());
 		processFieldErrors(validationError, result.getFieldErrors());
 		return validationError;
-
 	}
+
 }
