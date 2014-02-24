@@ -6,6 +6,7 @@ import java.util.Map;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import de.airsupply.airplay.core.config.DatabaseConfiguration;
@@ -13,6 +14,7 @@ import de.airsupply.airplay.core.config.DatabaseConfiguration;
 @Configuration
 @EnableTransactionManagement
 @Profile("test")
+@PropertySource("classpath:airplay_test.properties")
 public class TestConfiguration extends DatabaseConfiguration {
 
 	@Override
