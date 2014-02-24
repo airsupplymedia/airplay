@@ -25,7 +25,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
-import de.airsupply.airplay.core.model.PersistentNode;
 import de.airsupply.commons.core.util.CollectionUtils;
 import de.airsupply.commons.core.util.Functions;
 import de.airsupply.commons.core.util.ValidationUtils;
@@ -43,11 +42,7 @@ public abstract class Neo4jServiceSupport {
 		Assert.notNull(objects);
 
 		List<Node> nodes = CollectionUtils.transform(objects, Functions.toNode(neo4jTemplate));
-		Iterable<Node> referencers = getReferencers(nodes.toArray(new Node[nodes.size()]));
-		for (PersistentNode referencer : CollectionUtils.transform(referencers, Functions.toEntity(neo4jTemplate))) {
-			System.out.println(referencer);
-		}
-		if (referencers.iterator().hasNext()) {
+		if (getReferencers(nodes.toArray(new Node[nodes.size()])).iterator().hasNext()) {
 			throw new ConstraintViolationException("The objects still have referencers and may not be deleted!", null);
 		}
 		for (T object : objects) {
