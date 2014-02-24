@@ -14,31 +14,23 @@
 	</div>
 </div>
 <div class="row">
-	<div class="col-md-8">
+	<div class="col-md-6">
 		<table class="table table-condensed table-hover table-striped" ng-show="songs.length > 0">
 			<thead>
 				<tr>
 					<th>Artist</th>
 					<th>Title</th>
-					<th></th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr ng-repeat="song in songs" ui-sref="songs.edit({ identifier: song.identifier })">
 					<td>{{song.artist.name}}</td>
 					<td>{{song.name}}</td>
-					<td>
-						<div class="pull-right">
-							<button class="btn btn-danger btn-sm" ng-click="deleteItem(song)">
-								<i class="glyphicon glyphicon-remove"></i>
-							</button>
-						</div>
-					</td>
 				</tr>
 			</tbody>
 		</table>
 	</div>
-	<div class="col-md-4">
+	<div class="col-md-6">
 		<div ui-view autoscroll="false"></div>
 	</div>
 </div>
