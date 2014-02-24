@@ -300,6 +300,11 @@ public class RecordImport extends PersistentNode {
 		}
 	}
 
+	@Override
+	public String toString() {
+		return "RecordImport [chart=" + chart + ", week=" + week + "]";
+	}
+
 	private void writeObject(ObjectOutputStream outputStream) throws IOException {
 		importedArtists = null;
 		importedChartPositions = null;
