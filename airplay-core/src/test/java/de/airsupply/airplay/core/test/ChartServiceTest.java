@@ -8,7 +8,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import javax.validation.ConstraintViolationException;
-import javax.validation.ValidationException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -144,7 +143,7 @@ public class ChartServiceTest {
 		assertEquals(1, service.getCharts().get(0).getChartStateList().size());
 	}
 
-	@Test(expected = ValidationException.class)
+	@Test(expected = ConstraintViolationException.class)
 	public void testChartStateWithTransientChartCreation() {
 		Chart chart = new Chart("Airplay Charts");
 		service.save(new ChartState(chart, DateUtils.getStartOfWeek(new Date())));
@@ -152,24 +151,37 @@ public class ChartServiceTest {
 
 	@Test(expected = ConstraintViolationException.class)
 	public void testDuplicateChartCreation() {
-		service.save(new Chart("Airplay Charts"));
+		try {
+			service.save(new Chart("Airplay Charts"));
+		} catch (Exception exception) {
+		}
 		service.save(new Chart("Airplay Charts"));
 	}
 
 	@Test(expected = ConstraintViolationException.class)
 	public void testDuplicateChartPositionCreation() {
-		Chart chart = service.save(new Chart("Airplay Charts"));
-		ChartState chartState = service.save(new ChartState(chart, DateUtils.getStartOfWeek(new Date())));
-		Artist artist = service.save(new Artist("JACKSON, MICHAEL"));
-		Song song = service.save(new Song(artist, "THRILLER"));
-		service.save(new ChartPosition(chartState, song, 1));
+		ChartState chartState = null;
+		Song song = null;
+		try {
+			Chart chart = service.save(new Chart("Airplay Charts"));
+			chartState = service.save(new ChartState(chart, DateUtils.getStartOfWeek(new Date())));
+			Artist artist = service.save(new Artist("JACKSON, MICHAEL"));
+			song = service.save(new Song(artist, "THRILLER"));
+			service.save(new ChartPosition(chartState, song, 1));
+		} catch (Exception exception) {
+		}
 		service.save(new ChartPosition(chartState, song, 1));
 	}
 
 	@Test(expected = ConstraintViolationException.class)
 	public void testDuplicateChartStateCreation() {
-		Chart chart = service.save(new Chart("Airplay Charts"));
-		service.save(new ChartState(chart, DateUtils.getStartOfWeek(new Date())));
+		Chart chart = null;
+		try {
+			chart = service.save(new Chart("Airplay Charts"));
+			service.save(new ChartState(chart, DateUtils.getStartOfWeek(new Date())));
+			service.save(new ChartState(service.save(new Chart("Sales Charts")), DateUtils.getStartOfWeek(new Date())));
+		} catch (Exception exception) {
+		}
 		service.save(new ChartState(chart, DateUtils.getStartOfWeek(new Date())));
 	}
 

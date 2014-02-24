@@ -5,7 +5,6 @@ import static org.junit.Assert.assertArrayEquals;
 import java.util.Date;
 
 import javax.validation.ConstraintViolationException;
-import javax.validation.ValidationException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -83,7 +82,7 @@ public class StationServiceTest {
 		service.save(new SongBroadcast(station, null, new Date()));
 	}
 
-	@Test(expected = ValidationException.class)
+	@Test(expected = ConstraintViolationException.class)
 	public void testSongBroadcastWithTransientStationCreation() {
 		Station station = new Station("SWR", null);
 		Artist artist = service.save(new Artist("JACKSON, MICHAEL"));

@@ -5,17 +5,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.validation.ConstraintViolationException;
+
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Expander;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Path;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.kernel.Traversal;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,12 +27,48 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
 
 import de.airsupply.airplay.core.model.PersistentNode;
 import de.airsupply.commons.core.util.CollectionUtils;
+import de.airsupply.commons.core.util.Functions;
 import de.airsupply.commons.core.util.ValidationUtils;
 
 public abstract class Neo4jServiceSupport {
 
+	public static interface DeleteAction {
+	}
+
 	@Autowired
 	private Neo4jTemplate neo4jTemplate;
+
+	@Transactional
+	public <T> void delete(Iterable<T> objects) {
+		Assert.notNull(objects);
+
+		List<Node> nodes = CollectionUtils.transform(objects, Functions.toNode(neo4jTemplate));
+		Iterable<Node> referencers = getReferencers(nodes.toArray(new Node[nodes.size()]));
+		for (PersistentNode referencer : CollectionUtils.transform(referencers, Functions.toEntity(neo4jTemplate))) {
+			System.out.println(referencer);
+		}
+		if (referencers.iterator().hasNext()) {
+			throw new ConstraintViolationException("The objects still have referencers and may not be deleted!", null);
+		}
+		for (T object : objects) {
+			neo4jTemplate.delete(object);
+		}
+	}
+
+	@Transactional
+	public <T> void delete(T object) {
+		Assert.notNull(object);
+
+		Node node = neo4jTemplate.getPersistentState(object);
+		Iterable<Node> referencers = getReferencers(node);
+		for (Node referencer : referencers) {
+			System.out.println(referencer);
+		}
+		if (referencers.iterator().hasNext()) {
+			throw new ConstraintViolationException("The object still has referencers and may not be deleted!", null);
+		}
+		neo4jTemplate.delete(object);
+	}
 
 	public <T> boolean exists(T object) {
 		return find(object) != null;
@@ -152,50 +187,33 @@ public abstract class Neo4jServiceSupport {
 		return neo4jTemplate;
 	}
 
-	private Iterator<Path> getReferencerIterator(Node node) {
-		TraversalDescription traversalDescription = neo4jTemplate.traversalDescription();
-		Expander expander = Traversal.expanderForAllTypes(Direction.INCOMING);
-		Traverser traverser = traversalDescription.expand(expander).breadthFirst().depthFirst().traverse(node);
-		return traverser.iterator();
+	private Iterable<Node> getReferencers(Node node) {
+		// @formatter:off
+		Traverser traverser = Traversal
+			.description()
+			.expand(Traversal.expanderForAllTypes(Direction.INCOMING))
+			.evaluator(Evaluators.excludeStartPosition())
+			.evaluator(QueryUtils.getSystemNodeExcludingEvaluator())
+			.evaluator(QueryUtils.getDeletedNodeExcludingEvaluator())
+			.evaluator(Evaluators.toDepth(1))
+			.traverse(node);
+		// @formatter:on
+		return traverser.nodes();
 	}
 
-	public <T extends PersistentNode> Set<Node> getReferencers(T object) {
-		Assert.notNull(object);
-		Node node = neo4jTemplate.getNode(object.getIdentifier().longValue());
-		if (node == null) {
-			return Collections.emptySet();
-		}
-		Iterator<Path> iterator = getReferencerIterator(node);
-		Set<Node> result = new HashSet<>();
-		while (iterator.hasNext()) {
-			Path path = iterator.next();
-			for (Relationship relationship : path.relationships()) {
-				Node startNode = relationship.getStartNode();
-				Node endNode = relationship.getEndNode();
-				if (!node.equals(startNode)) {
-					result.add(startNode);
-				} else if (!node.equals(endNode)) {
-					result.add(endNode);
-				}
-			}
-		}
-		return result;
-	}
-
-	public <T extends PersistentNode> boolean isReferenced(T object) {
-		Assert.notNull(object);
-		Node node = neo4jTemplate.getNode(object.getIdentifier().longValue());
-		if (node == null) {
-			return false;
-		}
-		Iterator<Path> iterator = getReferencerIterator(node);
-		while (iterator.hasNext()) {
-			Relationship relationship = iterator.next().lastRelationship();
-			if (relationship != null) {
-				return true;
-			}
-		}
-		return false;
+	private Iterable<Node> getReferencers(Node... nodes) {
+		// @formatter:off
+		Traverser traverser = Traversal
+				.description()
+				.expand(Traversal.expanderForAllTypes(Direction.INCOMING))
+				.evaluator(Evaluators.excludeStartPosition())
+				.evaluator(QueryUtils.getSystemNodeExcludingEvaluator())
+				.evaluator(QueryUtils.getDeletedNodeExcludingEvaluator())
+				.evaluator(Evaluators.toDepth(1))
+				.evaluator(Evaluators.endNodeIs(Evaluation.EXCLUDE_AND_CONTINUE, Evaluation.INCLUDE_AND_CONTINUE, nodes))
+				.traverse(nodes);
+		// @formatter:on
+		return traverser.nodes();
 	}
 
 	@Transactional

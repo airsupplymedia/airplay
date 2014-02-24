@@ -10,7 +10,6 @@ import java.util.List;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-import javax.validation.ValidationException;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,6 +27,7 @@ import de.airsupply.airplay.core.model.RecordCompany;
 import de.airsupply.airplay.core.model.Song;
 import de.airsupply.airplay.core.services.ContentService;
 import de.airsupply.airplay.core.test.config.TestConfiguration;
+import de.airsupply.commons.core.neo4j.QueryUtils;
 import de.airsupply.commons.core.util.CollectionUtils;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -42,6 +42,13 @@ public class ContentServiceTest {
 	@Test
 	public void testArtistCreation() {
 		service.save(new Artist("JACKSON, MICHAEL"));
+	}
+
+	@Test
+	public void testArtistDeletion() {
+		Artist artist = service.save(new Artist("JACKSON, MICHAEL"));
+		service.delete(artist);
+		assertTrue(QueryUtils.isTransient(service.getNeo4jTemplate(), artist));
 	}
 
 	@Test
@@ -160,6 +167,23 @@ public class ContentServiceTest {
 	}
 
 	@Test
+	public void testSongDeletion() {
+		Artist artist = service.save(new Artist("JACKSON, MICHAEL"));
+		Song song = service.save(new Song(artist, "THRILLER", "ABCDEFG"));
+		service.delete(song);
+		service.delete(artist);
+		assertTrue(QueryUtils.isTransient(service.getNeo4jTemplate(), artist));
+		assertTrue(QueryUtils.isTransient(service.getNeo4jTemplate(), song));
+	}
+
+	@Test(expected = ConstraintViolationException.class)
+	public void testSongDeletionWithDependee() {
+		Artist artist = service.save(new Artist("JACKSON, MICHAEL"));
+		service.save(new Song(artist, "THRILLER", "ABCDEFG"));
+		service.delete(artist);
+	}
+
+	@Test
 	public void testSongUpdate() {
 		Artist artist = service.save(new Artist("JACKSON, MICHAEL"));
 		Song song = service.save(new Song(artist, "THRILLER", "ABCDEFG"));
@@ -274,7 +298,7 @@ public class ContentServiceTest {
 		assertEquals(1, service.findSongs("KISS ME (", false).toArray().length);
 	}
 
-	@Test(expected = ValidationException.class)
+	@Test(expected = ConstraintViolationException.class)
 	public void testSongWithTransientArtistCreation() {
 		Artist artist = new Artist("JACKSON, MICHAEL");
 		service.save(new Song(artist, "THRILLER"));

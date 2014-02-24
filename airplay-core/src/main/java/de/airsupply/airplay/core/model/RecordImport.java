@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
@@ -19,8 +18,6 @@ import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.PathExpander;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.traversal.BranchState;
-import org.neo4j.graphdb.traversal.Evaluation;
-import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.Traversal;
@@ -36,12 +33,14 @@ import org.springframework.util.Assert;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import de.airsupply.commons.core.neo4j.QueryUtils;
 import de.airsupply.commons.core.neo4j.annotation.Persistent;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 import de.airsupply.commons.core.util.CollectionUtils;
 import de.airsupply.commons.core.util.Functions;
 
-@Unique(parameters = { "chart", "week" })
+@Unique(query = "START chart=node({chart}) MATCH chart<-[:CHART]->recordImport WHERE recordImport.week={week} RETURN recordImport", parameters = {
+		"chart", "week" })
 @NodeEntity
 @SuppressWarnings("serial")
 public class RecordImport extends PersistentNode {
@@ -54,9 +53,10 @@ public class RecordImport extends PersistentNode {
 			return Traversal
 					.description()
 					.expand((PathExpander<?>) new ImportedRecordPathExpander())
-					.evaluator(new ImportedRecordEvaluator());
+					.evaluator(QueryUtils.getSystemNodeExcludingEvaluator());
 			// @formatter:on
 		}
+
 	}
 
 	private static class ImportedNodesFieldTraversalBuilder implements FieldTraversalDescriptionBuilder {
@@ -69,18 +69,6 @@ public class RecordImport extends PersistentNode {
 					.expand(Traversal.expanderForAllTypes(Direction.OUTGOING))
 					.evaluator(Evaluators.toDepth(1));
 			// @formatter:on
-		}
-	}
-
-	private static class ImportedRecordEvaluator implements Evaluator {
-
-		@Override
-		public Evaluation evaluate(Path path) {
-			Object systemValue = path.endNode().getProperty("system");
-			if (Boolean.valueOf(Objects.toString(systemValue)).booleanValue()) {
-				return Evaluation.EXCLUDE_AND_CONTINUE;
-			}
-			return Evaluation.INCLUDE_AND_CONTINUE;
 		}
 
 	}
@@ -102,6 +90,7 @@ public class RecordImport extends PersistentNode {
 
 	}
 
+	@Fetch
 	@NotNull
 	@Persistent
 	@RelatedTo(type = "CHART")
@@ -198,12 +187,8 @@ public class RecordImport extends PersistentNode {
 		return importedArtists;
 	}
 
-	public List<ChartPosition> getImportedChartPositionList() {
-		if (importedChartPositions != null) {
-			return CollectionUtils.asList(importedChartPositions);
-		} else {
-			return Collections.emptyList();
-		}
+	public Set<ChartPosition> getImportedChartPositionList() {
+		return importedChartPositions;
 	}
 
 	public Set<ChartState> getImportedChartStateList() {
@@ -230,15 +215,15 @@ public class RecordImport extends PersistentNode {
 	@JsonIgnore
 	public Collection<PersistentNode> getImportedRecords() {
 		Collection<PersistentNode> importedRecords = new HashSet<>();
-		importedRecords.addAll(getImportedArtistList());
-		importedRecords.addAll(getImportedChartPositionList());
 		importedRecords.addAll(getImportedChartStateList());
-		importedRecords.addAll(getImportedPublisherList());
-		importedRecords.addAll(getImportedRecordCompanyList());
+		importedRecords.addAll(getImportedChartPositionList());
 		importedRecords.addAll(getImportedShowBroadcastList());
 		importedRecords.addAll(getImportedSongBroadcastList());
 		importedRecords.addAll(getImportedSongList());
 		importedRecords.addAll(getImportedStationList());
+		importedRecords.addAll(getImportedArtistList());
+		importedRecords.addAll(getImportedPublisherList());
+		importedRecords.addAll(getImportedRecordCompanyList());
 		return Collections.unmodifiableCollection(importedRecords);
 	}
 
@@ -251,7 +236,7 @@ public class RecordImport extends PersistentNode {
 				.breadthFirst()
 				.expand(Traversal.pathExpanderForAllTypes(Direction.OUTGOING))
 				.evaluator(Evaluators.includeWhereEndNodeIs(getImportedNodesAsArray()))
-				.evaluator(new ImportedRecordEvaluator());
+				.evaluator(QueryUtils.getSystemNodeExcludingEvaluator());
 		// @formatter:on
 		for (Path path : traversalDescription.traverse(getDependeesAsArray())) {
 			importedRecordsWithDependencies.add(path.endNode());
@@ -265,20 +250,12 @@ public class RecordImport extends PersistentNode {
 		return importedRecordsWithoutDependees;
 	}
 
-	public List<ShowBroadcast> getImportedShowBroadcastList() {
-		if (importedShowBroadcasts != null) {
-			return CollectionUtils.asList(importedShowBroadcasts);
-		} else {
-			return Collections.emptyList();
-		}
+	public Set<ShowBroadcast> getImportedShowBroadcastList() {
+		return importedShowBroadcasts;
 	}
 
-	public List<SongBroadcast> getImportedSongBroadcastList() {
-		if (importedSongBroadcasts != null) {
-			return CollectionUtils.asList(importedSongBroadcasts);
-		} else {
-			return Collections.emptyList();
-		}
+	public Set<SongBroadcast> getImportedSongBroadcastList() {
+		return importedSongBroadcasts;
 	}
 
 	public Set<Song> getImportedSongList() {

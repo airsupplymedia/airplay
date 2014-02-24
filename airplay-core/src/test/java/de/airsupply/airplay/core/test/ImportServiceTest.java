@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import javax.validation.ValidationException;
+import javax.validation.ConstraintViolationException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -114,7 +114,7 @@ public class ImportServiceTest {
 		assertEquals(82, recordImport.getImportedPublisherList().size());
 	}
 
-	@Test(expected = ValidationException.class)
+	@Test(expected = ConstraintViolationException.class)
 	public void testSDFRepeatedImport() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
@@ -130,18 +130,19 @@ public class ImportServiceTest {
 		importRecords(ImporterType.SDF, chart, week, "/SDF_AIRPLAY_LARGE.sdf");
 
 		RecordImport recordImport = importService.getRecordImports().get(0);
-		Collection<PersistentNode> importedRecordsToRevert = importService.getImportedRecordsToRevert(recordImport);
+		Collection<PersistentNode> importedRecordsWithoutDependees = recordImport
+				.getImportedRecordsWithoutDependees(importService.getNeo4jTemplate());
 		assertEquals(1, chartService.getChartCount());
-		assertEquals(1, filter(importedRecordsToRevert, filterFor(ChartState.class)).size());
-		assertEquals(300, filter(importedRecordsToRevert, filterFor(ChartPosition.class)).size());
-		assertEquals(93, filter(importedRecordsToRevert, filterFor(Station.class)).size());
-		assertEquals(6216, filter(importedRecordsToRevert, filterFor(SongBroadcast.class)).size());
-		assertEquals(0, filter(importedRecordsToRevert, filterFor(ShowBroadcast.class)).size());
-		assertEquals(300, filter(importedRecordsToRevert, filterFor(Song.class)).size());
-		assertEquals(254, filter(importedRecordsToRevert, filterFor(Artist.class)).size());
-		assertEquals(24, filter(importedRecordsToRevert, filterFor(RecordCompany.class)).size());
-		assertEquals(82, filter(importedRecordsToRevert, filterFor(Publisher.class)).size());
-		assertEquals(7270, importedRecordsToRevert.size());
+		assertEquals(1, filter(importedRecordsWithoutDependees, filterFor(ChartState.class)).size());
+		assertEquals(300, filter(importedRecordsWithoutDependees, filterFor(ChartPosition.class)).size());
+		assertEquals(93, filter(importedRecordsWithoutDependees, filterFor(Station.class)).size());
+		assertEquals(6216, filter(importedRecordsWithoutDependees, filterFor(SongBroadcast.class)).size());
+		assertEquals(0, filter(importedRecordsWithoutDependees, filterFor(ShowBroadcast.class)).size());
+		assertEquals(300, filter(importedRecordsWithoutDependees, filterFor(Song.class)).size());
+		assertEquals(254, filter(importedRecordsWithoutDependees, filterFor(Artist.class)).size());
+		assertEquals(24, filter(importedRecordsWithoutDependees, filterFor(RecordCompany.class)).size());
+		assertEquals(82, filter(importedRecordsWithoutDependees, filterFor(Publisher.class)).size());
+		assertEquals(7270, importedRecordsWithoutDependees.size());
 
 		stopWatch.start();
 		importService.revertImport(recordImport);
@@ -162,7 +163,7 @@ public class ImportServiceTest {
 		assertEquals(0, importService.getRecordImportCount());
 	}
 
-	@Test
+	@Test(expected = ConstraintViolationException.class)
 	public void testSDFRevertedImportWithDependees() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
@@ -171,14 +172,16 @@ public class ImportServiceTest {
 		Artist importedArtist = contentService.findArtists("DEL REY, LANA", false).get(0);
 		RecordCompany importedRecordCompany = contentService.findRecordCompanies("IDG").get(0);
 		Publisher importedPublisher = contentService.findPublishers("UDR URBAN").get(0);
-		contentService.save(new Song(importedArtist, "SOME SONG", null, importedRecordCompany, importedPublisher));
+		Song newSong = contentService.save(new Song(importedArtist, "SOME SONG", null, importedRecordCompany,
+				importedPublisher));
 
 		Station importedStation = stationService.findStations("SUNSH").get(0);
 		Song importedSong = contentService.findSongs(importedArtist).get(1);
-		stationService.save(new SongBroadcast(importedStation, importedSong, new Date()));
+		SongBroadcast newSongBroadcast = stationService.save(new SongBroadcast(importedStation, importedSong,
+				new Date()));
 
 		ChartState importedChartState = chartService.findChartState(chart, week);
-		chartService.save(new ChartPosition(importedChartState, importedSong, 301));
+		ChartPosition newChartPosition = chartService.save(new ChartPosition(importedChartState, importedSong, 301));
 
 		RecordImport recordImport = importService.getRecordImports().get(0);
 
@@ -199,19 +202,20 @@ public class ImportServiceTest {
 
 		assertArrayEquals(expected.toArray(), actual.toArray());
 
+		expected.clear();
+		expected.add(newSong);
+		expected.add(newSongBroadcast);
+		expected.add(newChartPosition);
+
+		actual.clear();
+		actual.addAll(recordImport.getDependees(importService.getNeo4jTemplate()));
+
+		Collections.sort(expected, PersistentNode.identifierComparator());
+		Collections.sort(actual, PersistentNode.identifierComparator());
+
+		assertArrayEquals(expected.toArray(), actual.toArray());
+
 		importService.revertImport(recordImport);
-		assertEquals(1, chartService.getChartCount());
-		assertEquals(1, chartService.getChartStateCount());
-		assertEquals(1, chartService.getChartPositionCount());
-		assertEquals(0, stationService.getShowCount());
-		assertEquals(1, stationService.getStationCount());
-		assertEquals(1, stationService.getSongBroadcastCount());
-		assertEquals(0, stationService.getShowBroadcastCount());
-		assertEquals(2, contentService.getSongCount());
-		assertEquals(1, contentService.getArtistCount());
-		assertEquals(2, contentService.getRecordCompanyCount());
-		assertEquals(2, contentService.getPublisherCount());
-		assertEquals(0, importService.getRecordImportCount());
 	}
 
 	@Test
@@ -245,7 +249,7 @@ public class ImportServiceTest {
 		assertEquals(0, recordImport.getImportedPublisherList().size());
 	}
 
-	@Test(expected = ValidationException.class)
+	@Test(expected = ConstraintViolationException.class)
 	public void testXLSAirplayRepeatedImport() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
@@ -261,18 +265,19 @@ public class ImportServiceTest {
 		importRecords(ImporterType.XLS, chart, week, "/XLS_AIRPLAY_LARGE.xls");
 
 		RecordImport recordImport = importService.getRecordImports().get(0);
-		Collection<PersistentNode> importedRecordsToRevert = importService.getImportedRecordsToRevert(recordImport);
+		Collection<PersistentNode> importedRecordsWithoutDependees = recordImport
+				.getImportedRecordsWithoutDependees(importService.getNeo4jTemplate());
 		assertEquals(1, chartService.getChartCount());
-		assertEquals(1, filter(importedRecordsToRevert, filterFor(ChartState.class)).size());
-		assertEquals(300, filter(importedRecordsToRevert, filterFor(ChartPosition.class)).size());
-		assertEquals(0, filter(importedRecordsToRevert, filterFor(Station.class)).size());
-		assertEquals(0, filter(importedRecordsToRevert, filterFor(SongBroadcast.class)).size());
-		assertEquals(0, filter(importedRecordsToRevert, filterFor(ShowBroadcast.class)).size());
-		assertEquals(300, filter(importedRecordsToRevert, filterFor(Song.class)).size());
-		assertEquals(263, filter(importedRecordsToRevert, filterFor(Artist.class)).size());
-		assertEquals(0, filter(importedRecordsToRevert, filterFor(RecordCompany.class)).size());
-		assertEquals(0, filter(importedRecordsToRevert, filterFor(Publisher.class)).size());
-		assertEquals(864, importedRecordsToRevert.size());
+		assertEquals(1, filter(importedRecordsWithoutDependees, filterFor(ChartState.class)).size());
+		assertEquals(300, filter(importedRecordsWithoutDependees, filterFor(ChartPosition.class)).size());
+		assertEquals(0, filter(importedRecordsWithoutDependees, filterFor(Station.class)).size());
+		assertEquals(0, filter(importedRecordsWithoutDependees, filterFor(SongBroadcast.class)).size());
+		assertEquals(0, filter(importedRecordsWithoutDependees, filterFor(ShowBroadcast.class)).size());
+		assertEquals(300, filter(importedRecordsWithoutDependees, filterFor(Song.class)).size());
+		assertEquals(263, filter(importedRecordsWithoutDependees, filterFor(Artist.class)).size());
+		assertEquals(0, filter(importedRecordsWithoutDependees, filterFor(RecordCompany.class)).size());
+		assertEquals(0, filter(importedRecordsWithoutDependees, filterFor(Publisher.class)).size());
+		assertEquals(864, importedRecordsWithoutDependees.size());
 
 		stopWatch.start();
 		importService.revertImport(recordImport);
@@ -293,18 +298,18 @@ public class ImportServiceTest {
 		assertEquals(0, importService.getRecordImportCount());
 	}
 
-	@Test
+	@Test(expected = ConstraintViolationException.class)
 	public void testXLSAirplayRevertedImportWithDependees() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
 		importRecords(ImporterType.XLS, chart, week, "/XLS_AIRPLAY_LARGE.xls");
 
 		Artist importedArtist = contentService.findArtists("IMAGINE DRAGONS", false).get(0);
-		contentService.save(new Song(importedArtist, "SOME SONG"));
+		Song newSong = contentService.save(new Song(importedArtist, "SOME SONG"));
 
 		ChartState importedChartState = chartService.findChartState(chart, week);
 		Song importedSong = contentService.findSongs(importedArtist).get(1);
-		chartService.save(new ChartPosition(importedChartState, importedSong, 301));
+		ChartPosition newChartPosition = chartService.save(new ChartPosition(importedChartState, importedSong, 301));
 
 		RecordImport recordImport = importService.getRecordImports().get(0);
 
@@ -320,19 +325,19 @@ public class ImportServiceTest {
 
 		assertArrayEquals(expected.toArray(), actual.toArray());
 
+		expected.clear();
+		expected.add(newSong);
+		expected.add(newChartPosition);
+
+		actual.clear();
+		actual.addAll(recordImport.getDependees(importService.getNeo4jTemplate()));
+
+		Collections.sort(expected, PersistentNode.identifierComparator());
+		Collections.sort(actual, PersistentNode.identifierComparator());
+
+		assertArrayEquals(expected.toArray(), actual.toArray());
+
 		importService.revertImport(recordImport);
-		assertEquals(1, chartService.getChartCount());
-		assertEquals(1, chartService.getChartStateCount());
-		assertEquals(1, chartService.getChartPositionCount());
-		assertEquals(0, stationService.getShowCount());
-		assertEquals(0, stationService.getStationCount());
-		assertEquals(0, stationService.getSongBroadcastCount());
-		assertEquals(0, stationService.getShowBroadcastCount());
-		assertEquals(2, contentService.getSongCount());
-		assertEquals(1, contentService.getArtistCount());
-		assertEquals(0, contentService.getRecordCompanyCount());
-		assertEquals(0, contentService.getPublisherCount());
-		assertEquals(0, importService.getRecordImportCount());
 	}
 
 	@Test
@@ -366,7 +371,7 @@ public class ImportServiceTest {
 		assertEquals(0, recordImport.getImportedPublisherList().size());
 	}
 
-	@Test(expected = ValidationException.class)
+	@Test(expected = ConstraintViolationException.class)
 	public void testXLSSalesRepeatedImport() {
 		Chart chart = chartService.save(new Chart("Sales Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
@@ -382,18 +387,19 @@ public class ImportServiceTest {
 		importRecords(ImporterType.XLS, chart, week, "/XLS_SALES_LARGE.xls");
 
 		RecordImport recordImport = importService.getRecordImports().get(0);
-		Collection<PersistentNode> importedRecordsToRevert = importService.getImportedRecordsToRevert(recordImport);
+		Collection<PersistentNode> importedRecordsWithoutDependees = recordImport
+				.getImportedRecordsWithoutDependees(importService.getNeo4jTemplate());
 		assertEquals(1, chartService.getChartCount());
-		assertEquals(1, filter(importedRecordsToRevert, filterFor(ChartState.class)).size());
-		assertEquals(100, filter(importedRecordsToRevert, filterFor(ChartPosition.class)).size());
-		assertEquals(0, filter(importedRecordsToRevert, filterFor(Station.class)).size());
-		assertEquals(0, filter(importedRecordsToRevert, filterFor(SongBroadcast.class)).size());
-		assertEquals(0, filter(importedRecordsToRevert, filterFor(ShowBroadcast.class)).size());
-		assertEquals(100, filter(importedRecordsToRevert, filterFor(Song.class)).size());
-		assertEquals(85, filter(importedRecordsToRevert, filterFor(Artist.class)).size());
-		assertEquals(0, filter(importedRecordsToRevert, filterFor(RecordCompany.class)).size());
-		assertEquals(0, filter(importedRecordsToRevert, filterFor(Publisher.class)).size());
-		assertEquals(286, importedRecordsToRevert.size());
+		assertEquals(1, filter(importedRecordsWithoutDependees, filterFor(ChartState.class)).size());
+		assertEquals(100, filter(importedRecordsWithoutDependees, filterFor(ChartPosition.class)).size());
+		assertEquals(0, filter(importedRecordsWithoutDependees, filterFor(Station.class)).size());
+		assertEquals(0, filter(importedRecordsWithoutDependees, filterFor(SongBroadcast.class)).size());
+		assertEquals(0, filter(importedRecordsWithoutDependees, filterFor(ShowBroadcast.class)).size());
+		assertEquals(100, filter(importedRecordsWithoutDependees, filterFor(Song.class)).size());
+		assertEquals(85, filter(importedRecordsWithoutDependees, filterFor(Artist.class)).size());
+		assertEquals(0, filter(importedRecordsWithoutDependees, filterFor(RecordCompany.class)).size());
+		assertEquals(0, filter(importedRecordsWithoutDependees, filterFor(Publisher.class)).size());
+		assertEquals(286, importedRecordsWithoutDependees.size());
 
 		stopWatch.start();
 		importService.revertImport(recordImport);
@@ -414,18 +420,18 @@ public class ImportServiceTest {
 		assertEquals(0, importService.getRecordImportCount());
 	}
 
-	@Test
+	@Test(expected = ConstraintViolationException.class)
 	public void testXLSSalesRevertedImportWithDependees() {
 		Chart chart = chartService.save(new Chart("Sales Charts"));
 		Date week = DateUtils.getStartOfWeek(new Date());
 		importRecords(ImporterType.XLS, chart, week, "/XLS_SALES_LARGE.xls");
 
 		Artist importedArtist = contentService.findArtists("WILLIAMS, PHARRELL", false).get(0);
-		contentService.save(new Song(importedArtist, "SOME SONG"));
+		Song newSong = contentService.save(new Song(importedArtist, "SOME SONG"));
 
 		ChartState importedChartState = chartService.findChartState(chart, week);
 		Song importedSong = contentService.findSongs(importedArtist).get(0);
-		chartService.save(new ChartPosition(importedChartState, importedSong, 301));
+		ChartPosition newChartPosition = chartService.save(new ChartPosition(importedChartState, importedSong, 301));
 
 		RecordImport recordImport = importService.getRecordImports().get(0);
 
@@ -441,19 +447,19 @@ public class ImportServiceTest {
 
 		assertArrayEquals(expected.toArray(), actual.toArray());
 
+		expected.clear();
+		expected.add(newSong);
+		expected.add(newChartPosition);
+
+		actual.clear();
+		actual.addAll(recordImport.getDependees(importService.getNeo4jTemplate()));
+
+		Collections.sort(expected, PersistentNode.identifierComparator());
+		Collections.sort(actual, PersistentNode.identifierComparator());
+
+		assertArrayEquals(expected.toArray(), actual.toArray());
+
 		importService.revertImport(recordImport);
-		assertEquals(1, chartService.getChartCount());
-		assertEquals(1, chartService.getChartStateCount());
-		assertEquals(1, chartService.getChartPositionCount());
-		assertEquals(0, stationService.getShowCount());
-		assertEquals(0, stationService.getStationCount());
-		assertEquals(0, stationService.getSongBroadcastCount());
-		assertEquals(0, stationService.getShowBroadcastCount());
-		assertEquals(2, contentService.getSongCount());
-		assertEquals(1, contentService.getArtistCount());
-		assertEquals(0, contentService.getRecordCompanyCount());
-		assertEquals(0, contentService.getPublisherCount());
-		assertEquals(0, importService.getRecordImportCount());
 	}
 
 }

@@ -1,6 +1,7 @@
 package de.airsupply.airplay.core.services;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -62,11 +63,6 @@ public class ImportService extends Neo4jServiceSupport {
 	@Autowired
 	private XLSImporter xlsImporter;
 
-	public Collection<PersistentNode> getImportedRecordsToRevert(RecordImport recordImport) {
-		Assert.notNull(recordImport);
-		return recordImport.getImportedRecordsWithoutDependees(getNeo4jTemplate());
-	}
-
 	private Importer getImporter(ImporterType importerType) {
 		switch (importerType) {
 		case SDF:
@@ -99,17 +95,18 @@ public class ImportService extends Neo4jServiceSupport {
 		return save(recordImport);
 	}
 
+	public boolean mayRevertImport(RecordImport recordImport) {
+		Assert.notNull(recordImport);
+		return recordImport.getImportedRecordsWithDependees(getNeo4jTemplate()).isEmpty();
+	}
+
 	@Transactional
 	public void revertImport(RecordImport recordImport) {
-		// FIXME Please try this test case
-		// Import airplay xls on week 6
-		// Import sales xls on week 7
-		// Revert week 6 import and expect an error
 		Assert.notNull(recordImport);
-		for (PersistentNode importedRecord : getImportedRecordsToRevert(recordImport)) {
-			getNeo4jTemplate().delete(importedRecord);
-		}
-		recordImportRepository.delete(recordImport);
+		Collection<PersistentNode> toDelete = new ArrayList<>();
+		toDelete.add(recordImport);
+		toDelete.addAll(recordImport.getImportedRecords());
+		delete(toDelete);
 	}
 
 }
