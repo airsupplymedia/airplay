@@ -54,12 +54,7 @@ public abstract class Neo4jServiceSupport {
 	public <T> void delete(T object) {
 		Assert.notNull(object);
 
-		Node node = neo4jTemplate.getPersistentState(object);
-		Iterable<Node> referencers = getReferencers(node);
-		for (Node referencer : referencers) {
-			System.out.println(referencer);
-		}
-		if (referencers.iterator().hasNext()) {
+		if (getReferencers(neo4jTemplate.<Node>getPersistentState(object)).iterator().hasNext()) {
 			throw new ConstraintViolationException("The object still has referencers and may not be deleted!", null);
 		}
 		neo4jTemplate.delete(object);
