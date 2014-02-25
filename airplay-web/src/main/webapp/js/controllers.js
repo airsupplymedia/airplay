@@ -2,7 +2,7 @@ application.controller('ChartListController', [ '$scope', '$modal', '$timeout', 
 	$scope.charts = ChartService.charts.resource().find({}, function(response) {
 		if (response[0]) {
 			$scope.chartState.chart = response[0].identifier;
-			$scope.chartPositions = ChartService.chartStates.resource().find({
+			$scope.chartPositions = ChartService.chartPositionsByDate.resource().find({
 				identifier : $scope.chartState.chart,
 				date : 'latest'
 			});
