@@ -1,6 +1,7 @@
 package de.airsupply.commons.core.context;
 
 import java.util.List;
+import java.util.TimeZone;
 
 import javax.annotation.PostConstruct;
 
@@ -17,6 +18,8 @@ import de.airsupply.airplay.core.services.ChartService.ChartType;
 @Profile("!test")
 public class BootstrapLifecyclePhase {
 
+	private static final String DEFAULT_TIME_ZONE = "Europe/Berlin";
+
 	@Autowired
 	private ChartService chartService;
 
@@ -25,6 +28,9 @@ public class BootstrapLifecyclePhase {
 
 	@PostConstruct
 	public void start() {
+		logger.info("Setting the Timezone...");
+		TimeZone.setDefault(TimeZone.getTimeZone(DEFAULT_TIME_ZONE));
+
 		logger.info("Initializing the database...");
 		List<Chart> charts = chartService.getCharts();
 		if (charts.isEmpty()) {
