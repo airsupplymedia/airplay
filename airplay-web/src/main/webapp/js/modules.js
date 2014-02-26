@@ -36,7 +36,7 @@ application.factory('ChartService', [ 'RemoteService', function(RemoteService) {
 	var ChartService = {
 		charts : RemoteService.using('/charts'),
 		chartPositionsByDate : RemoteService.using('/charts/:identifier/date/:date'),
-		chartPositionsBySong : RemoteService.using('/charts/:identifier/date/:date')
+		chartPositionsBySong : RemoteService.using('/charts/:identifier/song/:song')
 	};
 	return ChartService;
 } ]);
