@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -31,9 +30,8 @@ public class ImportController {
 
 	@RequestMapping(value = "/{identifier}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public String delete(@PathVariable Long identifier) {
+	public String revert(@PathVariable Long identifier) {
 		RecordImport recordImport = getService().find(identifier, RecordImport.class);
-		Assert.notNull(recordImport, "Import " + identifier + " could not be found!");
 		getService().revertImport(recordImport);
 		return "Reverted: " + identifier;
 	}

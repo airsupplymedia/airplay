@@ -300,6 +300,10 @@ public class RecordImport extends PersistentNode {
 		}
 	}
 
+	public boolean isReversible() {
+		return getDependees().isEmpty();
+	}
+
 	@Override
 	public String toString() {
 		return "RecordImport [chart=" + chart + ", week=" + week + "]";

@@ -1,9 +1,8 @@
 <div class="page-header">
-	<h2>Import</h2>
-</div>
-<div class="row">
-	<div class="col-xs-4">
-		<div ui-view="run" autoscroll="false"></div>
+	<div class="row">
+		<div class="col-xs-4">
+			<div ui-view="run" autoscroll="false"></div>
+		</div>
 	</div>
 </div>
 <div class="row">
@@ -13,20 +12,12 @@
 				<tr>
 					<th>Date</th>
 					<th>Chart</th>
-					<th></th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr ng-repeat="import in imports" ui-sref="import.detail({ identifier: import.identifier })">
 					<td>{{week(import.weekDate)}}</td>
 					<td>{{import.chart.name}}</td>
-					<td>
-						<div class="pull-right">
-							<button class="btn btn-danger btn-sm" ng-click="deleteItem(import)">
-								<i class="glyphicon glyphicon-remove"></i>
-							</button>
-						</div>
-					</td>
 				</tr>
 			</tbody>
 		</table>

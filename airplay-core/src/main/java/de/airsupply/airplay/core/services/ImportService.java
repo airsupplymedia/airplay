@@ -95,11 +95,6 @@ public class ImportService extends Neo4jServiceSupport {
 		return save(recordImport);
 	}
 
-	public boolean mayRevertImport(RecordImport recordImport) {
-		Assert.notNull(recordImport);
-		return recordImport.getImportedRecordsWithDependees(getNeo4jTemplate()).isEmpty();
-	}
-
 	@Transactional
 	public void revertImport(RecordImport recordImport) {
 		Assert.notNull(recordImport);
