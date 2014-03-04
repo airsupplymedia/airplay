@@ -1,16 +1,15 @@
 <div class="page-header">
-	<h2>Charts</h2>
-</div>
-<div class="row">
-	<div class="col-xs-4">
-		<form role="select">
-			<div class="input-group">
-				<div class="input-group-btn">
-					<button class="btn btn-default" type="button" ng-click="findChartPositions(item.identifier, chartState.date)" ng-model="chartState.chart" ng-repeat="item in charts" btn-radio="item.identifier">{{item.name}}</button>
+	<div class="row">
+		<div class="col-xs-4">
+			<form role="select">
+				<div class="input-group">
+					<div class="input-group-btn">
+						<button class="btn btn-default" type="button" ng-click="findChartPositions(item.identifier, chartState.date)" ng-model="chartState.chart" ng-repeat="item in charts" btn-radio="item.identifier">{{item.name}}</button>
+					</div>
+					<input type="week" class="form-control span3" placeholder="Week" ng-change="findChartPositions(chartState.chart, chartState.date)" ng-model="chartState.date" required />
 				</div>
-				<input type="week" class="form-control span3" placeholder="Week" ng-change="findChartPositions(chartState.chart, chartState.date)" ng-model="chartState.date" required />
-			</div>
-		</form>
+			</form>
+		</div>
 	</div>
 </div>
 <table class="table table-condensed table-hover table-striped" ng-show="chartPositions.length > 0">

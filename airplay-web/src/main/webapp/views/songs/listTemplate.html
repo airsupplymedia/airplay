@@ -1,16 +1,15 @@
 <div class="page-header">
-	<h2>
-		Songs
-		<button class="btn btn-primary pull-right" ui-sref="songs.edit({ identifier: 'new' })">
-			<i class="glyphicon glyphicon-plus-sign"></i> Add New
-		</button>
-	</h2>
-</div>
-<div class="row">
-	<div class="col-xs-4">
-		<form role="search">
-			<input type="text" class="form-control" placeholder="Search..." ng-model="search" ng-change="findSongs(search)">
-		</form>
+	<div class="row">
+		<div class="col-xs-4">
+			<form role="select">
+				<div class="input-group">
+					<input type="text" class="form-control span3" placeholder="Search..." ng-model="search">
+					<div class="input-group-btn">
+						<button class="btn btn-primary" type="submit" ng-click="findSongs(search)">Search</button>
+					</div>
+				</div>
+			</form>
+		</div>
 	</div>
 </div>
 <div class="row">

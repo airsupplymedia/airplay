@@ -1,10 +1,14 @@
 application.controller('ChartListController', [ '$scope', '$modal', '$timeout', 'ChartService', function($scope, $modal, $timeout, ChartService) {
-	$scope.charts = ChartService.charts.resource().find({}, function(response) {
+	$scope.charts = ChartService.charts.resource().query({}, function(response) {
 		if (response[0]) {
 			$scope.chartState.chart = response[0].identifier;
-			$scope.chartPositions = ChartService.chartPositionsByDate.resource().find({
+			$scope.chartPositions = ChartService.chartPositionsByDate.resource().query({
 				identifier : $scope.chartState.chart,
 				date : 'latest'
+			}, function() {
+				if ($scope.chartPositions[0]) {
+					$scope.chartState.date = new Date($scope.chartPositions[0].chartState.weekDate).getWeekString();
+				}
 			});
 		}
 	});
@@ -14,7 +18,7 @@ application.controller('ChartListController', [ '$scope', '$modal', '$timeout', 
 	};
 	$scope.findChartPositions = function(chart, date) {
 		if (chart && date) {
-			$scope.chartPositions = ChartService.chartPositionsByDate.resource().find({
+			$scope.chartPositions = ChartService.chartPositionsByDate.resource().query({
 				identifier : chart,
 				date : date
 			});
@@ -29,61 +33,15 @@ application.controller('SongListController', [ '$scope', 'ContentService', funct
 	};
 } ]);
 
-application.controller('SongEditController', [ '$scope', '$state', 'AlertService', 'ContentService', function($scope, $state, AlertService, ContentService) {
-	var create = $state.params.identifier == null || $state.params.identifier == 'new';
-	$scope.create = create;
-	$scope.edit = !create;
-	if (!create) {
-		$scope.song = ContentService.songs.resource().get({
-			identifier : $state.params.identifier
-		});
-		$scope.master = angular.copy($scope.song);
-	} else {
-		$scope.song = {};
-	}
-	$scope.artists = function(name) {
-		return ContentService.artists.search(name, 10);
-	};
-	$scope.publishers = function(name) {
-		return ContentService.publishers.search(name, 10);
-	};
-	$scope.recordCompanies = function(name) {
-		return ContentService.recordCompanies.search(name, 10);
-	};
-	$scope.save = function() {
-		if (!create) {
-			ContentService.songs.resource().put({
-				identifier : $scope.song.identifier,
-			}, $scope.song, function() {
-				AlertService.success($scope.song.name + " has been saved!");
-			});
-		} else {
-			ContentService.songs.resource().post({}, $scope.song, function() {
-				AlertService.success($scope.song.name + " has been created!");
-			});
-		}
-	};
-	$scope.cancel = function() {
-		$scope.reset();
-		AlertService.warning($scope.song.name + " has not been saved!");
-		$state.go('^');
-	};
-	$scope.reset = function() {
-		if (!create) {
-			angular.extend($scope.song, $scope.master);
-		}
-	};
-	$scope.unchanged = function() {
-		return !create && angular.equals($scope.song, $scope.master);
-	};
-} ]);
-
-application.controller('ImportListController', [ '$scope', '$state', 'ImportService', function($scope, $state, ImportService) {
-	$scope.imports = ImportService.imports.resource().find({});
-	$scope.deleteItem = function(item) {
-		item.$delete(function() {
-			$scope.imports.splice($scope.imports.indexOf(item), 1);
-			$state.go('import');
+application.controller('SongEditController', [ '$scope', '$state', 'ContentService', 'ChartService', function($scope, $state, ContentService, ChartService) {
+	$scope.song = ContentService.songs.resource().get({
+		identifier : $state.params.identifier
+	});
+	$scope.charts = ChartService.charts.resource().query({});
+	$scope.findChartPositions = function(chart) {
+		$scope.chartPositions = ChartService.chartPositionsBySong.resource().query({
+			identifier : chart.identifier,
+			song : $scope.song.identifier
 		});
 	};
 	$scope.week = function(dateString) {
@@ -91,9 +49,17 @@ application.controller('ImportListController', [ '$scope', '$state', 'ImportServ
 	};
 } ]);
 
+application.controller('ImportListController', [ '$scope', '$state', 'ImportService', function($scope, $state, ImportService) {
+	$scope.imports = ImportService.imports.resource().query({});
+	$scope.week = function(dateString) {
+		return new Date(dateString).getWeekString();
+	};
+} ]);
+
 application.controller('ImportDetailController', [ '$scope', '$state', 'ImportService', function($scope, $state, ImportService) {
+	var identifier = $state.params.identifier;
 	$scope.import = ImportService.imports.resource().get({
-		identifier : $state.params.identifier
+		identifier : identifier
 	}, function(response) {
 		$scope.count = response.importedRecordCount;
 		$scope.categories = categories = [ {
@@ -138,11 +104,16 @@ application.controller('ImportDetailController', [ '$scope', '$state', 'ImportSe
 			return response[category.property].length;
 		};
 	});
+	$scope.revert = function() {
+		$scope.import.$delete(function() {
+			$state.go('import');
+		});
+	};
 } ]);
 
 application.controller('ImportRunController', [
 		'$scope', '$state', '$upload', 'AlertService', 'ChartService', 'ImportService', function($scope, $state, $upload, AlertService, ChartService, ImportService) {
-			$scope.charts = ChartService.charts.resource().find({}, function(response) {
+			$scope.charts = ChartService.charts.resource().query({}, function(response) {
 				if (response[0]) {
 					$scope.chart = response[0].identifier;
 				}

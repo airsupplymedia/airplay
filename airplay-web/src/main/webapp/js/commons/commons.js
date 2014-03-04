@@ -108,25 +108,15 @@ commons.factory('ServerValidator', function() {
 
 commons.factory('RemoteResource', [ '$resource', function($resource) {
 	var RemoteResource = function(url) {
-		url = '/services' + url;
+		url = 'services' + url;
 		return $resource(url, {
 			identifier : '@identifier'
 		}, {
 			create : {
 				method : 'POST'
 			},
-			remove : {
-				method : 'DELETE'
-			},
 			put : {
 				method : 'PUT'
-			},
-			post : {
-				method : 'POST'
-			},
-			find : {
-				method : 'GET',
-				isArray : true
 			},
 			search : {
 				method : 'GET',

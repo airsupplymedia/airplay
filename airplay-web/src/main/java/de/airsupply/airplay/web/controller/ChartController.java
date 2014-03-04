@@ -65,7 +65,7 @@ public class ChartController {
 		return null;
 	}
 
-	@RequestMapping("/{chartIdentifier}/song/{song}")
+	@RequestMapping("/{chartIdentifier}/song/{songIdentifier}")
 	@ResponseBody
 	public Collection<ChartPosition> findChartPositions(@PathVariable Long chartIdentifier,
 			@PathVariable Long songIdentifier) {

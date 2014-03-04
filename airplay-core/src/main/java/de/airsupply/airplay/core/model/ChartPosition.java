@@ -7,8 +7,6 @@ import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import de.airsupply.airplay.core.model.Traversers.ChartPositionUniquenessTraverserFactory;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 
@@ -17,9 +15,9 @@ import de.airsupply.commons.core.neo4j.annotation.Unique;
 @SuppressWarnings("serial")
 public class ChartPosition extends PersistentNode {
 
+	@Fetch
 	@NotNull
 	@RelatedTo(direction = Direction.BOTH, type = "CHART_POSITIONS")
-	@JsonIgnore
 	private ChartState chartState;
 
 	private int position;
@@ -40,7 +38,6 @@ public class ChartPosition extends PersistentNode {
 		this.position = position;
 	}
 
-	@JsonIgnore
 	public ChartState getChartState() {
 		return chartState;
 	}
