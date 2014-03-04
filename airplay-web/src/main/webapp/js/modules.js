@@ -9,10 +9,10 @@ var application = angular.module('airplay', [ 'ui.router', 'ui.bootstrap', 'ui.s
 				url : "/songs",
 				templateUrl : 'views/songs/listTemplate.html',
 				controller : 'SongListController'
-			}).state('songs.edit', {
-				url : "/edit/:identifier",
-				templateUrl : "views/songs/editTemplate.html",
-				controller : 'SongEditController'
+			}).state('songs.detail', {
+				url : "/detail/:identifier",
+				templateUrl : "views/songs/detailTemplate.html",
+				controller : 'SongDetailController'
 			}).state('import', {
 				url : "/import",
 				views : {

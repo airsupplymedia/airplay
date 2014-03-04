@@ -22,7 +22,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				<tr ng-repeat="song in songs" ui-sref="songs.edit({ identifier: song.identifier })">
+				<tr ng-repeat="song in songs" ui-sref="songs.detail({ identifier: song.identifier })">
 					<td>{{song.artist.name}}</td>
 					<td>{{song.name}}</td>
 				</tr>

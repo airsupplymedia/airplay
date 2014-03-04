@@ -33,7 +33,7 @@ application.controller('SongListController', [ '$scope', 'ContentService', funct
 	};
 } ]);
 
-application.controller('SongEditController', [ '$scope', '$state', 'ContentService', 'ChartService', function($scope, $state, ContentService, ChartService) {
+application.controller('SongDetailController', [ '$scope', '$state', 'ContentService', 'ChartService', function($scope, $state, ContentService, ChartService) {
 	$scope.song = ContentService.songs.resource().get({
 		identifier : $state.params.identifier
 	});
