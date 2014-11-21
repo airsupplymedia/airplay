@@ -1,7 +1,5 @@
 package de.airsupply.airplay.core.model;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -80,11 +78,6 @@ public class ChartState extends PersistentNode {
 	@Override
 	public String toString() {
 		return "ChartState [chart=" + chart + ", week=" + week + ", getIdentifier()=" + getIdentifier() + "]";
-	}
-
-	private void writeObject(ObjectOutputStream outputStream) throws IOException {
-		chartPositions = null;
-		outputStream.defaultWriteObject();
 	}
 
 }

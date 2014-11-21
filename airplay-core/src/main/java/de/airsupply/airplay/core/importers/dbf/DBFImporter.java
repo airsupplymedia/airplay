@@ -64,9 +64,9 @@ public class DBFImporter {
 	public void migrate(String fileDirectory, String storeDirectory) {
 		context = new DBFImporterContext(new ArrayList<>(5200000));
 
-		migrateStations(fileDirectory);
+		// migrateStations(fileDirectory);
 		migrateSongs(fileDirectory);
-		migrateStates(fileDirectory);
+		// migrateStates(fileDirectory);
 
 		List<Object> objects = context.getObjects();
 
@@ -165,12 +165,12 @@ public class DBFImporter {
 					migrateStateOfChartState(salesChart, record, table);
 					migrateStateOfChartPosition(salesChart, record, table);
 					break;
-				case STATE_TYPE_SONG_BROADCAST_EXACT:
-					migrateStateOfSongBroadcast(record, table, true);
-					break;
-				case STATE_TYPE_SONG_BROADCAST_WEEKLY:
-					migrateStateOfSongBroadcast(record, table, false);
-					break;
+				// case STATE_TYPE_SONG_BROADCAST_EXACT:
+				// migrateStateOfSongBroadcast(record, table, true);
+				// break;
+				// case STATE_TYPE_SONG_BROADCAST_WEEKLY:
+				// migrateStateOfSongBroadcast(record, table, false);
+				// break;
 				default:
 					break;
 				}

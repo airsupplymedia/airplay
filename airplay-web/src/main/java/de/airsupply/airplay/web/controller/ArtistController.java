@@ -24,7 +24,7 @@ public class ArtistController extends AbstractController<Artist, ContentService>
 	@RequestMapping(method = RequestMethod.GET, params = { "name" })
 	@ResponseBody
 	public Collection<Artist> searchByName(@RequestParam("name") String name) {
-		return getService().findArtists(name, false);
+		return getService().findArtists(name);
 	}
 
 }

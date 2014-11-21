@@ -10,7 +10,7 @@ import java.util.Set;
 
 import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.helpers.collection.ClosableIterable;
-import org.springframework.data.neo4j.conversion.EndResult;
+import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.util.Assert;
 
 public abstract class CollectionUtils {
@@ -86,8 +86,8 @@ public abstract class CollectionUtils {
 				result.add(type.cast(next));
 			}
 		}
-		if (iterable instanceof EndResult) {
-			((EndResult<T>) iterable).finish();
+		if (iterable instanceof Result) {
+			((Result<T>) iterable).finish();
 		}
 		if (iterable instanceof IndexHits) {
 			((IndexHits<T>) iterable).close();

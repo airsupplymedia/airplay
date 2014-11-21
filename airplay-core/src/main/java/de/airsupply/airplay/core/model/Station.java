@@ -1,8 +1,5 @@
 package de.airsupply.airplay.core.model;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
@@ -47,10 +44,6 @@ public class Station extends PersistentNode {
 	@Override
 	public String toString() {
 		return "Station [name=" + name + ", longName=" + longName + ", getIdentifier()=" + getIdentifier() + "]";
-	}
-
-	private void writeObject(ObjectOutputStream outputStream) throws IOException {
-		outputStream.defaultWriteObject();
 	}
 
 }

@@ -6,12 +6,14 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.data.neo4j.annotation.Indexed;
+import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.util.Assert;
 
 import de.airsupply.commons.core.neo4j.annotation.Persistent;
 import de.airsupply.commons.core.util.DateUtils;
 
+@NodeEntity
 @SuppressWarnings("serial")
 public abstract class Broadcast extends PersistentNode {
 

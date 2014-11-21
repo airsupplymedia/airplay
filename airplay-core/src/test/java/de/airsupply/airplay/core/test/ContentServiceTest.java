@@ -234,39 +234,6 @@ public class ContentServiceTest {
 	}
 
 	@Test
-	public void testSongSearchWithAdvancedQuery() {
-		Artist artist;
-		Song song;
-
-		List<Song> expectedResults = new ArrayList<>(4);
-
-		artist = service.save(new Artist("JACKSON, MICHAEL"));
-		song = service.save(new Song(artist, "THRILLER", "ABC"));
-		song = service.save(new Song(artist, "BEAT IT", "ABC"));
-
-		artist = service.save(new Artist("PRINCE"));
-		song = service.save(new Song(artist, "KISS", "ABC"));
-
-		artist = service.save(new Artist("U2"));
-		song = service.save(new Song(artist, "KISS ME, KILL ME, THRILL ME", "ABC"));
-		expectedResults.add(song);
-
-		artist = service.save(new Artist("SIXPENCE NON THE RICHER"));
-		song = service.save(new Song(artist, "KISS ME (LIVE VERSION)", "ABC"));
-		expectedResults.add(song);
-
-		artist = service.save(new Artist("KISS ME"));
-		song = service.save(new Song(artist, "ABERTURA", "ABC"));
-		expectedResults.add(song);
-		song = service.save(new Song(artist, "RAINING DAY", "ABC"));
-		expectedResults.add(song);
-
-		List<Song> songs = service.findSongs("name:KISS* AND name:ME*", true);
-
-		assertArrayEquals(expectedResults.toArray(), songs.toArray());
-	}
-
-	@Test
 	public void testSongSearchWithSimpleQuery() {
 		Artist artist;
 		Song song;
@@ -280,12 +247,12 @@ public class ContentServiceTest {
 		artist = service.save(new Artist("PRINCE"));
 		song = service.save(new Song(artist, "KISS", "ABC"));
 
-		artist = service.save(new Artist("U2"));
-		song = service.save(new Song(artist, "KISS ME, KILL ME, THRILL ME", "ABC"));
-		expectedResults.add(song);
-
 		artist = service.save(new Artist("SIXPENCE NON THE RICHER"));
 		song = service.save(new Song(artist, "KISS ME (LIVE VERSION)", "ABC"));
+		expectedResults.add(song);
+
+		artist = service.save(new Artist("U2"));
+		song = service.save(new Song(artist, "KISS ME, KILL ME, THRILL ME", "ABC"));
 		expectedResults.add(song);
 
 		artist = service.save(new Artist("KISS ME"));
@@ -294,8 +261,8 @@ public class ContentServiceTest {
 		song = service.save(new Song(artist, "RAINING DAY", "ABC"));
 		expectedResults.add(song);
 
-		assertArrayEquals(expectedResults.toArray(), service.findSongs("KISS ME", false).toArray());
-		assertEquals(1, service.findSongs("KISS ME (", false).toArray().length);
+		assertArrayEquals(expectedResults.toArray(), service.findSongs("KISS ME").toArray());
+		assertEquals(1, service.findSongs("KISS ME (").toArray().length);
 	}
 
 	@Test(expected = ConstraintViolationException.class)

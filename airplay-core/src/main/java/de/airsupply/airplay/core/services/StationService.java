@@ -45,7 +45,7 @@ public class StationService extends Neo4jServiceSupport {
 
 	public List<Station> findStations(Station object) {
 		Assert.notNull(object);
-		return CollectionUtils.asList(stationRepository.findAllByPropertyValue("name", object.getName()));
+		return CollectionUtils.asList(stationRepository.findAllBySchemaPropertyValue("name", object.getName()));
 	}
 
 	public List<Station> findStations(String name) {

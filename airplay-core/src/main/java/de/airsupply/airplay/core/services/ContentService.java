@@ -1,5 +1,8 @@
 package de.airsupply.airplay.core.services;
 
+import static de.airsupply.commons.core.neo4j.QueryUtils.buildDefaultQuery;
+import static de.airsupply.commons.core.util.CollectionUtils.asList;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,8 +20,6 @@ import de.airsupply.airplay.core.model.Publisher;
 import de.airsupply.airplay.core.model.RecordCompany;
 import de.airsupply.airplay.core.model.Song;
 import de.airsupply.commons.core.neo4j.Neo4jServiceSupport;
-import de.airsupply.commons.core.neo4j.QueryUtils;
-import de.airsupply.commons.core.util.CollectionUtils;
 
 @Service
 public class ContentService extends Neo4jServiceSupport {
@@ -35,17 +36,14 @@ public class ContentService extends Neo4jServiceSupport {
 	@Autowired
 	private SongRepository songRepository;
 
-	public List<Artist> findArtists(String query, boolean advancedSearch) {
+	public List<Artist> findArtists(String query) {
 		Assert.notNull(query);
-		if (!advancedSearch) {
-			query = QueryUtils.buildDefaultQuery(query);
-		}
-		return CollectionUtils.asList(artistRepository.findAllByQuery("name", query));
+		return asList(artistRepository.findByName(buildDefaultQuery(query, "name")));
 	}
 
 	public List<Publisher> findPublishers(Publisher object) {
 		Assert.notNull(object);
-		return CollectionUtils.asList(publisherRepository.findAllByPropertyValue("name", object.getName()));
+		return asList(publisherRepository.findAllBySchemaPropertyValue("name", object.getName()));
 	}
 
 	public List<Publisher> findPublishers(String name) {
@@ -55,7 +53,7 @@ public class ContentService extends Neo4jServiceSupport {
 
 	public List<RecordCompany> findRecordCompanies(RecordCompany object) {
 		Assert.notNull(object);
-		return CollectionUtils.asList(recordCompanyRepository.findAllByPropertyValue("name", object.getName()));
+		return asList(recordCompanyRepository.findAllBySchemaPropertyValue("name", object.getName()));
 	}
 
 	public List<RecordCompany> findRecordCompanies(String name) {
@@ -65,24 +63,15 @@ public class ContentService extends Neo4jServiceSupport {
 
 	public List<Song> findSongs(Artist artist) {
 		Assert.notNull(artist);
-		return CollectionUtils.asList(songRepository.findByArtist(artist));
+		return asList(songRepository.findByArtist(artist));
 	}
 
-	public List<Song> findSongs(String query, boolean advancedSearch) {
+	public List<Song> findSongs(String query) {
 		Assert.notNull(query);
-		String search;
-		String searchWithFields;
-		if (!advancedSearch) {
-			search = QueryUtils.buildDefaultQuery(query);
-			searchWithFields = QueryUtils.buildDefaultQuery(query, "name");
-		} else {
-			search = query;
-			searchWithFields = query;
-		}
 		// FIXME Use Single Cypher query to increase performance
 		List<Song> result = new ArrayList<>();
-		result.addAll(CollectionUtils.asList(songRepository.findAllByQuery("name", search)));
-		result.addAll(CollectionUtils.asList(songRepository.findByArtistName(searchWithFields)));
+		result.addAll(asList(songRepository.findByName(buildDefaultQuery(query, "name"))));
+		result.addAll(asList(songRepository.findByArtistName(buildDefaultQuery(query, "name"))));
 		return Collections.unmodifiableList(result);
 	}
 
@@ -91,7 +80,7 @@ public class ContentService extends Neo4jServiceSupport {
 	}
 
 	public List<Artist> getArtists() {
-		return CollectionUtils.asList(artistRepository.findAll());
+		return asList(artistRepository.findAll());
 	}
 
 	public long getPublisherCount() {
@@ -99,11 +88,11 @@ public class ContentService extends Neo4jServiceSupport {
 	}
 
 	public List<Publisher> getPublishers() {
-		return CollectionUtils.asList(publisherRepository.findAll());
+		return asList(publisherRepository.findAll());
 	}
 
 	public List<RecordCompany> getRecordCompanies() {
-		return CollectionUtils.asList(recordCompanyRepository.findAll());
+		return asList(recordCompanyRepository.findAll());
 	}
 
 	public long getRecordCompanyCount() {
@@ -115,7 +104,7 @@ public class ContentService extends Neo4jServiceSupport {
 	}
 
 	public List<Song> getSongs() {
-		return CollectionUtils.asList(songRepository.findAll());
+		return asList(songRepository.findAll());
 	}
 
 	public Iterable<Song> getSongs(Iterable<Long> ids) {
