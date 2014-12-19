@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import de.airsupply.airplay.core.graph.repository.ChartPositionRepository;
@@ -66,7 +65,7 @@ public class ChartService extends Neo4jServiceSupport {
 
 	public List<Chart> findCharts(Chart object) {
 		Assert.notNull(object);
-		return CollectionUtils.asList(chartRepository.findAllBySchemaPropertyValue("name", object.getName()));
+		return CollectionUtils.asList(chartRepository.findAllByPropertyValue("name", object.getName()));
 	}
 
 	public List<Chart> findCharts(String name) {
@@ -97,7 +96,6 @@ public class ChartService extends Neo4jServiceSupport {
 		return chartPositionRepository.count();
 	}
 
-	@Transactional
 	public List<Chart> getCharts() {
 		return CollectionUtils.asList(chartRepository.findAll());
 	}

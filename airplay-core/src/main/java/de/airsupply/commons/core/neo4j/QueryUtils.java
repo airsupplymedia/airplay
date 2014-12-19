@@ -73,8 +73,18 @@ public abstract class QueryUtils {
 		return fieldName + INDEX_QUERY + INDEX_QUERY_QUOTE + fieldValue + INDEX_QUERY_QUOTE;
 	}
 
+	public static boolean exists(Neo4jTemplate neo4jTemplate, Object object) {
+		Assert.isTrue(!isPersistent(neo4jTemplate, object));
+		return new UniquenessEvaluator<>(object, neo4jTemplate).exists();
+	}
+
 	public static Evaluator getDeletedNodeExcludingEvaluator() {
 		return new DeletedNodeExcludingEvaluator();
+	}
+
+	public static <T> T getExisting(Neo4jTemplate neo4jTemplate, T object) {
+		Assert.isTrue(!isPersistent(neo4jTemplate, object));
+		return new UniquenessEvaluator<>(object, neo4jTemplate).getExisting();
 	}
 
 	public static PropertyContainer getPersistentState(Neo4jTemplate neo4jTemplate, Object value) {

@@ -26,8 +26,8 @@ import org.springframework.data.neo4j.mapping.Neo4jPersistentEntity;
 import org.springframework.data.neo4j.mapping.Neo4jPersistentProperty;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.data.neo4j.support.index.IndexType;
-import org.springframework.data.neo4j.support.typerepresentation.AbstractIndexBasedTypeRepresentationStrategy;
-import org.springframework.data.neo4j.support.typerepresentation.IndexBasedNodeTypeRepresentationStrategy;
+import org.springframework.data.neo4j.support.typerepresentation.AbstractIndexingTypeRepresentationStrategy;
+import org.springframework.data.neo4j.support.typerepresentation.IndexingNodeTypeRepresentationStrategy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
@@ -143,9 +143,9 @@ public class Neo4jBatchInserter {
 
 	}
 
-	private static final String NODE_INDEX_NAME = IndexBasedNodeTypeRepresentationStrategy.INDEX_NAME;
+	private static final String NODE_INDEX_NAME = IndexingNodeTypeRepresentationStrategy.INDEX_NAME;
 
-	private static final String TYPE_PROPERTY_NAME = AbstractIndexBasedTypeRepresentationStrategy.TYPE_PROPERTY_NAME;
+	private static final String TYPE_PROPERTY_NAME = AbstractIndexingTypeRepresentationStrategy.TYPE_PROPERTY_NAME;
 
 	private Counter counter = new Counter();
 

@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.core.services.ChartService;
@@ -27,7 +26,6 @@ public class BootstrapLifecyclePhase {
 	@Loggable
 	private Logger logger;
 
-	@Transactional
 	@PostConstruct
 	public void start() {
 		logger.info("Setting the Timezone...");

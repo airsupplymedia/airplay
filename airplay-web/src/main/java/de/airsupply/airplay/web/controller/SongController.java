@@ -24,7 +24,7 @@ public class SongController extends AbstractController<Song, ContentService> {
 	@RequestMapping(method = RequestMethod.GET, params = { "name" })
 	@ResponseBody
 	public Collection<Song> searchByName(@RequestParam("name") String name) {
-		return getService().findSongs(name);
+		return getService().findSongs(name, false);
 	}
 
 }

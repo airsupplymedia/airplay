@@ -176,7 +176,7 @@ public class ImportServiceTest {
 		Date week = DateUtils.getStartOfWeek(new Date());
 		performImport(ImporterType.SDF, chart, week, "/SDF_AIRPLAY_SMALL.sdf");
 
-		Artist importedArtist = contentService.findArtists("DEL REY, LANA").get(0);
+		Artist importedArtist = contentService.findArtists("DEL REY, LANA", false).get(0);
 		RecordCompany importedRecordCompany = contentService.findRecordCompanies("IDG").get(0);
 		Publisher importedPublisher = contentService.findPublishers("UDR URBAN").get(0);
 		Song newSong = contentService.save(new Song(importedArtist, "SOME SONG", null, importedRecordCompany,
@@ -307,7 +307,7 @@ public class ImportServiceTest {
 		Date week = DateUtils.getStartOfWeek(new Date());
 		performImport(ImporterType.XLS, chart, week, "/XLS_AIRPLAY_LARGE.xls");
 
-		Artist importedArtist = contentService.findArtists("IMAGINE DRAGONS").get(0);
+		Artist importedArtist = contentService.findArtists("IMAGINE DRAGONS", false).get(0);
 		Song newSong = contentService.save(new Song(importedArtist, "SOME SONG"));
 
 		ChartState importedChartState = chartService.findChartState(chart, week);
@@ -533,7 +533,7 @@ public class ImportServiceTest {
 		Date week = DateUtils.getStartOfWeek(new Date());
 		performImport(ImporterType.XLS, chart, week, "/XLS_SALES_LARGE.xls");
 
-		Artist importedArtist = contentService.findArtists("WILLIAMS, PHARRELL").get(0);
+		Artist importedArtist = contentService.findArtists("WILLIAMS, PHARRELL", false).get(0);
 		Song newSong = contentService.save(new Song(importedArtist, "SOME SONG"));
 
 		ChartState importedChartState = chartService.findChartState(chart, week);

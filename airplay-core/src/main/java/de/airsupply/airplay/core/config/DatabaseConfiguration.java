@@ -1,7 +1,7 @@
 package de.airsupply.airplay.core.config;
 
-import static org.neo4j.helpers.Settings.STRING;
-import static org.neo4j.helpers.Settings.setting;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.joda.time.DateTime;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -28,10 +28,6 @@ import de.airsupply.commons.core.context.LoggerBeanFactoryPostProcessor;
 @Profile("production")
 @EnableNeo4jRepositories("de.airsupply.airplay.core.graph.repository")
 public class DatabaseConfiguration extends Neo4jConfiguration {
-
-	public DatabaseConfiguration() {
-		setBasePackage("de.airsupply.airplay.core.model");
-	}
 
 	@Bean
 	public static LoggerBeanFactoryPostProcessor loggerBeanFactoryPostProcessor() {
@@ -64,14 +60,16 @@ public class DatabaseConfiguration extends Neo4jConfiguration {
 		};
 	}
 
-	protected void buildGraphDatabaseConfiguration(GraphDatabaseBuilder builder) {
-		builder.setConfig(setting("keep_logical_logs", STRING, "7 days"), "7 days");
+	protected Map<String, String> graphDatabaseConfiguration() {
+		Map<String, String> configuration = new HashMap<>();
+		configuration.put("keep_logical_logs", "7 days");
+		return configuration;
 	}
 
 	@Bean
 	public GraphDatabaseService graphDatabaseService(@Value("${neo4j.path}") String path) {
 		GraphDatabaseBuilder builder = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(path);
-		buildGraphDatabaseConfiguration(builder);
+		builder.setConfig(graphDatabaseConfiguration());
 		return builder.newGraphDatabase();
 	}
 

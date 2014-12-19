@@ -1,5 +1,7 @@
 package de.airsupply.airplay.core.model;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -14,12 +16,11 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.PathExpander;
-import org.neo4j.graphdb.PathExpanders;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.traversal.BranchState;
 import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
-import org.neo4j.kernel.impl.traversal.MonoDirectionalTraversalDescription;
+import org.neo4j.kernel.Traversal;
 import org.springframework.data.neo4j.annotation.Fetch;
 import org.springframework.data.neo4j.annotation.GraphTraversal;
 import org.springframework.data.neo4j.annotation.Indexed;
@@ -49,7 +50,8 @@ public class RecordImport extends PersistentNode {
 		@Override
 		public TraversalDescription build(Object start, Neo4jPersistentProperty property, String... params) {
 			// @formatter:off
-			return new MonoDirectionalTraversalDescription()
+			return Traversal
+					.description()
 					.expand((PathExpander<?>) new ImportedRecordPathExpander())
 					.evaluator(QueryUtils.getSystemNodeExcludingEvaluator());
 			// @formatter:on
@@ -62,8 +64,9 @@ public class RecordImport extends PersistentNode {
 		@Override
 		public TraversalDescription build(Object start, Neo4jPersistentProperty property, String... params) {
 			// @formatter:off
-			return new MonoDirectionalTraversalDescription()
-					.expand(PathExpanders.forDirection(Direction.OUTGOING))
+			return Traversal
+					.description()
+					.expand(Traversal.expanderForAllTypes(Direction.OUTGOING))
 					.evaluator(Evaluators.toDepth(1));
 			// @formatter:on
 		}
@@ -228,10 +231,10 @@ public class RecordImport extends PersistentNode {
 	public List<PersistentNode> getImportedRecordsWithDependees(Neo4jTemplate neo4jTemplate) {
 		Collection<Node> importedRecordsWithDependencies = new HashSet<>();
 		// @formatter:off
-		TraversalDescription traversalDescription = neo4jTemplate.getGraphDatabaseService()
-				.traversalDescription()
+		TraversalDescription traversalDescription = Traversal
+				.description()
 				.breadthFirst()
-				.expand(PathExpanders.forDirection(Direction.OUTGOING))
+				.expand(Traversal.pathExpanderForAllTypes(Direction.OUTGOING))
 				.evaluator(Evaluators.includeWhereEndNodeIs(getImportedNodesAsArray()))
 				.evaluator(QueryUtils.getSystemNodeExcludingEvaluator());
 		// @formatter:on
@@ -304,6 +307,19 @@ public class RecordImport extends PersistentNode {
 	@Override
 	public String toString() {
 		return "RecordImport [chart=" + chart + ", week=" + week + "]";
+	}
+
+	private void writeObject(ObjectOutputStream outputStream) throws IOException {
+		importedArtists = null;
+		importedChartPositions = null;
+		importedChartStates = null;
+		importedPublishers = null;
+		importedRecordCompanies = null;
+		importedShowBroadcasts = null;
+		importedSongBroadcasts = null;
+		importedSongs = null;
+		importedStations = null;
+		outputStream.defaultWriteObject();
 	}
 
 }

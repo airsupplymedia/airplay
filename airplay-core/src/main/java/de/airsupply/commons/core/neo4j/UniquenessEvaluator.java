@@ -1,13 +1,5 @@
 package de.airsupply.commons.core.neo4j;
 
-import static de.airsupply.commons.core.neo4j.QueryUtils.buildIndexQuery;
-import static de.airsupply.commons.core.neo4j.QueryUtils.getPersistentState;
-import static de.airsupply.commons.core.neo4j.QueryUtils.isPersistable;
-import static de.airsupply.commons.core.neo4j.QueryUtils.isPersistent;
-import static de.airsupply.commons.core.util.CollectionUtils.asList;
-import static de.airsupply.commons.core.util.CollectionUtils.transform;
-import static de.airsupply.commons.core.util.Functions.toEntity;
-
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,16 +13,18 @@ import javax.validation.ValidationException;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
-import org.neo4j.graphdb.Node;
 import org.springframework.data.neo4j.repository.GraphRepository;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
+import de.airsupply.airplay.core.model.PersistentNode;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 import de.airsupply.commons.core.neo4j.annotation.Unique.UniquenessTraverser;
 import de.airsupply.commons.core.neo4j.annotation.Unique.UniquenessTraverserFactory;
+import de.airsupply.commons.core.util.CollectionUtils;
+import de.airsupply.commons.core.util.Functions;
 
 class UniquenessEvaluator<T> {
 
@@ -94,8 +88,8 @@ class UniquenessEvaluator<T> {
 				try {
 					fieldType = field.getType();
 					fieldValue = field.get(entity);
-					if (fieldValue != null && isPersistent(neo4jTemplate, fieldValue)) {
-						fieldValue = getPersistentState(neo4jTemplate, fieldValue);
+					if (fieldValue != null && QueryUtils.isPersistent(neo4jTemplate, fieldValue)) {
+						fieldValue = QueryUtils.getPersistentState(neo4jTemplate, fieldValue);
 					}
 				} catch (IllegalArgumentException | IllegalAccessException cause) {
 					throw new ValidationException(cause);
@@ -120,7 +114,7 @@ class UniquenessEvaluator<T> {
 
 		protected String getFieldValueAsQueryString(Neo4jTemplate neo4jTemplate) {
 			TermQuery query = getFieldValueAsQuery(neo4jTemplate);
-			return buildIndexQuery(query.getTerm().field(), query.getTerm().text());
+			return QueryUtils.buildIndexQuery(query.getTerm().field(), query.getTerm().text());
 		}
 
 		protected String getName() {
@@ -145,8 +139,8 @@ class UniquenessEvaluator<T> {
 				if (isIndexQuery()) {
 					return String.class.equals(fieldType) && !StringUtils.isEmpty(fieldValue);
 				}
-				if (!(fieldValue instanceof Node) && isPersistable(neo4jTemplate, fieldValue)) {
-					return isPersistent(neo4jTemplate, fieldValue);
+				if (QueryUtils.isPersistable(neo4jTemplate, fieldValue)) {
+					return QueryUtils.isPersistent(neo4jTemplate, fieldValue);
 				}
 				return true;
 			}
@@ -222,7 +216,7 @@ class UniquenessEvaluator<T> {
 	}
 
 	public boolean exists() {
-		return isPersistent(neo4jTemplate, value) || getExisting() != null;
+		return QueryUtils.isPersistent(neo4jTemplate, value) || getExisting() != null;
 	}
 
 	protected Collection<?> findExisting() {
@@ -254,7 +248,7 @@ class UniquenessEvaluator<T> {
 
 	@SuppressWarnings("unchecked")
 	public T getExisting() {
-		if (isPersistent(neo4jTemplate, value)) {
+		if (QueryUtils.isPersistent(neo4jTemplate, value)) {
 			return value;
 		} else {
 			Collection<?> result = findExisting();
@@ -270,7 +264,7 @@ class UniquenessEvaluator<T> {
 	}
 
 	public boolean isUnique() {
-		if (isPersistent(neo4jTemplate, value)) {
+		if (QueryUtils.isPersistent(neo4jTemplate, value)) {
 			Collection<?> result = findExisting();
 			if (result.size() == 0 || (result.size() == 1 && result.contains(value))) {
 				return true;
@@ -292,14 +286,15 @@ class UniquenessEvaluator<T> {
 		Query fieldValueAsQuery = new TermQuery(new Term(fieldName, fieldValue.toString()));
 
 		if (parameter.isIndexQuery()) {
-			return asList(repository.findAllByQuery(fieldName, fieldValueAsQuery));
+			return CollectionUtils.asList(repository.findAllByQuery(fieldName, fieldValueAsQuery));
 		} else {
-			return asList(repository.findAllBySchemaPropertyValue(fieldName, fieldValue));
+			return CollectionUtils.asList(repository.findAllByPropertyValue(fieldName, fieldValue));
 		}
 	}
 
 	protected List<?> runQuery(Map<String, Object> parameters) {
-		return transform(neo4jTemplate.query(query, parameters), toEntity(neo4jTemplate, value.getClass()));
+		return CollectionUtils.transform(neo4jTemplate.query(query, parameters),
+				Functions.<PersistentNode> toEntity(neo4jTemplate, value.getClass()));
 	}
 
 	protected List<?> runTraverser(Map<String, Object> parameters) {
@@ -311,8 +306,8 @@ class UniquenessEvaluator<T> {
 		}
 		UniquenessTraverser traverser = traverserFactory.create(parameters);
 		Assert.notNull(traverser);
-		Iterable<Node> result = traverser.traverse(neo4jTemplate.getGraphDatabaseService(), parameters);
-		return transform(result, toEntity(neo4jTemplate, value.getClass()));
+		return CollectionUtils.transform(traverser.traverse(parameters),
+				Functions.<PersistentNode> toEntity(neo4jTemplate, value.getClass()));
 	}
 
 }

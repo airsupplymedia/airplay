@@ -10,7 +10,6 @@ import java.util.Map;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 
 import de.airsupply.commons.core.neo4j.UniqueConstraintValidator;
@@ -23,7 +22,7 @@ public @interface Unique {
 
 	public static interface UniquenessTraverser {
 
-		Iterable<Node> traverse(GraphDatabaseService databaseService, Map<String, Object> parameters);
+		Iterable<Node> traverse(Map<String, Object> parameters);
 
 	}
 

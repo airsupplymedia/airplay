@@ -1,8 +1,5 @@
 package de.airsupply.commons.core.neo4j;
 
-import static de.airsupply.commons.core.util.CollectionUtils.asList;
-import static de.airsupply.commons.core.util.CollectionUtils.transform;
-
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,10 +13,10 @@ import javax.validation.ConstraintViolationException;
 
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.PathExpanderBuilder;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.Traverser;
+import org.neo4j.kernel.Traversal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.repository.GraphRepository;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
@@ -28,10 +25,14 @@ import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
+import de.airsupply.commons.core.util.CollectionUtils;
 import de.airsupply.commons.core.util.Functions;
 import de.airsupply.commons.core.util.ValidationUtils;
 
 public abstract class Neo4jServiceSupport {
+
+	public static interface DeleteAction {
+	}
 
 	@Autowired
 	private Neo4jTemplate neo4jTemplate;
@@ -40,7 +41,7 @@ public abstract class Neo4jServiceSupport {
 	public <T> void delete(Iterable<T> objects) {
 		Assert.notNull(objects);
 
-		List<Node> nodes = transform(objects, Functions.toNode(neo4jTemplate));
+		List<Node> nodes = CollectionUtils.transform(objects, Functions.toNode(neo4jTemplate));
 		if (getReferencers(nodes.toArray(new Node[nodes.size()])).iterator().hasNext()) {
 			throw new ConstraintViolationException("The objects still have referencers and may not be deleted!", null);
 		}
@@ -69,17 +70,15 @@ public abstract class Neo4jServiceSupport {
 	}
 
 	public <T> List<T> find(Class<T> entityClass) {
-		return asList(neo4jTemplate.repositoryFor(entityClass).findAll());
+		return CollectionUtils.asList(neo4jTemplate.findAll(entityClass));
 	}
 
-	@Transactional
 	public <T> T find(Long identifier, Class<T> entityClass) {
-		return neo4jTemplate.repositoryFor(entityClass).findOne(identifier);
+		return neo4jTemplate.findOne(identifier.longValue(), entityClass);
 	}
 
 	public <T> T find(T object) {
-		Assert.isTrue(!QueryUtils.isPersistent(neo4jTemplate, object));
-		return new UniquenessEvaluator<>(object, neo4jTemplate).getExisting();
+		return QueryUtils.getExisting(neo4jTemplate, object);
 	}
 
 	public <T> List<T> findOrCreate(List<T> objects) {
@@ -181,9 +180,9 @@ public abstract class Neo4jServiceSupport {
 
 	private Iterable<Node> getReferencers(Node node) {
 		// @formatter:off
-		Traverser traverser = neo4jTemplate.getGraphDatabaseService()
-			.traversalDescription()
-			.expand(PathExpanderBuilder.allTypes(Direction.INCOMING).build())
+		Traverser traverser = Traversal
+			.description()
+			.expand(Traversal.expanderForAllTypes(Direction.INCOMING))
 			.evaluator(Evaluators.excludeStartPosition())
 			.evaluator(QueryUtils.getSystemNodeExcludingEvaluator())
 			.evaluator(QueryUtils.getDeletedNodeExcludingEvaluator())
@@ -195,9 +194,9 @@ public abstract class Neo4jServiceSupport {
 
 	private Iterable<Node> getReferencers(Node... nodes) {
 		// @formatter:off
-		Traverser traverser = neo4jTemplate.getGraphDatabaseService()
-				.traversalDescription()
-				.expand(PathExpanderBuilder.allTypes(Direction.INCOMING).build())
+		Traverser traverser = Traversal
+				.description()
+				.expand(Traversal.expanderForAllTypes(Direction.INCOMING))
 				.evaluator(Evaluators.excludeStartPosition())
 				.evaluator(QueryUtils.getSystemNodeExcludingEvaluator())
 				.evaluator(QueryUtils.getDeletedNodeExcludingEvaluator())

@@ -4,6 +4,7 @@ import java.util.Date;
 
 import javax.validation.constraints.NotNull;
 
+import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import de.airsupply.airplay.core.model.Traversers.SongBroadcastUniquenessTraverserFactory;
@@ -12,6 +13,7 @@ import de.airsupply.commons.core.neo4j.annotation.Unique;
 
 @Unique(traverser = SongBroadcastUniquenessTraverserFactory.class, parameters = { "broadcastedSong", "station", "from",
 		"to" })
+@NodeEntity
 @SuppressWarnings("serial")
 public class SongBroadcast extends Broadcast {
 

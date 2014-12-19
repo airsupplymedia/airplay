@@ -1,10 +1,9 @@
 package de.airsupply.airplay.core.test.config;
 
-import static org.neo4j.helpers.Settings.STRING;
-import static org.neo4j.helpers.Settings.setting;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
@@ -19,8 +18,10 @@ import de.airsupply.airplay.core.config.DatabaseConfiguration;
 public class TestConfiguration extends DatabaseConfiguration {
 
 	@Override
-	protected void buildGraphDatabaseConfiguration(GraphDatabaseBuilder builder) {
-		builder.setConfig(setting("keep_logical_logs", STRING, "0 days"), "0 days");
+	protected Map<String, String> graphDatabaseConfiguration() {
+		Map<String, String> configuration = new HashMap<>();
+		configuration.put("keep_logical_logs", "0 days");
+		return configuration;
 	}
 
 	@Override

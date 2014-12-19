@@ -53,7 +53,7 @@ public class PerformanceTestRunner {
 		StopWatch stopWatch = new StopWatch();
 
 		stopWatch.start("Find Song");
-		Song song = contentService.findSongs("JUST A LITTLE WHILE").get(0);
+		Song song = contentService.findSongs("JUST A LITTLE WHILE", false).get(0);
 		logger.info(song.toString());
 		stopWatch.stop();
 

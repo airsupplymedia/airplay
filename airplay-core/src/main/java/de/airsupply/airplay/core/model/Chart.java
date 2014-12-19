@@ -1,5 +1,7 @@
 package de.airsupply.airplay.core.model;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.Collections;
 import java.util.List;
 
@@ -52,6 +54,11 @@ public class Chart extends PersistentNode {
 	@Override
 	public String toString() {
 		return "Chart [name=" + name + ", getIdentifier()=" + getIdentifier() + "]";
+	}
+
+	private void writeObject(ObjectOutputStream outputStream) throws IOException {
+		chartStates = null;
+		outputStream.defaultWriteObject();
 	}
 
 }
