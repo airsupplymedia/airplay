@@ -42,7 +42,6 @@
 		<commons-io-version>2.4</commons-io-version>
 		<hibernate-validator-version>4.3.1.Final</hibernate-validator-version>
 		<jackson-version>2.2.3</jackson-version>
-		<jasperreports-version>5.5.0</jasperreports-version>
 		<java-version>1.7</java-version>
 		<javax-persistence-version>1.0</javax-persistence-version>
 		<junit-version>4.11</junit-version>

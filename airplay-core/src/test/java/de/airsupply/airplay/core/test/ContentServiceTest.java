@@ -1,5 +1,6 @@
 package de.airsupply.airplay.core.test;
 
+import static de.airsupply.commons.core.util.CollectionUtils.asList;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -28,7 +29,6 @@ import de.airsupply.airplay.core.model.Song;
 import de.airsupply.airplay.core.services.ContentService;
 import de.airsupply.airplay.core.test.config.TestConfiguration;
 import de.airsupply.commons.core.neo4j.QueryUtils;
-import de.airsupply.commons.core.util.CollectionUtils;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles("test")
@@ -138,7 +138,7 @@ public class ContentServiceTest {
 		try {
 			service.save(new Artist(null));
 		} catch (ConstraintViolationException exception) {
-			List<ConstraintViolation<?>> violations = CollectionUtils.asList(exception.getConstraintViolations());
+			List<ConstraintViolation<?>> violations = asList(exception.getConstraintViolations());
 			Assert.assertEquals(1, violations.size());
 			Assert.assertEquals(null, violations.get(0).getInvalidValue());
 		}
@@ -228,7 +228,7 @@ public class ContentServiceTest {
 		song = service.save(new Song(artist, "THRILLER", "ABC"));
 		song = service.save(new Song(artist, "BEAT IT", "ABC"));
 
-		List<Song> results = CollectionUtils.asList(service.findSongs(artist));
+		List<Song> results = asList(service.findSongs(artist));
 
 		assertEquals(2, results.size());
 	}

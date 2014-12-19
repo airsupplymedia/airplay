@@ -1,5 +1,14 @@
 package de.airsupply.airplay.core.model;
 
+import static de.airsupply.commons.core.util.DateUtils.getEndOfDay;
+import static de.airsupply.commons.core.util.DateUtils.getEndOfMonth;
+import static de.airsupply.commons.core.util.DateUtils.getEndOfWeek;
+import static de.airsupply.commons.core.util.DateUtils.getEndOfYear;
+import static de.airsupply.commons.core.util.DateUtils.getStartOfDay;
+import static de.airsupply.commons.core.util.DateUtils.getStartOfMonth;
+import static de.airsupply.commons.core.util.DateUtils.getStartOfWeek;
+import static de.airsupply.commons.core.util.DateUtils.getStartOfYear;
+
 import java.util.Date;
 
 import javax.validation.constraints.Min;
@@ -10,7 +19,6 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.util.Assert;
 
 import de.airsupply.commons.core.neo4j.annotation.Persistent;
-import de.airsupply.commons.core.util.DateUtils;
 
 @SuppressWarnings("serial")
 public abstract class Broadcast extends PersistentNode {
@@ -151,20 +159,20 @@ public abstract class Broadcast extends PersistentNode {
 	private void computeDate(BroadcastType broadcastType, Date date) {
 		switch (broadcastType) {
 		case DAY:
-			this.from = DateUtils.getStartOfDay(date).getTime();
-			this.to = DateUtils.getEndOfDay(date).getTime();
+			this.from = getStartOfDay(date).getTime();
+			this.to = getEndOfDay(date).getTime();
 			break;
 		case WEEK:
-			this.from = DateUtils.getStartOfWeek(date).getTime();
-			this.to = DateUtils.getEndOfWeek(date).getTime();
+			this.from = getStartOfWeek(date).getTime();
+			this.to = getEndOfWeek(date).getTime();
 			break;
 		case MONTH:
-			this.from = DateUtils.getStartOfMonth(date).getTime();
-			this.to = DateUtils.getEndOfMonth(date).getTime();
+			this.from = getStartOfMonth(date).getTime();
+			this.to = getEndOfMonth(date).getTime();
 			break;
 		case YEAR:
-			this.from = DateUtils.getStartOfYear(date).getTime();
-			this.to = DateUtils.getEndOfYear(date).getTime();
+			this.from = getStartOfYear(date).getTime();
+			this.to = getEndOfYear(date).getTime();
 			break;
 		case EXACT_BEGIN:
 			this.from = date.getTime();

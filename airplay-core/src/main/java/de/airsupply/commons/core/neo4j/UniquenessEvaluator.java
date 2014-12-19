@@ -1,9 +1,12 @@
 package de.airsupply.commons.core.neo4j;
 
+import static de.airsupply.commons.core.util.CollectionUtils.asList;
+import static de.airsupply.commons.core.util.CollectionUtils.transform;
+import static java.util.Collections.emptyList;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +26,6 @@ import de.airsupply.airplay.core.model.PersistentNode;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
 import de.airsupply.commons.core.neo4j.annotation.Unique.UniquenessTraverser;
 import de.airsupply.commons.core.neo4j.annotation.Unique.UniquenessTraverserFactory;
-import de.airsupply.commons.core.util.CollectionUtils;
 import de.airsupply.commons.core.util.Functions;
 
 class UniquenessEvaluator<T> {
@@ -232,7 +234,7 @@ class UniquenessEvaluator<T> {
 				query = query.replace(parameter.getName(), parameter.getParameterName());
 			}
 			if (!parameter.isValid(neo4jTemplate)) {
-				return Collections.emptyList();
+				return emptyList();
 			}
 			parameters.add(parameter);
 		}
@@ -286,14 +288,14 @@ class UniquenessEvaluator<T> {
 		Query fieldValueAsQuery = new TermQuery(new Term(fieldName, fieldValue.toString()));
 
 		if (parameter.isIndexQuery()) {
-			return CollectionUtils.asList(repository.findAllByQuery(fieldName, fieldValueAsQuery));
+			return asList(repository.findAllByQuery(fieldName, fieldValueAsQuery));
 		} else {
-			return CollectionUtils.asList(repository.findAllByPropertyValue(fieldName, fieldValue));
+			return asList(repository.findAllByPropertyValue(fieldName, fieldValue));
 		}
 	}
 
 	protected List<?> runQuery(Map<String, Object> parameters) {
-		return CollectionUtils.transform(neo4jTemplate.query(query, parameters),
+		return transform(neo4jTemplate.query(query, parameters),
 				Functions.<PersistentNode> toEntity(neo4jTemplate, value.getClass()));
 	}
 
@@ -306,7 +308,7 @@ class UniquenessEvaluator<T> {
 		}
 		UniquenessTraverser traverser = traverserFactory.create(parameters);
 		Assert.notNull(traverser);
-		return CollectionUtils.transform(traverser.traverse(parameters),
+		return transform(traverser.traverse(parameters),
 				Functions.<PersistentNode> toEntity(neo4jTemplate, value.getClass()));
 	}
 

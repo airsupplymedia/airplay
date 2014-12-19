@@ -1,5 +1,7 @@
 package de.airsupply.airplay.core.importers.dbf;
 
+import static de.airsupply.commons.core.util.DateUtils.getStartOfWeek;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -32,7 +34,6 @@ import de.airsupply.commons.core.context.Loggable;
 import de.airsupply.commons.core.dbf.DBFReader;
 import de.airsupply.commons.core.dbf.DBFReader.RecordHandler;
 import de.airsupply.commons.core.neo4j.Neo4jBatchInserter;
-import de.airsupply.commons.core.util.DateUtils;
 
 @Service
 public class DBFImporter {
@@ -108,7 +109,7 @@ public class DBFImporter {
 
 		Song song = songMap.get(Integer.valueOf(songIdentifier));
 
-		Date date = DateUtils.getStartOfWeek(parseDateFormat(chartStateDate));
+		Date date = getStartOfWeek(parseDateFormat(chartStateDate));
 		ChartState chartState = context.get(new ChartState(chart, date));
 
 		Assert.notNull(song);
@@ -119,7 +120,7 @@ public class DBFImporter {
 
 	private void migrateStateOfChartState(Chart chart, Record record, Table table) {
 		String chartStateDate = record.getStringValue("DATE").trim();
-		Date date = DateUtils.getStartOfWeek(parseDateFormat(chartStateDate));
+		Date date = getStartOfWeek(parseDateFormat(chartStateDate));
 		context.getOrPersist(new ChartState(chart, date));
 	}
 
@@ -140,7 +141,7 @@ public class DBFImporter {
 			Date date = parseDateFormat(broadcastDate, broadcastTime);
 			context.getOrPersist(new SongBroadcast(station, song, date));
 		} else {
-			Date date = DateUtils.getStartOfWeek(parseDateFormat(broadcastDate));
+			Date date = getStartOfWeek(parseDateFormat(broadcastDate));
 			context.getOrPersist(new SongBroadcast(station, song, date, count.intValue()));
 		}
 	}

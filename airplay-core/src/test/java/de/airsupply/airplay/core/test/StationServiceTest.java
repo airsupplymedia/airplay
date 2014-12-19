@@ -1,5 +1,6 @@
 package de.airsupply.airplay.core.test;
 
+import static de.airsupply.commons.core.util.DateUtils.getStartOfWeek;
 import static org.junit.Assert.assertArrayEquals;
 
 import java.util.Date;
@@ -21,7 +22,6 @@ import de.airsupply.airplay.core.model.SongBroadcast;
 import de.airsupply.airplay.core.model.Station;
 import de.airsupply.airplay.core.services.StationService;
 import de.airsupply.airplay.core.test.config.TestConfiguration;
-import de.airsupply.commons.core.util.DateUtils;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles("test")
@@ -87,7 +87,7 @@ public class StationServiceTest {
 		Station station = new Station("SWR", null);
 		Artist artist = service.save(new Artist("JACKSON, MICHAEL"));
 		Song song = service.save(new Song(artist, "THRILLER"));
-		service.save(new SongBroadcast(station, song, DateUtils.getStartOfWeek(new Date())));
+		service.save(new SongBroadcast(station, song, getStartOfWeek(new Date())));
 	}
 
 	@Test(expected = ConstraintViolationException.class)

@@ -1,8 +1,10 @@
 package de.airsupply.commons.core.neo4j;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -255,7 +257,7 @@ public class Neo4jBatchInserter {
 			});
 			return relationships;
 		}
-		return Collections.emptyList();
+		return emptyList();
 	}
 
 	private Object fetch(Object object) {
@@ -285,7 +287,7 @@ public class Neo4jBatchInserter {
 			for (RelationshipWrapper relationship : createRelationships(objects)) {
 				long startNode = relationship.getStartNode();
 				long endNode = relationship.getEndNode();
-				Map<String, Object> properties = Collections.emptyMap();
+				Map<String, Object> properties = emptyMap();
 				inserter.createRelationship(startNode, endNode, relationship.getRelationshipType(), properties);
 			}
 		} catch (Exception exception) {

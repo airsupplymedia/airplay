@@ -1,10 +1,13 @@
 package de.airsupply.airplay.core.model;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import static de.airsupply.commons.core.util.CollectionUtils.asList;
+import static de.airsupply.commons.core.util.CollectionUtils.asSet;
+import static de.airsupply.commons.core.util.CollectionUtils.transform;
+import static de.airsupply.commons.core.util.Functions.toEntity;
+import static java.util.Collections.unmodifiableCollection;
+
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -36,8 +39,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.airsupply.commons.core.neo4j.QueryUtils;
 import de.airsupply.commons.core.neo4j.annotation.Persistent;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
-import de.airsupply.commons.core.util.CollectionUtils;
-import de.airsupply.commons.core.util.Functions;
 
 @Unique(query = "START chart=node({chart}) MATCH chart<-[:CHART]->recordImport WHERE recordImport.week={week} RETURN recordImport", parameters = {
 		"chart", "week" })
@@ -168,14 +169,14 @@ public class RecordImport extends PersistentNode {
 	}
 
 	private Collection<Node> getDependees() {
-		Set<Node> result = new HashSet<>(CollectionUtils.asSet(dependees));
-		result.removeAll(CollectionUtils.asSet(importedNodes));
+		Set<Node> result = new HashSet<>(asSet(dependees));
+		result.removeAll(asSet(importedNodes));
 		return result;
 	}
 
 	public Collection<PersistentNode> getDependees(Neo4jTemplate neo4jTemplate) {
 		Assert.notNull(neo4jTemplate);
-		return CollectionUtils.transform(getDependees(), Functions.toEntity(neo4jTemplate));
+		return transform(getDependees(), toEntity(neo4jTemplate));
 	}
 
 	private Node[] getDependeesAsArray() {
@@ -196,7 +197,7 @@ public class RecordImport extends PersistentNode {
 	}
 
 	private Node[] getImportedNodesAsArray() {
-		Collection<Node> collection = CollectionUtils.asList(importedNodes);
+		Collection<Node> collection = asList(importedNodes);
 		return collection.toArray(new Node[collection.size()]);
 	}
 
@@ -224,7 +225,7 @@ public class RecordImport extends PersistentNode {
 		importedRecords.addAll(getImportedArtistList());
 		importedRecords.addAll(getImportedPublisherList());
 		importedRecords.addAll(getImportedRecordCompanyList());
-		return Collections.unmodifiableCollection(importedRecords);
+		return unmodifiableCollection(importedRecords);
 	}
 
 	@JsonIgnore
@@ -241,7 +242,7 @@ public class RecordImport extends PersistentNode {
 		for (Path path : traversalDescription.traverse(getDependeesAsArray())) {
 			importedRecordsWithDependencies.add(path.endNode());
 		}
-		return CollectionUtils.transform(importedRecordsWithDependencies, Functions.toEntity(neo4jTemplate));
+		return transform(importedRecordsWithDependencies, toEntity(neo4jTemplate));
 	}
 
 	public List<PersistentNode> getImportedRecordsWithoutDependees(Neo4jTemplate neo4jTemplate) {
@@ -307,19 +308,6 @@ public class RecordImport extends PersistentNode {
 	@Override
 	public String toString() {
 		return "RecordImport [chart=" + chart + ", week=" + week + "]";
-	}
-
-	private void writeObject(ObjectOutputStream outputStream) throws IOException {
-		importedArtists = null;
-		importedChartPositions = null;
-		importedChartStates = null;
-		importedPublishers = null;
-		importedRecordCompanies = null;
-		importedShowBroadcasts = null;
-		importedSongBroadcasts = null;
-		importedSongs = null;
-		importedStations = null;
-		outputStream.defaultWriteObject();
 	}
 
 }

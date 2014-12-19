@@ -1,8 +1,10 @@
 package de.airsupply.airplay.core.model;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.util.Collections;
+import static de.airsupply.commons.core.util.CollectionUtils.asModifiableList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.sort;
+import static java.util.Collections.unmodifiableList;
+
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -19,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import de.airsupply.commons.core.neo4j.annotation.Persistent;
 import de.airsupply.commons.core.neo4j.annotation.Unique;
-import de.airsupply.commons.core.util.CollectionUtils;
 
 @Unique(query = "START chart=node({chart}) MATCH chart<-[:CHART_STATES]->chartState WHERE chartState.week={week} RETURN chartState", parameters = {
 		"chart", "week" })
@@ -58,8 +59,8 @@ public class ChartState extends PersistentNode {
 	@JsonIgnore
 	public List<ChartPosition> getChartPositionList() {
 		if (chartPositions != null) {
-			List<ChartPosition> list = CollectionUtils.asModifiableList(chartPositions);
-			Collections.sort(list, new Comparator<ChartPosition>() {
+			List<ChartPosition> list = asModifiableList(chartPositions);
+			sort(list, new Comparator<ChartPosition>() {
 
 				@Override
 				public int compare(ChartPosition o1, ChartPosition o2) {
@@ -67,9 +68,9 @@ public class ChartState extends PersistentNode {
 				}
 
 			});
-			return Collections.unmodifiableList(list);
+			return unmodifiableList(list);
 		} else {
-			return Collections.emptyList();
+			return emptyList();
 		}
 	}
 
@@ -80,11 +81,6 @@ public class ChartState extends PersistentNode {
 	@Override
 	public String toString() {
 		return "ChartState [chart=" + chart + ", week=" + week + ", getIdentifier()=" + getIdentifier() + "]";
-	}
-
-	private void writeObject(ObjectOutputStream outputStream) throws IOException {
-		chartPositions = null;
-		outputStream.defaultWriteObject();
 	}
 
 }

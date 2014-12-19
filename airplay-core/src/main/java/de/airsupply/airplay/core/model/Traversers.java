@@ -1,5 +1,7 @@
 package de.airsupply.airplay.core.model;
 
+import static de.airsupply.commons.core.util.CollectionUtils.transform;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +20,6 @@ import org.springframework.util.Assert;
 
 import de.airsupply.commons.core.neo4j.annotation.Unique.UniquenessTraverser;
 import de.airsupply.commons.core.neo4j.annotation.Unique.UniquenessTraverserFactory;
-import de.airsupply.commons.core.util.CollectionUtils;
 import de.airsupply.commons.core.util.CollectionUtils.Function;
 import de.airsupply.commons.core.util.Pair;
 
@@ -130,7 +131,7 @@ public class Traversers {
 					.traverse(start);
 			// @formatter:on
 
-			return CollectionUtils.transform(paths, new Function<Path, Node>() {
+			return transform(paths, new Function<Path, Node>() {
 
 				@Override
 				public Node apply(Path path) {

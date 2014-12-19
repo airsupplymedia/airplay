@@ -1,9 +1,11 @@
 package de.airsupply.commons.core.dbf;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -120,9 +122,9 @@ public class DBFReader {
 			}
 		}
 		if (results == null) {
-			results = Collections.emptyList();
+			results = emptyList();
 		}
-		return Collections.unmodifiableList(results);
+		return unmodifiableList(results);
 	}
 
 }

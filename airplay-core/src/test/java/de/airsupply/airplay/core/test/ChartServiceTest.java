@@ -1,5 +1,6 @@
 package de.airsupply.airplay.core.test;
 
+import static de.airsupply.commons.core.util.DateUtils.getStartOfWeek;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -25,7 +26,6 @@ import de.airsupply.airplay.core.model.ChartState;
 import de.airsupply.airplay.core.model.Song;
 import de.airsupply.airplay.core.services.ChartService;
 import de.airsupply.airplay.core.test.config.TestConfiguration;
-import de.airsupply.commons.core.util.DateUtils;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles("test")
@@ -45,7 +45,7 @@ public class ChartServiceTest {
 	@Test
 	public void testChartPositionCreation() {
 		Chart chart = service.save(new Chart("Airplay Charts"));
-		ChartState chartState = service.save(new ChartState(chart, DateUtils.getStartOfWeek(new Date())));
+		ChartState chartState = service.save(new ChartState(chart, getStartOfWeek(new Date())));
 		Artist artist = service.save(new Artist("JACKSON, MICHAEL"));
 		Song song = service.save(new Song(artist, "THRILLER"));
 		service.save(new ChartPosition(chartState, song, 1));
@@ -55,11 +55,11 @@ public class ChartServiceTest {
 
 	@Test
 	public void testChartPositionRetrievalByChartAndDate() {
-		Date week = DateUtils.getStartOfWeek(new GregorianCalendar(2000, 12, 24).getTime());
+		Date week = getStartOfWeek(new GregorianCalendar(2000, 12, 24).getTime());
 
 		Chart chart = service.save(new Chart("Airplay Charts"));
 		ChartState chartState = service.save(new ChartState(chart, week));
-		service.save(new ChartState(chart, DateUtils.getStartOfWeek(new GregorianCalendar(2001, 12, 24).getTime())));
+		service.save(new ChartState(chart, getStartOfWeek(new GregorianCalendar(2001, 12, 24).getTime())));
 
 		Artist artist;
 		Song song;
@@ -80,7 +80,7 @@ public class ChartServiceTest {
 
 	@Test
 	public void testChartPositionRetrievalByChartAndSong() {
-		Date week = DateUtils.getStartOfWeek(new GregorianCalendar(2000, 12, 24).getTime());
+		Date week = getStartOfWeek(new GregorianCalendar(2000, 12, 24).getTime());
 
 		Chart chart = service.save(new Chart("Airplay Charts"));
 		ChartState chartState = service.save(new ChartState(chart, week));
@@ -105,9 +105,9 @@ public class ChartServiceTest {
 	@Test
 	public void testChartPositionRetrievalLatestByChart() {
 		Chart chart = service.save(new Chart("Airplay Charts"));
-		ChartState oldChartState = service.save(new ChartState(chart, DateUtils.getStartOfWeek(new GregorianCalendar(
+		ChartState oldChartState = service.save(new ChartState(chart, getStartOfWeek(new GregorianCalendar(
 				2000, 10, 24).getTime())));
-		ChartState newChartState = service.save(new ChartState(chart, DateUtils.getStartOfWeek(new GregorianCalendar(
+		ChartState newChartState = service.save(new ChartState(chart, getStartOfWeek(new GregorianCalendar(
 				2000, 12, 24).getTime())));
 
 		Artist artist;
@@ -131,22 +131,22 @@ public class ChartServiceTest {
 
 	public void testChartStateCount() {
 		Chart chart = service.save(new Chart("Airplay Charts"));
-		service.save(new ChartState(chart, DateUtils.getStartOfWeek(new GregorianCalendar(2000, 12, 24).getTime())));
-		service.save(new ChartState(chart, DateUtils.getStartOfWeek(new GregorianCalendar(2000, 12, 17).getTime())));
+		service.save(new ChartState(chart, getStartOfWeek(new GregorianCalendar(2000, 12, 24).getTime())));
+		service.save(new ChartState(chart, getStartOfWeek(new GregorianCalendar(2000, 12, 17).getTime())));
 		assertEquals(2, service.getChartStateCount());
 	}
 
 	@Test
 	public void testChartStateCreation() {
 		Chart chart = service.save(new Chart("Airplay Charts"));
-		service.save(new ChartState(chart, DateUtils.getStartOfWeek(new Date())));
+		service.save(new ChartState(chart, getStartOfWeek(new Date())));
 		assertEquals(1, service.getCharts().get(0).getChartStateList().size());
 	}
 
 	@Test(expected = ConstraintViolationException.class)
 	public void testChartStateWithTransientChartCreation() {
 		Chart chart = new Chart("Airplay Charts");
-		service.save(new ChartState(chart, DateUtils.getStartOfWeek(new Date())));
+		service.save(new ChartState(chart, getStartOfWeek(new Date())));
 	}
 
 	@Test(expected = ConstraintViolationException.class)
@@ -164,7 +164,7 @@ public class ChartServiceTest {
 		Song song = null;
 		try {
 			Chart chart = service.save(new Chart("Airplay Charts"));
-			chartState = service.save(new ChartState(chart, DateUtils.getStartOfWeek(new Date())));
+			chartState = service.save(new ChartState(chart, getStartOfWeek(new Date())));
 			Artist artist = service.save(new Artist("JACKSON, MICHAEL"));
 			song = service.save(new Song(artist, "THRILLER"));
 			service.save(new ChartPosition(chartState, song, 1));
@@ -178,11 +178,11 @@ public class ChartServiceTest {
 		Chart chart = null;
 		try {
 			chart = service.save(new Chart("Airplay Charts"));
-			service.save(new ChartState(chart, DateUtils.getStartOfWeek(new Date())));
-			service.save(new ChartState(service.save(new Chart("Sales Charts")), DateUtils.getStartOfWeek(new Date())));
+			service.save(new ChartState(chart, getStartOfWeek(new Date())));
+			service.save(new ChartState(service.save(new Chart("Sales Charts")), getStartOfWeek(new Date())));
 		} catch (Exception exception) {
 		}
-		service.save(new ChartState(chart, DateUtils.getStartOfWeek(new Date())));
+		service.save(new ChartState(chart, getStartOfWeek(new Date())));
 	}
 
 	@Test(expected = ConstraintViolationException.class)

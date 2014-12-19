@@ -26,6 +26,6 @@ public class DBFImporterBatch {
 
 	private void prefill() {
 		migrator.migrate("C:\\Development\\Storage\\Git\\airplay\\airplay-dbf",
-				"C:/Development/Storage/Neo4j/config-batch");
+				"C:/Development/Storage/Neo4j/config-batch-small");
 	}
 }

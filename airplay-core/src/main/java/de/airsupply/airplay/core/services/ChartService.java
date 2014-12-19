@@ -1,6 +1,9 @@
 package de.airsupply.airplay.core.services;
 
-import java.util.Collections;
+import static de.airsupply.commons.core.util.CollectionUtils.asList;
+import static de.airsupply.commons.core.util.DateUtils.getStartOfWeek;
+import static java.util.Collections.emptyList;
+
 import java.util.Date;
 import java.util.List;
 
@@ -16,8 +19,6 @@ import de.airsupply.airplay.core.model.ChartPosition;
 import de.airsupply.airplay.core.model.ChartState;
 import de.airsupply.airplay.core.model.Song;
 import de.airsupply.commons.core.neo4j.Neo4jServiceSupport;
-import de.airsupply.commons.core.util.CollectionUtils;
-import de.airsupply.commons.core.util.DateUtils;
 
 @Service
 public class ChartService extends Neo4jServiceSupport {
@@ -52,7 +53,7 @@ public class ChartService extends Neo4jServiceSupport {
 		Assert.notNull(date);
 		ChartState chartState = findChartState(chart, date);
 		if (chartState == null) {
-			return Collections.emptyList();
+			return emptyList();
 		}
 		return chartState.getChartPositionList();
 	}
@@ -60,12 +61,12 @@ public class ChartService extends Neo4jServiceSupport {
 	public List<ChartPosition> findChartPositions(Chart chart, Song song) {
 		Assert.notNull(chart);
 		Assert.notNull(song);
-		return CollectionUtils.asList(chartPositionRepository.find(chart, song));
+		return asList(chartPositionRepository.find(chart, song));
 	}
 
 	public List<Chart> findCharts(Chart object) {
 		Assert.notNull(object);
-		return CollectionUtils.asList(chartRepository.findAllByPropertyValue("name", object.getName()));
+		return asList(chartRepository.findAllByPropertyValue("name", object.getName()));
 	}
 
 	public List<Chart> findCharts(String name) {
@@ -76,14 +77,14 @@ public class ChartService extends Neo4jServiceSupport {
 	public ChartState findChartState(Chart chart, Date date) {
 		Assert.notNull(chart);
 		Assert.notNull(date);
-		return chartStateRepository.find(chart, DateUtils.getStartOfWeek(date).getTime());
+		return chartStateRepository.find(chart, getStartOfWeek(date).getTime());
 	}
 
 	public List<ChartPosition> findLatestChartPositions(Chart chart) {
 		Assert.notNull(chart);
 		ChartState chartState = chartStateRepository.findLatest(chart);
 		if (chartState == null) {
-			return Collections.emptyList();
+			return emptyList();
 		}
 		return chartState.getChartPositionList();
 	}
@@ -97,7 +98,7 @@ public class ChartService extends Neo4jServiceSupport {
 	}
 
 	public List<Chart> getCharts() {
-		return CollectionUtils.asList(chartRepository.findAll());
+		return asList(chartRepository.findAll());
 	}
 
 	public long getChartStateCount() {
@@ -105,7 +106,7 @@ public class ChartService extends Neo4jServiceSupport {
 	}
 
 	public List<ChartState> getChartStates() {
-		return CollectionUtils.asList(chartStateRepository.findAll());
+		return asList(chartStateRepository.findAll());
 	}
 
 }

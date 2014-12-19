@@ -1,5 +1,7 @@
 package de.airsupply.airplay.core.services;
 
+import static de.airsupply.commons.core.util.CollectionUtils.asList;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +18,6 @@ import de.airsupply.airplay.core.model.Song;
 import de.airsupply.airplay.core.model.SongBroadcast;
 import de.airsupply.airplay.core.model.Station;
 import de.airsupply.commons.core.neo4j.Neo4jServiceSupport;
-import de.airsupply.commons.core.util.CollectionUtils;
 
 @Service
 public class StationService extends Neo4jServiceSupport {
@@ -35,17 +36,17 @@ public class StationService extends Neo4jServiceSupport {
 
 	public List<ShowBroadcast> findBroadcasts(Show show) {
 		Assert.notNull(show);
-		return CollectionUtils.asList(showBroadcastRepository.find(show));
+		return asList(showBroadcastRepository.find(show));
 	}
 
 	public List<SongBroadcast> findBroadcasts(Song song) {
 		Assert.notNull(song);
-		return CollectionUtils.asList(songBroadcastRepository.find(song));
+		return asList(songBroadcastRepository.find(song));
 	}
 
 	public List<Station> findStations(Station object) {
 		Assert.notNull(object);
-		return CollectionUtils.asList(stationRepository.findAllByPropertyValue("name", object.getName()));
+		return asList(stationRepository.findAllByPropertyValue("name", object.getName()));
 	}
 
 	public List<Station> findStations(String name) {
@@ -58,7 +59,7 @@ public class StationService extends Neo4jServiceSupport {
 	}
 
 	public List<ShowBroadcast> getShowBroadcasts() {
-		return CollectionUtils.asList(showBroadcastRepository.findAll());
+		return asList(showBroadcastRepository.findAll());
 	}
 
 	public long getShowCount() {
@@ -66,7 +67,7 @@ public class StationService extends Neo4jServiceSupport {
 	}
 
 	public List<Show> getShows() {
-		return CollectionUtils.asList(showRepository.findAll());
+		return asList(showRepository.findAll());
 	}
 
 	public long getSongBroadcastCount() {
@@ -74,7 +75,7 @@ public class StationService extends Neo4jServiceSupport {
 	}
 
 	public List<SongBroadcast> getSongBroadcasts() {
-		return CollectionUtils.asList(songBroadcastRepository.findAll());
+		return asList(songBroadcastRepository.findAll());
 	}
 
 	public long getStationCount() {
@@ -82,7 +83,7 @@ public class StationService extends Neo4jServiceSupport {
 	}
 
 	public List<Station> getStations() {
-		return CollectionUtils.asList(stationRepository.findAll());
+		return asList(stationRepository.findAll());
 	}
 
 }

@@ -1,8 +1,11 @@
 package de.airsupply.commons.core.util;
 
+import static java.util.Collections.unmodifiableCollection;
+import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.unmodifiableSet;
+
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -43,7 +46,7 @@ public abstract class CollectionUtils {
 		while (iterator.hasNext()) {
 			collection.add(iterator.next());
 		}
-		return Collections.unmodifiableCollection(collection);
+		return unmodifiableCollection(collection);
 	}
 
 	public static <T> List<T> asList(ClosableIterable<T> iterable) {
@@ -93,7 +96,7 @@ public abstract class CollectionUtils {
 			((IndexHits<T>) iterable).close();
 		}
 		if (!modifiable) {
-			result = Collections.unmodifiableList(result);
+			result = unmodifiableList(result);
 		}
 		return result;
 	}
@@ -133,7 +136,7 @@ public abstract class CollectionUtils {
 				result.add(type.cast(next));
 			}
 		}
-		return Collections.unmodifiableSet(result);
+		return unmodifiableSet(result);
 	}
 
 	public static <S, T extends S> List<S> filter(Collection<S> source, Collection<T> target, Filter<T> filter) {

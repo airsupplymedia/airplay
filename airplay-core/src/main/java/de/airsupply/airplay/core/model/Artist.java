@@ -1,8 +1,8 @@
 package de.airsupply.airplay.core.model;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.util.Collections;
+import static de.airsupply.commons.core.util.CollectionUtils.asList;
+import static java.util.Collections.emptyList;
+
 import java.util.List;
 
 import org.hibernate.validator.constraints.NotEmpty;
@@ -15,7 +15,6 @@ import org.springframework.data.neo4j.support.index.IndexType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import de.airsupply.commons.core.neo4j.annotation.Unique;
-import de.airsupply.commons.core.util.CollectionUtils;
 
 @Unique(query = "START artist=node:searchArtistByName({:name}) WHERE LOWER(artist.name)=LOWER({name}) RETURN artist", parameters = {
 		"name", ":name" })
@@ -47,9 +46,9 @@ public class Artist extends PersistentNode {
 	@JsonIgnore
 	public List<Song> getSongList() {
 		if (songs != null) {
-			return CollectionUtils.asList(songs);
+			return asList(songs);
 		} else {
-			return Collections.emptyList();
+			return emptyList();
 		}
 	}
 
@@ -60,11 +59,6 @@ public class Artist extends PersistentNode {
 	@Override
 	public String toString() {
 		return "Artist [name=" + name + ", getIdentifier()=" + getIdentifier() + "]";
-	}
-
-	private void writeObject(ObjectOutputStream outputStream) throws IOException {
-		songs = null;
-		outputStream.defaultWriteObject();
 	}
 
 }

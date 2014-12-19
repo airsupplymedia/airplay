@@ -1,5 +1,8 @@
 package de.airsupply.airplay.core.services;
 
+import static de.airsupply.commons.core.util.CollectionUtils.asList;
+import static de.airsupply.commons.core.util.DateUtils.getStartOfWeek;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,8 +22,6 @@ import de.airsupply.airplay.core.model.Chart;
 import de.airsupply.airplay.core.model.PersistentNode;
 import de.airsupply.airplay.core.model.RecordImport;
 import de.airsupply.commons.core.neo4j.Neo4jServiceSupport;
-import de.airsupply.commons.core.util.CollectionUtils;
-import de.airsupply.commons.core.util.DateUtils;
 
 @Service
 public class ImportService extends Neo4jServiceSupport {
@@ -79,7 +80,7 @@ public class ImportService extends Neo4jServiceSupport {
 	}
 
 	public List<RecordImport> getRecordImports() {
-		return CollectionUtils.asList(recordImportRepository.findAll());
+		return asList(recordImportRepository.findAll());
 	}
 
 	@Transactional
@@ -89,7 +90,7 @@ public class ImportService extends Neo4jServiceSupport {
 		Assert.notNull(week);
 		Assert.notNull(inputStream);
 
-		week = DateUtils.getStartOfWeek(week);
+		week = getStartOfWeek(week);
 		RecordImport recordImport = new RecordImport(chart, week);
 		getImporter(importerType).processRecords(recordImport, chart, week, inputStream);
 		return save(recordImport);

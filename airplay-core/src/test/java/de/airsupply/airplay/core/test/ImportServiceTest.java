@@ -2,6 +2,8 @@ package de.airsupply.airplay.core.test;
 
 import static de.airsupply.commons.core.util.CollectionUtils.filter;
 import static de.airsupply.commons.core.util.CollectionUtils.filterFor;
+import static de.airsupply.commons.core.util.DateUtils.getStartOfWeek;
+import static java.util.Collections.sort;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
@@ -10,7 +12,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -46,7 +47,6 @@ import de.airsupply.airplay.core.services.ImportService.ImporterType;
 import de.airsupply.airplay.core.services.StationService;
 import de.airsupply.airplay.core.test.config.TestConfiguration;
 import de.airsupply.commons.core.context.Loggable;
-import de.airsupply.commons.core.util.DateUtils;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles("test")
@@ -97,7 +97,7 @@ public class ImportServiceTest {
 	@Test
 	public void testSDFInitialImport() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
-		Date week = DateUtils.getStartOfWeek(new Date());
+		Date week = getStartOfWeek(new Date());
 		performImport(ImporterType.SDF, chart, week, "/SDF_AIRPLAY_LARGE.sdf");
 
 		assertEquals(1, chartService.getChartCount());
@@ -128,7 +128,7 @@ public class ImportServiceTest {
 	@Test(expected = ConstraintViolationException.class)
 	public void testSDFRepeatedImport() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
-		Date week = DateUtils.getStartOfWeek(new Date());
+		Date week = getStartOfWeek(new Date());
 		performImport(ImporterType.SDF, chart, week, "/SDF_AIRPLAY_SMALL.sdf");
 		performImport(ImporterType.SDF, chart, week, "/SDF_AIRPLAY_SMALL.sdf");
 	}
@@ -136,7 +136,7 @@ public class ImportServiceTest {
 	@Test
 	public void testSDFRevertedImport() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
-		Date week = DateUtils.getStartOfWeek(new Date());
+		Date week = getStartOfWeek(new Date());
 		performImport(ImporterType.SDF, chart, week, "/SDF_AIRPLAY_LARGE.sdf");
 
 		RecordImport recordImport = importService.getRecordImports().get(0);
@@ -173,7 +173,7 @@ public class ImportServiceTest {
 	@Test(expected = ConstraintViolationException.class)
 	public void testSDFRevertedImportWithDependees() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
-		Date week = DateUtils.getStartOfWeek(new Date());
+		Date week = getStartOfWeek(new Date());
 		performImport(ImporterType.SDF, chart, week, "/SDF_AIRPLAY_SMALL.sdf");
 
 		Artist importedArtist = contentService.findArtists("DEL REY, LANA", false).get(0);
@@ -204,8 +204,8 @@ public class ImportServiceTest {
 
 		List<PersistentNode> actual = recordImport.getImportedRecordsWithDependees(importService.getNeo4jTemplate());
 
-		Collections.sort(expected, PersistentNode.identifierComparator());
-		Collections.sort(actual, PersistentNode.identifierComparator());
+		sort(expected, PersistentNode.identifierComparator());
+		sort(actual, PersistentNode.identifierComparator());
 
 		assertArrayEquals(expected.toArray(), actual.toArray());
 
@@ -217,8 +217,8 @@ public class ImportServiceTest {
 		actual.clear();
 		actual.addAll(recordImport.getDependees(importService.getNeo4jTemplate()));
 
-		Collections.sort(expected, PersistentNode.identifierComparator());
-		Collections.sort(actual, PersistentNode.identifierComparator());
+		sort(expected, PersistentNode.identifierComparator());
+		sort(actual, PersistentNode.identifierComparator());
 
 		assertArrayEquals(expected.toArray(), actual.toArray());
 
@@ -228,7 +228,7 @@ public class ImportServiceTest {
 	@Test
 	public void testXLSAirplayInitialImport() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
-		Date week = DateUtils.getStartOfWeek(new Date());
+		Date week = getStartOfWeek(new Date());
 		performImport(ImporterType.XLS, chart, week, "/XLS_AIRPLAY_LARGE.xls");
 
 		assertEquals(1, chartService.getChartCount());
@@ -259,7 +259,7 @@ public class ImportServiceTest {
 	@Test(expected = ConstraintViolationException.class)
 	public void testXLSAirplayRepeatedImport() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
-		Date week = DateUtils.getStartOfWeek(new Date());
+		Date week = getStartOfWeek(new Date());
 		performImport(ImporterType.XLS, chart, week, "/XLS_AIRPLAY_LARGE.xls");
 		performImport(ImporterType.XLS, chart, week, "/XLS_AIRPLAY_LARGE.xls");
 	}
@@ -267,7 +267,7 @@ public class ImportServiceTest {
 	@Test
 	public void testXLSAirplayRevertedImport() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
-		Date week = DateUtils.getStartOfWeek(new Date());
+		Date week = getStartOfWeek(new Date());
 		performImport(ImporterType.XLS, chart, week, "/XLS_AIRPLAY_LARGE.xls");
 
 		RecordImport recordImport = importService.getRecordImports().get(0);
@@ -304,7 +304,7 @@ public class ImportServiceTest {
 	@Test(expected = ConstraintViolationException.class)
 	public void testXLSAirplayRevertedImportWithDependees() {
 		Chart chart = chartService.save(new Chart("Airplay Charts"));
-		Date week = DateUtils.getStartOfWeek(new Date());
+		Date week = getStartOfWeek(new Date());
 		performImport(ImporterType.XLS, chart, week, "/XLS_AIRPLAY_LARGE.xls");
 
 		Artist importedArtist = contentService.findArtists("IMAGINE DRAGONS", false).get(0);
@@ -323,8 +323,8 @@ public class ImportServiceTest {
 
 		List<PersistentNode> actual = recordImport.getImportedRecordsWithDependees(importService.getNeo4jTemplate());
 
-		Collections.sort(expected, PersistentNode.identifierComparator());
-		Collections.sort(actual, PersistentNode.identifierComparator());
+		sort(expected, PersistentNode.identifierComparator());
+		sort(actual, PersistentNode.identifierComparator());
 
 		assertArrayEquals(expected.toArray(), actual.toArray());
 
@@ -335,8 +335,8 @@ public class ImportServiceTest {
 		actual.clear();
 		actual.addAll(recordImport.getDependees(importService.getNeo4jTemplate()));
 
-		Collections.sort(expected, PersistentNode.identifierComparator());
-		Collections.sort(actual, PersistentNode.identifierComparator());
+		sort(expected, PersistentNode.identifierComparator());
+		sort(actual, PersistentNode.identifierComparator());
 
 		assertArrayEquals(expected.toArray(), actual.toArray());
 
@@ -345,7 +345,7 @@ public class ImportServiceTest {
 
 	@Test
 	public void testXLSMixedImport() {
-		Date week = DateUtils.getStartOfWeek(new Date());
+		Date week = getStartOfWeek(new Date());
 
 		RecordImport recordImportForAirplay = performImport(ImporterType.XLS,
 				chartService.save(new Chart("Airplay Charts")), week, "/XLS_AIRPLAY_LARGE.xls");
@@ -414,7 +414,7 @@ public class ImportServiceTest {
 
 	@Test
 	public void testXLSMixedImportWithRevert() {
-		Date week = DateUtils.getStartOfWeek(new Date());
+		Date week = getStartOfWeek(new Date());
 
 		RecordImport recordImportForAirplay = performImport(ImporterType.XLS,
 				chartService.save(new Chart("Airplay Charts")), week, "/XLS_AIRPLAY_LARGE.xls");
@@ -440,7 +440,7 @@ public class ImportServiceTest {
 
 	@Test(expected = ConstraintViolationException.class)
 	public void testXLSMixedImportWithRevertInWrongOrder() {
-		Date week = DateUtils.getStartOfWeek(new Date());
+		Date week = getStartOfWeek(new Date());
 
 		RecordImport recordImportForAirplay = performImport(ImporterType.XLS,
 				chartService.save(new Chart("Airplay Charts")), week, "/XLS_AIRPLAY_LARGE.xls");
@@ -454,7 +454,7 @@ public class ImportServiceTest {
 	@Test
 	public void testXLSSalesInitialImport() {
 		Chart chart = chartService.save(new Chart("Sales Charts"));
-		Date week = DateUtils.getStartOfWeek(new Date());
+		Date week = getStartOfWeek(new Date());
 		performImport(ImporterType.XLS, chart, week, "/XLS_SALES_LARGE.xls");
 
 		assertEquals(1, chartService.getChartCount());
@@ -485,7 +485,7 @@ public class ImportServiceTest {
 	@Test(expected = ConstraintViolationException.class)
 	public void testXLSSalesRepeatedImport() {
 		Chart chart = chartService.save(new Chart("Sales Charts"));
-		Date week = DateUtils.getStartOfWeek(new Date());
+		Date week = getStartOfWeek(new Date());
 		performImport(ImporterType.XLS, chart, week, "/XLS_SALES_LARGE.xls");
 		performImport(ImporterType.XLS, chart, week, "/XLS_SALES_LARGE.xls");
 	}
@@ -493,7 +493,7 @@ public class ImportServiceTest {
 	@Test
 	public void testXLSSalesRevertedImport() {
 		Chart chart = chartService.save(new Chart("Sales Charts"));
-		Date week = DateUtils.getStartOfWeek(new Date());
+		Date week = getStartOfWeek(new Date());
 		performImport(ImporterType.XLS, chart, week, "/XLS_SALES_LARGE.xls");
 
 		RecordImport recordImport = importService.getRecordImports().get(0);
@@ -530,7 +530,7 @@ public class ImportServiceTest {
 	@Test(expected = ConstraintViolationException.class)
 	public void testXLSSalesRevertedImportWithDependees() {
 		Chart chart = chartService.save(new Chart("Sales Charts"));
-		Date week = DateUtils.getStartOfWeek(new Date());
+		Date week = getStartOfWeek(new Date());
 		performImport(ImporterType.XLS, chart, week, "/XLS_SALES_LARGE.xls");
 
 		Artist importedArtist = contentService.findArtists("WILLIAMS, PHARRELL", false).get(0);
@@ -549,8 +549,8 @@ public class ImportServiceTest {
 
 		List<PersistentNode> actual = recordImport.getImportedRecordsWithDependees(importService.getNeo4jTemplate());
 
-		Collections.sort(expected, PersistentNode.identifierComparator());
-		Collections.sort(actual, PersistentNode.identifierComparator());
+		sort(expected, PersistentNode.identifierComparator());
+		sort(actual, PersistentNode.identifierComparator());
 
 		assertArrayEquals(expected.toArray(), actual.toArray());
 
@@ -561,8 +561,8 @@ public class ImportServiceTest {
 		actual.clear();
 		actual.addAll(recordImport.getDependees(importService.getNeo4jTemplate()));
 
-		Collections.sort(expected, PersistentNode.identifierComparator());
-		Collections.sort(actual, PersistentNode.identifierComparator());
+		sort(expected, PersistentNode.identifierComparator());
+		sort(actual, PersistentNode.identifierComparator());
 
 		assertArrayEquals(expected.toArray(), actual.toArray());
 

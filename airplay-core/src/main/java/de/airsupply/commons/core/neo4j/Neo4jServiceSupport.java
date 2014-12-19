@@ -1,8 +1,12 @@
 package de.airsupply.commons.core.neo4j;
 
+import static de.airsupply.commons.core.util.CollectionUtils.asList;
+import static de.airsupply.commons.core.util.CollectionUtils.transform;
+import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.unmodifiableSet;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,7 +29,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
-import de.airsupply.commons.core.util.CollectionUtils;
 import de.airsupply.commons.core.util.Functions;
 import de.airsupply.commons.core.util.ValidationUtils;
 
@@ -41,7 +44,7 @@ public abstract class Neo4jServiceSupport {
 	public <T> void delete(Iterable<T> objects) {
 		Assert.notNull(objects);
 
-		List<Node> nodes = CollectionUtils.transform(objects, Functions.toNode(neo4jTemplate));
+		List<Node> nodes = transform(objects, Functions.toNode(neo4jTemplate));
 		if (getReferencers(nodes.toArray(new Node[nodes.size()])).iterator().hasNext()) {
 			throw new ConstraintViolationException("The objects still have referencers and may not be deleted!", null);
 		}
@@ -70,7 +73,7 @@ public abstract class Neo4jServiceSupport {
 	}
 
 	public <T> List<T> find(Class<T> entityClass) {
-		return CollectionUtils.asList(neo4jTemplate.findAll(entityClass));
+		return asList(neo4jTemplate.findAll(entityClass));
 	}
 
 	public <T> T find(Long identifier, Class<T> entityClass) {
@@ -91,7 +94,7 @@ public abstract class Neo4jServiceSupport {
 		for (T t : objects) {
 			result.add(findOrCreate(t, recursively));
 		}
-		return Collections.unmodifiableList(result);
+		return unmodifiableList(result);
 	}
 
 	public <T> Set<T> findOrCreate(Set<T> objects) {
@@ -104,7 +107,7 @@ public abstract class Neo4jServiceSupport {
 		for (T t : objects) {
 			result.add(findOrCreate(t, recursively));
 		}
-		return Collections.unmodifiableSet(result);
+		return unmodifiableSet(result);
 	}
 
 	public <T> T findOrCreate(T object) {
