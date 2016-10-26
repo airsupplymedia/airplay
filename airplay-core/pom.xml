@@ -5,9 +5,9 @@
 
 	<parent>
 		<groupId>de.airsupply.airplay</groupId>
-		<artifactId>airplay-parent</artifactId>
+		<artifactId>airplay</artifactId>
 		<version>0.0.7-SNAPSHOT</version>
-		<relativePath>../airplay-parent/pom.xml</relativePath>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<dependencies>
