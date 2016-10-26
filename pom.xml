@@ -120,8 +120,8 @@
 	</repositories>
 
 	<modules>
-		<module>../airplay-web</module>
-		<module>../airplay-core</module>
+		<module>airplay-web</module>
+		<module>airplay-core</module>
 	</modules>
 
 </project>
