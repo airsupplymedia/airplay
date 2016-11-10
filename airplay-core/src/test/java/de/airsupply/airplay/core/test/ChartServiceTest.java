@@ -105,10 +105,10 @@ public class ChartServiceTest {
 	@Test
 	public void testChartPositionRetrievalLatestByChart() {
 		Chart chart = service.save(new Chart("Airplay Charts"));
-		ChartState oldChartState = service.save(new ChartState(chart, getStartOfWeek(new GregorianCalendar(
-				2000, 10, 24).getTime())));
-		ChartState newChartState = service.save(new ChartState(chart, getStartOfWeek(new GregorianCalendar(
-				2000, 12, 24).getTime())));
+		ChartState oldChartState = service
+				.save(new ChartState(chart, getStartOfWeek(new GregorianCalendar(2000, 10, 24).getTime())));
+		ChartState newChartState = service
+				.save(new ChartState(chart, getStartOfWeek(new GregorianCalendar(2000, 12, 24).getTime())));
 
 		Artist artist;
 		Song song;
