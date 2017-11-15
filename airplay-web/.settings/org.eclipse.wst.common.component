@@ -1,13 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+<?xml version="1.0" encoding="UTF-8"?>
+<project-modules id="moduleCoreId" project-version="1.5.0">
 	<wb-module deploy-name="airplay-web">
-		<wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
-		<wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
-        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
-        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
-        <dependent-module archiveName="airplay-core-0.0.7-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/airplay-core/airplay-core">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
 		<property name="context-root" value="airplay-web"/>
-		<property name="java-output-path" value="/airplay-web/build/classes"/>
+		<wb-resource deploy-path="/WEB-INF/classes" source-path="src/main/resources"/>
+		<wb-resource deploy-path="/WEB-INF/classes" source-path="src/main/java"/>
+		<wb-resource deploy-path="/" source-path="src/main/webapp"/>
+		<dependent-module deploy-path="/WEB-INF/lib" handle="module:/resource/airplay-core/airplay-core">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
 	</wb-module>
 </project-modules>

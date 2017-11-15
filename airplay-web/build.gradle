@@ -1,0 +1,25 @@
+apply plugin: 'war'
+description = 'AirPlay Manager Web Application'
+dependencies {
+	compile project(':airplay-core')
+    compile group: 'org.slf4j', name: 'slf4j-log4j12', version:'1.7.5'
+    compile group: 'org.slf4j', name: 'jcl-over-slf4j', version:'1.7.5'
+    compile group: 'commons-lang', name: 'commons-lang', version:'2.6'
+    compile group: 'commons-io', name: 'commons-io', version:'2.4'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version:'2.2.3'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.2.3'
+    compile(group: 'org.springframework', name: 'spring-core', version:'3.2.6.RELEASE') {
+		exclude(module: 'commons-logging')
+    }
+    compile group: 'org.springframework', name: 'spring-beans', version:'3.2.6.RELEASE'
+    compile(group: 'org.springframework', name: 'spring-context', version:'3.2.6.RELEASE') {
+		exclude(module: 'commons-logging')
+    }
+    compile group: 'org.springframework', name: 'spring-web', version:'3.2.6.RELEASE'
+    compile group: 'org.springframework', name: 'spring-webmvc', version:'3.2.6.RELEASE'
+    compile group: 'org.springframework.security', name: 'spring-security-core', version:'3.2.0.RELEASE'
+    compile group: 'org.springframework.security', name: 'spring-security-web', version:'3.2.0.RELEASE'
+    testCompile group: 'org.springframework', name: 'spring-test', version:'3.2.6.RELEASE'
+    testCompile group: 'junit', name: 'junit', version:'4.11'
+    providedCompile group: 'javax.persistence', name: 'persistence-api', version:'1.0'
+}
