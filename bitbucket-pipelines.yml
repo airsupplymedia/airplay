@@ -3,7 +3,6 @@ pipelines:
   default:
     - step:
         caches:
-          - .gradle
           - gradle
         script:
           - bash ./gradlew clean build
